@@ -12,11 +12,11 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[6]
 sys.path.insert(0, str(REPO / "symbols" / "tools"))
 
-from gen_kicad_symbol import GRID, _layout, build_symbol  # noqa: E402
+from gen_kicad_symbol import GRID, _layout, build_symbol
 
 # Re-exported for gen_schematic.py / gen_pcb.py -- this module is a shared
 # import hub, not just a spec table.
-__all__ = ["REPO", "GENERIC_SPECS", "_layout", "build_symbol", "GRID"]
+__all__ = ["GENERIC_SPECS", "GRID", "REPO", "_layout", "build_symbol"]
 
 # ---------------------------------------------------------------------------
 # Generic, unsourced support parts (resistor / capacitor / generic headers).
@@ -109,6 +109,26 @@ GENERIC_SPECS = {
             {"num": "2", "name": "Pin_2", "etype": "passive", "side": "left"},
             {"num": "3", "name": "Pin_3", "etype": "passive", "side": "left"},
             {"num": "4", "name": "Pin_4", "etype": "passive", "side": "left"},
+        ],
+    },
+    "power:PWR_FLAG": {
+        "name": "PWR_FLAG",
+        "reference": "#FLG",
+        "footprint": "",
+        "datasheet": "",
+        "citation": "",
+        "description": (
+            "KiCad standard power-flag marker: asserts a net is driven from "
+            "outside this schematic (a rail carried only by same-name labels "
+            "here, with no regulator/source symbol on this sheet) so ERC's "
+            "power-input-pin-not-driven check doesn't fire. Not itself a "
+            "claim about where the power actually comes from -- see "
+            "../README.md / kicad/README.md for the open items on 3V3 "
+            "regulator and isolated-supply sourcing."
+        ),
+        "verification": "Generic KiCad mechanism, not part-specific -- no citation required.",
+        "pins": [
+            {"num": "1", "name": "pwr", "etype": "power_out", "side": "bottom"},
         ],
     },
 }

@@ -10,34 +10,34 @@ import json
 import re
 import sys
 import uuid
+from itertools import pairwise
 from pathlib import Path
 from typing import ClassVar
 
 SCRATCH = Path(__file__).parent
 sys.path.insert(0, str(SCRATCH))
-from genlib import REPO, GENERIC_SPECS, _layout, build_symbol, GRID  # noqa: E402
-
-from kiutils.items.common import (  # noqa: E402
-    Position,
+from genlib import GENERIC_SPECS, GRID, REPO, _layout, build_symbol
+from kiutils.items.common import (
     Effects,
     Font,
-    Property,
-    PageSettings,
-    TitleBlock,
-    Stroke,
     Justify,
+    PageSettings,
+    Position,
+    Property,
+    Stroke,
+    TitleBlock,
 )
-from kiutils.items.schitems import (  # noqa: E402
-    SchematicSymbol,
-    Junction,
-    NoConnect,
+from kiutils.items.schitems import (
     Connection,
     GlobalLabel,
     HierarchicalSheetInstance,
+    Junction,
+    NoConnect,
+    SchematicSymbol,
     Text,
 )
-from kiutils.symbol import SymbolLib  # noqa: E402
-from kiutils.schematic import Schematic  # noqa: E402
+from kiutils.schematic import Schematic
+from kiutils.symbol import SymbolLib
 
 SPECDIR = REPO / "symbols" / "specs"
 SYMDIR = REPO / "symbols"
@@ -221,7 +221,7 @@ class Builder:
                 legs.append((x2, y1))
         legs.append((x2, y2))
         segments = []
-        for a, bpt in zip(legs, legs[1:]):
+        for a, bpt in pairwise(legs):
             c = Connection(
                 type="wire",
                 points=[Position(*a), Position(*bpt)],
@@ -304,6 +304,18 @@ def rail(b, ref, name, direction, label, index=0):
 def rail_all(b, ref, name, direction, label):
     for _, p in find_all(b, ref, name):
         b.label_stub((p[0], p[1]), direction, label)
+
+
+def power_flag(b, p, dy=-8):
+    """Place a PWR_FLAG at p so ERC's power-input-pin-not-driven check
+    doesn't fire on a net that's only carried by same-name labels (or, for
+    an unlabeled net, only by a direct wire) with no regulator/power symbol
+    on this sheet -- see genlib.py's power:PWR_FLAG description."""
+    ref, _ = b.place(
+        "FLG", p[0], p[1] + dy, generic_lib_id="power:PWR_FLAG", value="PWR_FLAG"
+    )
+    pin = find(b, ref, "pwr")
+    b.wire(xy(pin), p)
 
 
 def place_all(b):
@@ -712,6 +724,23 @@ def wire_all(b, r):
         "current-sense sourcing is an open design question, see ../README.md Open items.",
         size=1.2,
     )
+
+    # ---- Power-flag markers -------------------------------------------------------
+    # ERC requires every net with a power-input pin to have a declared driver
+    # (a power-output pin or a PWR_FLAG). GND/3V3/VM/the two isolated grounds/
+    # the two open isolated-supply nets carry only same-name labels with no
+    # regulator or source symbol on this sheet; DRV8353S.VREF is wired only to
+    # its own decoupling cap with no label at all. None of that changes with a
+    # PWR_FLAG -- it just tells ERC the omission is intentional, not a
+    # dangling input. See genlib.py power:PWR_FLAG and kicad/README.md.
+    power_flag(b, xy(find(b, bt[-1], "-")))  # GND
+    power_flag(b, xy(find(b, r["r_nrst"], "~", 0)))  # 3V3
+    power_flag(b, xy(find(b, bt[0], "+")))  # VM
+    power_flag(b, xy(find(b, u3, "RS")))  # CAN_ISO_GND
+    power_flag(b, xy(find(b, u4, "GND2", 0)))  # RS485_ISO_GND
+    power_flag(b, xy(find(b, u3, "VISOIN")))  # CAN_VISOIN_OPEN
+    power_flag(b, xy(find(b, u4, "VISOIN")))  # RS485_VISOIN_OPEN
+    power_flag(b, xy(find(b, u5, "VREF")))  # DRV8353S.VREF local net (no label)
 
 
 def title_block():

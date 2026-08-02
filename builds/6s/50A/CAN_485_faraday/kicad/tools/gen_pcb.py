@@ -17,14 +17,13 @@ from pathlib import Path
 
 SCRATCH = Path(__file__).parent
 sys.path.insert(0, str(SCRATCH))
-from genlib import REPO  # noqa: E402
-
-from kiutils.board import Board  # noqa: E402
-from kiutils.footprint import Footprint, Pad, DrillDefinition, Attributes  # noqa: E402
-from kiutils.items.common import Position, Effects, Font, TitleBlock, PageSettings  # noqa: E402
-from kiutils.items.fpitems import FpText, FpRect  # noqa: E402
-from kiutils.items.gritems import GrRect, GrText  # noqa: E402
-from kiutils.schematic import Schematic  # noqa: E402
+from genlib import REPO
+from kiutils.board import Board
+from kiutils.footprint import Attributes, DrillDefinition, Footprint, Pad
+from kiutils.items.common import Effects, Font, PageSettings, Position, TitleBlock
+from kiutils.items.fpitems import FpRect, FpText
+from kiutils.items.gritems import GrRect, GrText
+from kiutils.schematic import Schematic
 
 BUILD_KICAD_DIR = REPO / "builds/6s/50A/CAN_485_faraday/kicad"
 PROJECT_NAME = "open_secure_esc_6s_50a_can485_faraday"
