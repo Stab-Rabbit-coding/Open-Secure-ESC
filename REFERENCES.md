@@ -10,27 +10,29 @@ Last reviewed: 2026-08-02.
 
 ---
 
-**[1]** STMicroelectronics, *STM32G431x6 STM32G431x8 STM32G431xB — Arm®
-Cortex®-M4 32-bit MCU+FPU, 170 MHz/213 DMIPS, up to 128 KB Flash, 32 KB
-SRAM, rich analog, math accelerator*, datasheet — production data,
-DS12589, Rev. 6, STMicroelectronics, Geneva, Switzerland, 2021-10.
-[Online]. Available:
-https://www.st.com/resource/en/datasheet/stm32g431c6.pdf
-Product page: https://www.st.com/en/microcontrollers-microprocessors/stm32g431c6.html
-Local verified copy: `docs/datasheets/stm32g431c6.pdf` (198 pp.).
-Section/page: p. 2/198, "Table 1. Device summary" — STM32G431x6 subfamily
-includes ordering codes STM32G431C6, STM32G431K6, STM32G431R6,
-STM32G431V6, STM32G431M6; "C" = 48/49-pin package, "6" = 32 Kbytes Flash
-(confirmed against the ordering information scheme below). p. 42/198,
-§3.33 "Controller area network (FDCAN1)" — "compliant with ISO 11898-1
-(CAN protocol specification version 2.0 part A, B) and CAN FD protocol
-specification version 1.0" (cf. [5], [6]). p. 50/198, §4.10 "Pin
-definition," Table 12 — full pinout. p. 194/198, §7 "Ordering
-information," Table 101 "Ordering information scheme" — decodes
-STM32G431C6: device family STM32, product type G (general-purpose),
-sub-family 431, pin count C (48/49 pins), code size 6 (32 Kbytes),
-package/temperature range suffixes not fixed by this ordering code alone
-(T=LQFP, U=UFQFPN, I=UFBGA, Y=WLCSP; select per BOM).
+**[1]** Texas Instruments Incorporated, *MSPM0G350x Mixed-Signal
+Microcontrollers With CAN-FD Interface*, datasheet — production data,
+SLASEX6C, Rev. C, Texas Instruments Incorporated, Dallas, TX, USA,
+2023-02 (revised 2025-10). [Online]. Available:
+https://www.ti.com/lit/ds/symlink/mspm0g3507.pdf
+(live fetch blocked: HTTP 403, 2026-08-02 — see TODO.md 1.4).
+Product page: https://www.ti.com/product/MSPM0G3507
+(live fetch blocked: HTTP 403, 2026-08-02).
+Local verified copy: `docs/datasheets/mspm0g3507.pdf` (120 pp.).
+Section/page: p. 6, Table 5-1 "Device Comparison" — MSPM0G3507SPMR/
+SPTR/SRGZR/SRHBR/SDGSR28 variants: 128 KB flash, 32 KB SRAM, one CAN
+peripheral; package options 64-pin LQFP, 48-pin LQFP, 48-pin VQFN,
+32-pin VQFN, 28-pin VSSOP. p. 68, §8.26 "CAN-FD" — "controller area
+network (CAN) controller enables communication with a CAN2.0A, CAN2.0B,
+or CAN-FD bus and is compliant to ISO 11898-1:2015 standard supporting
+up to 5Mbit/s bit rate" (cf. [5], [6]). p. 7, §6.1 "Pin Diagrams"; p.
+11, §6.2 "Pin Attributes"; p. 14, §6.3 "Signal Descriptions" — full
+pinout. p. 77, §10.2 "Device Nomenclature," Table 10-1 "Device
+Nomenclature" — decodes MSPM0G3507SRHBR: MCU platform MSPM0 (Arm
+Cortex-M0+), product family G (80 MHz), device subfamily 350 (CAN-FD,
+2x ADC, 2x OPA, 3x COMP), flash memory 7 (128 KB), temperature range S
+(-40°C to 125°C); package type and distribution format per Section 12
+"Mechanical, Packaging, and Orderable Information" (select per BOM).
 Cited in: README.md (MCU line).
 Date accessed: 2026-08-02.
 
@@ -94,9 +96,9 @@ Section/page: Part A (Standard Format, 11-bit identifier) and Part B
 claim not yet pinned; verify against the mirrored PDF before quoting
 page-level detail. Note: this specification has been superseded for new
 designs by ISO 11898-1 [6]; retained here only insofar as "CAN2.0" is
-referenced by name in README.md. The project MCU's embedded FDCAN
-peripheral, [1], p. 42/198, declares compliance with "CAN protocol
-specification version 2.0 part A, B" by name.
+referenced by name in README.md. The project MCU's embedded CAN
+peripheral, [1], p. 68, §8.26 "CAN-FD," declares support for "CAN2.0A,
+CAN2.0B, or CAN-FD" by name.
 Cited in: README.md (Protocol: CAN2.0).
 Date accessed: 2026-08-02.
 
@@ -113,8 +115,8 @@ ISO 11898-2:2016 (physical layer), not this Part 1 (data link layer)
 document — the two parts are distinct and both apply to a complete
 CAN FD implementation; ISO 11898-2:2016 itself is not yet a separate
 entry here pending a verified catalog URL. The project MCU's embedded
-FDCAN peripheral, [1], p. 42/198, declares compliance with "CAN FD
-protocol specification version 1.0."
+CAN peripheral, [1], p. 68, §8.26 "CAN-FD," declares itself "compliant
+to ISO 11898-1:2015 standard."
 Cited in: README.md (Protocol: CAN-FD).
 Date accessed: 2026-08-02.
 

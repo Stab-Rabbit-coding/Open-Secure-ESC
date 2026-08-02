@@ -8,7 +8,8 @@ detail belongs in design docs, not here.
 - [x] 1.1 AGENTS.md — contributor/agent rules
 - [x] 1.2 REFERENCES.md — IEEE bibliography scaffold
 - [x] 1.3 TODO.md — this WBS
-- [x] 1.4 Verify [1] STM32G431C6 datasheet doc ID/rev/page (local copy verified 2026-08-02)
+- [x] 1.4 Verify [1] MSPM0G3507 datasheet doc ID/rev/page (local copy
+      verified 2026-08-02; live ti.com fetch blocked: 403)
 - [ ] 1.5 Verify [2] SLB9672 datasheet page refs for compliance claims (blocked: 403 on infineon.com)
 - [ ] 1.6 Verify [3]-[7] section/page pins once standards obtained (paywalled)
 - [ ] 1.7 Confirm MIL-STD-1553B vs -1553C target revision, update [7]
@@ -22,7 +23,7 @@ detail belongs in design docs, not here.
 - [ ] 2.4 Requirements traceability matrix → REFERENCES.md tags
 
 ## 3. Hardware — MCU Subsystem
-- [ ] 3.1 STM32G431C6 schematic (power, clock, decoupling per [1])
+- [ ] 3.1 MSPM0G3507 schematic (power, clock, decoupling per [1])
 - [ ] 3.2 Programming/debug interface (SWD)
 - [ ] 3.3 Peripheral pin mapping vs. protocol variant matrix
 
