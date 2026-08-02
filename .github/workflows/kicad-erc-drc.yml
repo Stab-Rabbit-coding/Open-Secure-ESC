@@ -101,6 +101,19 @@ jobs:
 
           exit $status
 
+      - name: Show ERC/DRC violation details
+        if: steps.find.outputs.found == 'true' && always()
+        shell: bash
+        run: |
+          set +e
+          for f in reports/*.json; do
+            [ -f "$f" ] || continue
+            echo "::group::$f"
+            cat "$f"
+            echo
+            echo "::endgroup::"
+          done
+
       - name: Upload ERC/DRC reports
         if: steps.find.outputs.found == 'true' && always()
         uses: actions/upload-artifact@v4

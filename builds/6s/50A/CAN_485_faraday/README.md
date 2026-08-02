@@ -142,10 +142,15 @@ existing layout guidance ([15], [17]) already in the base decision matrix.
 ## Folder contents
 
 - `README.md` — this file.
-- `kicad/` — KiCad project skeleton (schematic sheet + shared-library
-  wiring); see `kicad/README.md` for exact status.
-- `gerbers/` — fabrication output; empty until a PCB layout exists, see
-  `gerbers/README.md`.
+- `kicad/` — populated KiCad project: schematic (all BOM parts below placed
+  and wired), `.kicad_pro`, and a PCB with footprints placed and a board
+  outline (not yet routed). Title block company: **Griffing Technology
+  LLC**. See `kicad/README.md` for exact status, including what's still
+  open (no footprint for the DRV8353S gate driver, no netlist/routing yet,
+  and the open design questions noted in this document are deliberately
+  left open there too, not silently resolved).
+- `gerbers/` — fabrication output; still empty, the PCB isn't routed yet,
+  see `gerbers/README.md`.
 
 Symbols referenced by this build live in the repo-root `symbols/` library,
 shared across all builds — see `symbols/README.md` for citation/
