@@ -27,9 +27,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          version=$(curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" \
-            https://api.github.com/repos/gitleaks/gitleaks/releases/latest \
-            | grep -m1 '"tag_name"' | cut -d '"' -f4)
+          release=$(curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" \
+            https://api.github.com/repos/gitleaks/gitleaks/releases/latest)
+          version=$(printf '%s' "$release" | grep -m1 '"tag_name"' | cut -d '"' -f4)
           ver_num="${version#v}"
           curl -fsSL -o gitleaks.tar.gz \
             "https://github.com/gitleaks/gitleaks/releases/download/${version}/gitleaks_${ver_num}_linux_x64.tar.gz"
@@ -95,4 +95,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Requires Settings > Security > Dependency graph to be enabled for
+      # this repository; continue-on-error keeps that an opt-in rather than
+      # a hard CI prerequisite.
       - uses: actions/dependency-review-action@v4
+        continue-on-error: true

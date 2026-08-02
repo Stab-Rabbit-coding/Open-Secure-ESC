@@ -31,6 +31,10 @@ jobs:
     # https://www.kicad.org/download/docker/
     container:
       image: kicad/kicad:9.0
+      # The image's default user can't write to the runner's mounted
+      # _temp dir (owned by the host runner UID), which breaks actions'
+      # post-job state handling. Run as root to avoid that permission gap.
+      options: --user root
     steps:
       - uses: actions/checkout@v4
 
@@ -66,13 +70,14 @@ jobs:
 
             if [ -f "$sch" ]; then
               echo "::group::ERC — $sch"
-              kicad-cli sch erc \
+              if ! kicad-cli sch erc \
                 --exit-code-violations \
                 --severity-error \
                 --format json \
                 --output "reports/${name}-erc.json" \
-                "$sch"
-              if [ $? -ne 0 ]; then status=1; fi
+                "$sch"; then
+                status=1
+              fi
               echo "::endgroup::"
             else
               echo "::warning::No schematic found for project $proj (expected $sch)"
@@ -80,13 +85,14 @@ jobs:
 
             if [ -f "$pcb" ]; then
               echo "::group::DRC — $pcb"
-              kicad-cli pcb drc \
+              if ! kicad-cli pcb drc \
                 --exit-code-violations \
                 --severity-error \
                 --format json \
                 --output "reports/${name}-drc.json" \
-                "$pcb"
-              if [ $? -ne 0 ]; then status=1; fi
+                "$pcb"; then
+                status=1
+              fi
               echo "::endgroup::"
             else
               echo "::warning::No PCB found for project $proj (expected $pcb)"
