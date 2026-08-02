@@ -26,7 +26,7 @@ detail belongs in design docs, not here.
       in [12]-[23] are corroborated via secondary search sources only,
       not read from a primary PDF, and none has a local verified copy.
       2026-08-02 update: manual PDF downloads resolved [14], [19], [20],
-      [22] (VERIFIED, local copies added) plus four alternative-part
+      [22], [23] (VERIFIED, local copies added) plus four alternative-part
       citations [26]-[29] (Molicel P45B, Samsung SDI 40T, Analog Devices
       AD8410A, Infineon TLE9180D-31QK — none adopted into the BOM).
       **[27] (Samsung 40T) is marked "Confidential Proprietary" by
@@ -34,13 +34,13 @@ detail belongs in design docs, not here.
       whether it should be removed rather than committed; see [27].**
       Two other manual downloads added the same day turned out NOT to
       resolve any open citation — [24] (Vishay WSL, doc 30100) is a
-      related-but-different family from the still-missing [23]
-      (WSLP2512, doc 30122); [25] (Würth WE-SHC 3690103020) is a ~3mm
-      single-IC-scale shield, not the missing 3670375 frame that pairs
-      with [19]'s 3671375 cover. Still fully missing a local copy: [21]
-      (DRV8353S), [23] (WSLP2512), and the WE-SHC 3670375 frame (no
-      citation tag yet) — these are the only three gaps remaining for
-      this build's own BOM (§12.1).
+      related-but-different family from [23] (WSLP2512, doc 30122,
+      since resolved separately); [25] (Würth WE-SHC 3690103020) is a
+      ~3mm single-IC-scale shield, not the missing 3670375 frame that
+      pairs with [19]'s 3671375 cover. Still fully missing a local
+      copy: [21] (DRV8353S) and the WE-SHC 3670375 frame (no citation
+      tag yet) — these are the only two gaps remaining for this
+      build's own BOM (§12.1).
 
 ## 2. Requirements
 
@@ -73,9 +73,10 @@ detail belongs in design docs, not here.
       7.2/8.4/5.0V ... 12S 43.2/50.4/30.0V); cell not yet selected in
       BOM, cutoff voltage is cell-dependent (see [14] note)
 - [~] 5.3 Current sensing (shunt/hall) selection + citation — candidates:
-      Vishay WSLP2512 shunt [23] + TI INA240 amplifier [22], same parts
-      across tiers except 80A/120A where single-shunt power rating is
-      exceeded (open gap, no part selected yet for those two tiers)
+      Vishay WSLP2512 shunt [23] (VERIFIED against local datasheet
+      2026-08-02) + TI INA240 amplifier [22], same parts across tiers
+      except 80A/120A where single-shunt power rating is exceeded (open
+      gap, no part selected yet for those two tiers)
 
 ## 6. Hardware — Protocol Interfaces
 
@@ -144,10 +145,9 @@ detail belongs in design docs, not here.
       D/SOIC-8 8-pin map (see `symbols/specs/INA240.json`).
 - [x] 11.6 IRFB4110PBF [20], WSLP2512 [23], INR21700-P42A [14],
       WE-SHC 3671375 [15], [19] symbols — generic/mechanical pinouts, no
-      part-specific pin diagram needed. IRFB4110PBF and WE-SHC 3671375
-      electrical/dimensional ratings additionally VERIFIED against local
-      datasheets 2026-08-02 (WSLP2512 and INR21700-P42A still lack a
-      local copy — see §1.10).
+      part-specific pin diagram needed. All four now additionally
+      VERIFIED (electrical/dimensional ratings) against local
+      datasheets added 2026-08-02.
 
 ## 12. Per-Build Instances (builds/`<voltage>`/`<amperage>`/`<variant>`/)
 

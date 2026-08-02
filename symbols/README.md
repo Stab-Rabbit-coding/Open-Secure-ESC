@@ -68,7 +68,7 @@ against kiutils 1.4.8).
 | `DRV8353S.kicad_sym` | [21] | UNVERIFIED PLACEHOLDER pin numbering (no local datasheet copy) |
 | `INA240.kicad_sym` | [22] | VERIFIED (full 8-pin, D/SOIC-8 package; local datasheet) |
 | `IRFB4110PBF.kicad_sym` | [20] | Standard TO-220AB G/D/S pinout convention; ratings VERIFIED (local datasheet) |
-| `WSLP2512.kicad_sym` | [23] | Generic 2-terminal chip pinout; values unverified |
+| `WSLP2512.kicad_sym` | [23] | Generic 2-terminal chip pinout; values VERIFIED (local datasheet) |
 | `INR21700_P42A.kicad_sym` | [14] | Generic 2-terminal cell pinout; values VERIFIED (local datasheet) |
 | `WE_SHC_3671375.kicad_sym` | [15], [19] | Mechanical shield **cover** — no functional schematic pins (placeholder GND-bond pin only); dimensions VERIFIED (local datasheet), but the paired frame (part 3670375) is not yet in this repo |
 

@@ -615,37 +615,36 @@ Date accessed: 2026-08-02.
 ---
 
 **[23]** Vishay Dale (Vishay Intertechnology, Inc.), *WSLP — Power Metal
-Strip® Resistors*, datasheet, document no. 30122 (revision/date on one
-mirror indexed as 10-Aug-2018 — exact current revision `UNVERIFIED`),
-Vishay Intertechnology, Inc., Malvern, PA, USA. [Online]. Available:
-https://www.vishay.com/docs/30122/wslp.pdf (live fetch blocked: HTTP
-403, 2026-08-02).
-No local copy yet — `UNVERIFIED — needs primary source (see TODO.md)`.
-Section/page: not verified — live fetch blocked this session; specs
-corroborated via distributor/search-indexed excerpts, not read from the
-primary PDF. Indexed content: WSLP2512 package resistance range 0.5 mΩ
-to 10 mΩ, power rating 3.0 W at 70°C, AEC-Q200 qualified metal-strip
-construction. Per-tier sizing (engineering calculation against the
-3 W/2512-package rating, not itself a datasheet claim): 10 mΩ (10A),
-5 mΩ (20A), 2 mΩ (30A), 1.5 mΩ (40A), 1 mΩ (50A); at 80A/120A a single
-WSLP2512 exceeds its 3 W rating (3.2 W and 7.2 W respectively at the
-sizes that would otherwise apply), so 2–4 devices in parallel (or a
-higher-power Vishay sibling part, not yet selected) are required —
-flagged as an open gap, not a drop-in substitution. Alternative
-considered: Allegro MicroSystems ACS732/ACS733 galvanically-isolated
-Hall-effect current sensor ICs (up to ±65 A, e.g. ACS733KLATR-65AB-T,
-20 mV/A, <1 mΩ internal resistance, 3600–4800 VRMS isolation) — not
-selected because the family tops out below the 80A/120A tiers, breaking
-BOM commonality; a higher-range Allegro part (e.g. ACS781/ACS758 family)
-would be needed for those tiers and was not pursued further.
+Strip® Resistors, Very High Power (to 3 W), Low Value (Down to
+0.0005 Ω), Surface-Mount*, datasheet, document no. 30122, revision
+09-Sep-2024, Vishay Intertechnology, Inc., Malvern, PA, USA. [Online].
+Available: https://www.vishay.com/docs/30122/wslp.pdf.
+Local copy: `docs/datasheets/wslp.pdf` — `VERIFIED` (added 2026-08-02).
+Section/page: p.1 "Standard Electrical Specifications" table.
+Confirmed directly from the local PDF, matching every figure previously
+corroborated only via secondary sources — no discrepancy found:
+WSLP2512 power rating 3.0 W at 70°C; resistance value range 0.003 Ω to
+0.01 Ω (±0.5% tolerance) or 0.0005 Ω to 0.01 Ω (±1.0% tolerance,
+i.e. the previously-cited 0.5 mΩ–10 mΩ range); weight 63.6 g/1000
+pieces; AEC-Q200 rev. D qualified; welded (not clad) construction.
+Per-tier sizing (engineering calculation against the 3 W/2512-package
+rating, not itself a datasheet claim): 10 mΩ (10A), 5 mΩ (20A), 2 mΩ
+(30A), 1.5 mΩ (40A), 1 mΩ (50A); at 80A/120A a single WSLP2512 exceeds
+its 3 W rating (3.2 W and 7.2 W respectively at the sizes that would
+otherwise apply), so 2–4 devices in parallel (or a higher-power Vishay
+sibling part, not yet selected) are required — flagged as an open gap,
+not a drop-in substitution. Alternative considered: Allegro
+MicroSystems ACS732/ACS733 galvanically-isolated Hall-effect current
+sensor ICs (up to ±65 A, e.g. ACS733KLATR-65AB-T, 20 mV/A, <1 mΩ
+internal resistance, 3600–4800 VRMS isolation) — not selected because
+the family tops out below the 80A/120A tiers, breaking BOM commonality;
+a higher-range Allegro part (e.g. ACS781/ACS758 family) would be needed
+for those tiers and was not pursued further.
 Candidate part answering the current-sensing selection (TODO.md §5.3);
 not yet selected in a bill of materials; the 80A/120A shunt sizing gap
 remains open.
-**Still no local copy of this specific document (30122/WSLP)** — see
-[24] for a related-but-different Vishay document that was added to
-`docs/datasheets/` and does not substitute for this one.
-Cited in: docs/datasheets/ (not yet present; not yet cited in repo-root
-README.md); symbols/WSLP2512.kicad_sym (generic 2-terminal pinout);
+Cited in: docs/datasheets/wslp.pdf; symbols/WSLP2512.kicad_sym (generic
+2-terminal pinout);
 builds/6s/50A/CAN_485_faraday/README.md (50A-tier BOM, 1 mΩ ×3, one per
 phase).
 Date accessed: 2026-08-02.

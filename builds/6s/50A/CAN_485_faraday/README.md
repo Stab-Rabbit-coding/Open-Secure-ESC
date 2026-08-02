@@ -46,7 +46,7 @@ KiCad symbols and their own pin-map verification status are in
 | --- | --- | --- | --- |
 | Infineon IRFB4110PBF power MOSFET | 6 (1 per switch position × 2 positions × 3 phases; "FET Qty/Phase Leg" = 1 at 50A) | [20] | Candidate — datasheet VERIFIED locally 2026-08-02 (`docs/datasheets/infineon-irfb4110-datasheet-en.pdf`), not yet locked into BOM |
 | TI DRV8353S 3-phase gate driver (SPI variant) | 1 | [21] | Candidate (unverified) — integrates 3 per-phase shunt-sense amplifiers itself |
-| Vishay WSLP2512 shunt, 1 mΩ | 3 (one per phase; "Shunt Qty Needed" = 1 parallel device per location at 50A) | [23] | Candidate (unverified) |
+| Vishay WSLP2512 shunt, 1 mΩ | 3 (one per phase; "Shunt Qty Needed" = 1 parallel device per location at 50A) | [23] | Candidate — datasheet VERIFIED locally 2026-08-02 (`docs/datasheets/wslp.pdf`), not yet locked into BOM |
 | TI INA240 current-sense amp, 200 V/V gain | 3 (one per phase) — **open, see note below** | [22] | Candidate — datasheet VERIFIED locally 2026-08-02 (`docs/datasheets/ina240.pdf`), not yet locked into BOM |
 
 **Open design question, not resolved here:** REFERENCES.md [21] states
@@ -121,19 +121,20 @@ existing layout guidance ([15], [17]) already in the base decision matrix.
   neither resolves this or any other open gap — see [24]/[25] in
   `REFERENCES.md` for exactly why (wrong Vishay family, and a shield at
   the wrong physical scale, respectively).
-- Remaining parts without a local, primary-source datasheet: TI DRV8353S
-  [21] and Vishay WSLP2512 [23] — need a datasheet pass (blocked this
-  session/all recent sessions by a network-egress policy denial; see
-  `TODO.md` 1.10) before those two BOM lines can move past "Candidate."
-  Plus the WE-SHC 3670375 frame noted above.
-- Molicel INR-21700-P42A [14], IRFB4110PBF [20], INA240 [22], and the
-  WE-SHC 3671375 cover [19] now all have a locally verified primary
-  datasheet (2026-08-02) confirming the figures already used in this
-  BOM — still "Candidate" only in the sense that the part hasn't been
-  formally locked in per `AGENTS.md` §5, not because the data is
-  unverified. That means **every BOM line in this document now has a
-  verified primary datasheet except DRV8353S, WSLP2512, and the missing
-  WE-SHC frame** — see `REFERENCES.md` [21], [23], [19] respectively.
+- Remaining part without a local, primary-source datasheet: TI DRV8353S
+  [21] — needs a datasheet pass (blocked this session/all recent
+  sessions by a network-egress policy denial; see `TODO.md` 1.10)
+  before that BOM line can move past "Candidate." Plus the WE-SHC
+  3670375 frame noted above.
+- Molicel INR-21700-P42A [14], IRFB4110PBF [20], INA240 [22], Vishay
+  WSLP2512 [23], and the WE-SHC 3671375 cover [19] now all have a
+  locally verified primary datasheet (2026-08-02) confirming the
+  figures already used in this BOM — still "Candidate" only in the
+  sense that the part hasn't been formally locked in per `AGENTS.md`
+  §5, not because the data is unverified. That means **every BOM line
+  in this document now has a verified primary datasheet except
+  DRV8353S and the missing WE-SHC frame** — see `REFERENCES.md` [21],
+  [19] respectively.
 - Four alternative-manufacturer datasheets were also added 2026-08-02
   (Molicel P45B, Samsung SDI 40T, Analog Devices AD8410A, Infineon
   TLE9180D-31QK — see `REFERENCES.md` [26]-[29]) but none is adopted
