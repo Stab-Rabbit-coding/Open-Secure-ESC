@@ -44,7 +44,14 @@ anything here as final.
   `symbols/tools/gen_kicad_symbol.py`: re-run them after editing
   `symbols/specs/*.json` or the placement/wiring tables inside these scripts,
   rather than hand-editing the generated `.kicad_sch`/`.kicad_pcb` text.
-  Requires `pip install kiutils`.
+  Requires `pip install kiutils`. Also has `check_shorts.py`: a
+  collinear-overlap checker for `.kicad_sch` (two wire segments that are
+  collinear and overlap in range but belong to different nets -- real
+  KiCad's ERC reads that as one electrically-connected net, i.e. a short,
+  and reports it as a `pin_to_pin` violation). Run it after any hand edit
+  to the wiring in `gen_schematic.py`; a naive 2-segment L-route between
+  two pins whose stacks share a row/column is exactly how this build's
+  DRV8353S gate-driver outputs first got wired together by accident.
 
 ## What got added beyond the verified BOM
 
