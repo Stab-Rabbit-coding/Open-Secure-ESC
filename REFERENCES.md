@@ -336,6 +336,18 @@ at 2.7 V/cell, or the commonly-seen 3.0 V/cell convention) shifts the
 actual cell selected at BOM finalization (TODO.md §10.2) and using the
 highest (most conservative) published cutoff among candidates for
 FET/regulator voltage-margin derating in the interim.
+Alternative real cells considered, not further verified (2026-08-02
+search pass, secondary sources only — high-drain vape/DIY-battery
+community bench tests, not manufacturer test data): E-One Moli Energy's
+own INR-21700-P45B (same manufacturer/family; secondary sources report
+~7% higher capacity and ~22% lower DCR than P42A at every discharge
+rate tested — the strongest same-supplier swap-in if capacity/DCR
+matter more than the existing BOM citation); Samsung SDI
+INR21700-40T (Republic of Korea; same secondary sources report P42A
+outperforming it at equal discharge current). No US/UK/EU-headquartered
+cell manufacturer was found competing in this high-drain 21700
+cylindrical-cell class — production is concentrated in Taiwan/South
+Korea/Japan/China industry-wide, not a gap specific to this BOM choice.
 Candidate cell for voltage-tier derating (TODO.md §5.2); not yet
 selected in a bill of materials.
 Cited in: docs/datasheets/ (not yet present; not yet cited in repo-root
@@ -489,6 +501,14 @@ maximize BOM commonality across tiers per the research brief, at the
 cost of being oversized/cost-inefficient for the smallest tiers (10A–30A),
 where a smaller SO-8 SMD FET would be leaner if part-count commonality
 were not prioritized.
+Alternative real manufacturers in this space, not further verified
+(2026-08-02 search pass, secondary/distributor listings only — no
+primary datasheet opened for any of them either): onsemi (USA),
+STMicroelectronics (Switzerland/EU), Toshiba (Japan) each publish
+comparable 100 V TO-220 N-channel power MOSFETs aimed at motor-drive
+applications; none was found with a head-to-head RDS(on)/ID spec
+comparison from a primary source this session, so no like-for-like
+numeric comparison is possible yet.
 Candidate part for the power stage (TODO.md §5.1); not yet selected in
 a bill of materials.
 Cited in: docs/datasheets/ (not yet present; not yet cited in repo-root
@@ -521,6 +541,17 @@ UVLO, VDS overcurrent monitoring, and gate-driver fault detection.
 Proposed as the same part for all 7 amperage tiers — the SPI-programmable
 IDRIVE setting and CSA gain register absorb the per-tier differences
 rather than requiring a different gate-driver part.
+Alternative real manufacturer considered, not further verified
+(2026-08-02 search pass, secondary/distributor listings only): Infineon
+MOTIX™ TLE9180D-series (Germany/EU) — a 3-phase gate driver family
+(TLE9180D-21QK/-31QK/-32QK) with 2–3 integrated current-sense
+amplifiers per variant and ISO 26262 functional-safety qualification.
+Candidate for supply-chain diversification away from a single US
+supplier (TI) and for the functional-safety pedigree this project's
+trust/security scope may eventually want, but its VM operating range
+and SPI/register interface are unconfirmed against this build's 6S
+(≤25.2 V) through 12S (≤50.4 V) span and would require a separate
+firmware driver (TODO.md §8.4) — not a drop-in part swap.
 Candidate part for the power stage (TODO.md §5.1); not yet selected in
 a bill of materials.
 Cited in: docs/datasheets/ (not yet present; not yet cited in repo-root
@@ -552,6 +583,16 @@ Candidate part answering the current-sensing selection (TODO.md §5.3);
 proposed as the same part for all 7 amperage tiers, paired with the
 Vishay shunt series [23] whose resistance value (and, at 80A/120A,
 parallel count) varies by tier.
+Alternative real manufacturer considered, not further verified
+(2026-08-02 search pass, secondary/distributor listings only): Analog
+Devices AD8410/AD8410A (USA) — a bidirectional current-sense amplifier
+with an internal deglitch circuit marketed for PWM common-mode
+rejection, reported common-mode range −2 V to +70 V (narrower than
+INA240's −4 V to +80 V) and a single fixed 20 V/V gain (vs. INA240's
+four selectable gains 20/50/100/200 V/V — losing that gain flexibility
+would require an external gain stage or accepting one fixed resolution
+across all amperage tiers). No primary datasheet opened for either part
+this session; the comparison above is search-snippet-level only.
 Candidate part for the power stage; not yet selected in a bill of
 materials.
 Cited in: docs/datasheets/ (not yet present; not yet cited in repo-root
