@@ -5,6 +5,7 @@ Governed by `AGENTS.md`. Status: `[ ]` open, `[~]` in progress, `[x]` done,
 detail belongs in design docs, not here.
 
 ## 1. Governance & Docs
+
 - [x] 1.1 AGENTS.md — contributor/agent rules
 - [x] 1.2 REFERENCES.md — IEEE bibliography scaffold
 - [x] 1.3 TODO.md — this WBS
@@ -26,22 +27,26 @@ detail belongs in design docs, not here.
       not read from a primary PDF, and none has a local verified copy
 
 ## 2. Requirements
+
 - [ ] 2.1 Functional requirements spec (per voltage/amperage/protocol/control/EMI variant)
 - [ ] 2.2 Safety requirements (motor runaway, overcurrent, thermal, TPM attestation trust boundary)
 - [ ] 2.3 Regulatory/EMC targets per market (cite standard, C6)
 - [ ] 2.4 Requirements traceability matrix → REFERENCES.md tags
 
 ## 3. Hardware — MCU Subsystem
+
 - [ ] 3.1 MSPM0G3507 schematic (power, clock, decoupling per [1])
 - [ ] 3.2 Programming/debug interface (SWD)
 - [ ] 3.3 Peripheral pin mapping vs. protocol variant matrix
 
 ## 4. Hardware — Trust/Security Subsystem
+
 - [ ] 4.1 SLB9672 TPM schematic (SPI per [2])
 - [ ] 4.2 Secure boot / attestation chain design doc
 - [ ] 4.3 Key provisioning process
 
 ## 5. Hardware — Power Stage
+
 - [~] 5.1 Gate driver + FET selection per amperage tier (10/20/30/40/50/80/120 A)
       — candidates: Infineon IRFB4110PBF FET [20] (1x-3x parallel per
       tier), TI DRV8353S gate driver [21] (same part all tiers); not yet
@@ -56,6 +61,7 @@ detail belongs in design docs, not here.
       exceeded (open gap, no part selected yet for those two tiers)
 
 ## 6. Hardware — Protocol Interfaces
+
 - [ ] 6.1 PWM input stage
 - [ ] 6.2 SBus input stage (flag UNVERIFIED spec, C-pending)
 - [ ] 6.3 DBus input stage (flag UNVERIFIED spec, C-pending)
@@ -68,6 +74,7 @@ detail belongs in design docs, not here.
 - [ ] 6.10 MIL-STD-1553B interface per [7]; candidate module Alta MEZ-E1553 [11]
 
 ## 7. Hardware — EMI Hardening
+
 - [~] 7.1 Define tier requirements: None / Isolation / Grounding / Faraday
       — standards found: MIL-STD-461G [15] (Grounding, Faraday), IEC
       62368-1 [16] (Isolation classification), IEC/TR 61000-5-2 [17]
@@ -79,6 +86,7 @@ detail belongs in design docs, not here.
 - [ ] 7.3 Pre-compliance test plan
 
 ## 8. Firmware
+
 - [ ] 8.1 Control loop: Open-loop
 - [~] 8.2 Control loop: Closed-loop differential — feedback approach:
       sensorless FOC per TI SLAAE96A [13] (no extra BOM part; MCU's own
@@ -89,12 +97,14 @@ detail belongs in design docs, not here.
 - [ ] 8.6 Fault handling (overcurrent/thermal/comm-loss)
 
 ## 9. Verification & Test
+
 - [ ] 9.1 Unit test plan (firmware)
 - [ ] 9.2 HIL bench test plan
 - [ ] 9.3 EMC pre-compliance test
 - [ ] 9.4 Protocol conformance test per interface
 
 ## 10. Release
+
 - [ ] 10.1 Design review gate (AGENTS.md §5 checklist)
 - [ ] 10.2 BOM finalization per variant
 - [ ] 10.3 Manufacturing/fab release
