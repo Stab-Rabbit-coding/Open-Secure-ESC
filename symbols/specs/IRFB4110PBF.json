@@ -1,0 +1,14 @@
+{
+  "name": "IRFB4110PBF",
+  "reference": "Q",
+  "footprint": "Package_TO_SOT_THT:TO-220-3_Vertical",
+  "datasheet": "https://www.infineon.com/assets/row/public/documents/24/49/infineon-irfb4110-datasheet-en.pdf",
+  "description": "Infineon IRFB4110PbF 100V HEXFET power MOSFET, TO-220AB -- candidate power-stage FET, all amperage tiers (TODO.md 5.1).",
+  "citation": "[20]",
+  "verification": "VERIFIED (package pinout only) -- Gate/Drain/Source order is the standard TO-220AB 3-pin MOSFET pinout convention (industry-standard, not part-specific). Electrical ratings cited elsewhere (VDSS=100V, RDS(on), ID) are 'Candidate (unverified)' per REFERENCES.md [20] (live fetch HTTP 403, no local copy of Infineon's own pin-diagram figure) -- confirm against the primary datasheet before fab. See TODO.md 1.10 and 5.1.",
+  "pins": [
+    {"num": "1", "name": "G", "etype": "input",   "side": "left"},
+    {"num": "2", "name": "D", "etype": "passive", "side": "top"},
+    {"num": "3", "name": "S", "etype": "passive", "side": "bottom"}
+  ]
+}

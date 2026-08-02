@@ -1,0 +1,31 @@
+{
+  "name": "ADM2582E_ADM2587E",
+  "reference": "U",
+  "footprint": "Package_SO:SOIC-20W_7.5x12.8mm_P1.27mm",
+  "datasheet": "docs/datasheets/analog-devices-adm2582e-adm2587e-datasheet.pdf",
+  "description": "Analog Devices ADM2582E/ADM2587E signal+power isolated RS-485 transceiver -- candidate part for the RS-485 protocol interface (TODO.md 6.7).",
+  "citation": "[4], [9]",
+  "verification": "VERIFIED -- full 20-pin map read directly from the local copy of [9], p.8, Table 10 'Pin Function Description'. Part itself is still 'Candidate (unverified)' status in docs/decision-matrix.xlsx (not yet locked into a BOM revision) -- only the PIN MAP is verified here, not final part selection.",
+  "pins": [
+    {"num": "1",  "name": "GND1",    "etype": "power_in", "side": "left"},
+    {"num": "2",  "name": "VCC",     "etype": "power_in", "side": "left"},
+    {"num": "3",  "name": "GND1",    "etype": "power_in", "side": "left"},
+    {"num": "4",  "name": "RxD",     "etype": "output",   "side": "left"},
+    {"num": "5",  "name": "RE",      "etype": "input",    "side": "left"},
+    {"num": "6",  "name": "DE",      "etype": "input",    "side": "left"},
+    {"num": "7",  "name": "TxD",     "etype": "input",    "side": "left"},
+    {"num": "8",  "name": "VCC",     "etype": "power_in", "side": "left"},
+    {"num": "9",  "name": "GND1",    "etype": "power_in", "side": "left"},
+    {"num": "10", "name": "GND1",    "etype": "power_in", "side": "left"},
+    {"num": "11", "name": "GND2",    "etype": "power_in", "side": "right"},
+    {"num": "12", "name": "VISOOUT", "etype": "power_out","side": "right"},
+    {"num": "13", "name": "Y",       "etype": "output",   "side": "right"},
+    {"num": "14", "name": "GND2",    "etype": "power_in", "side": "right"},
+    {"num": "15", "name": "Z",       "etype": "output",   "side": "right"},
+    {"num": "16", "name": "GND2",    "etype": "power_in", "side": "right"},
+    {"num": "17", "name": "B",       "etype": "input",    "side": "right"},
+    {"num": "18", "name": "A",       "etype": "input",    "side": "right"},
+    {"num": "19", "name": "VISOIN",  "etype": "power_in", "side": "right"},
+    {"num": "20", "name": "GND2",    "etype": "power_in", "side": "right"}
+  ]
+}

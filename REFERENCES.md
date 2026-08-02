@@ -33,7 +33,8 @@ Cortex-M0+), product family G (80 MHz), device subfamily 350 (CAN-FD,
 2x ADC, 2x OPA, 3x COMP), flash memory 7 (128 KB), temperature range S
 (-40°C to 125°C); package type and distribution format per Section 12
 "Mechanical, Packaging, and Orderable Information" (select per BOM).
-Cited in: README.md (MCU line).
+Cited in: README.md (MCU line); symbols/specs/MSPM0G3507.json (pin map,
+64-LQFP subset used by this build); builds/6s/50A/CAN_485_faraday/README.md.
 Date accessed: 2026-08-02.
 
 ---
@@ -56,7 +57,8 @@ specs listed in the datasheet's own References section, p. 45, refs
 (CS#, SCLK, MOSI, MISO, PIRQ#, RST#). p. 19, §3.1.3 "Typical schematic,"
 Figure 7 — reference decoupling/pull-up circuit (3×100 nF + 1 µF
 bypass, 10 kΩ CS# pull-up).
-Cited in: README.md (TPM line).
+Cited in: README.md (TPM line); symbols/specs/SLB9672.json (full 32-pin
+map); builds/6s/50A/CAN_485_faraday/README.md.
 Date accessed: 2026-08-02.
 
 ---
@@ -82,7 +84,8 @@ Section/page: not verified — standard is paywalled; only the catalog/store
 listing is accessible without purchase. Compliance with this standard by
 name ("ANSI/TIA/EIA-485-A-98") is independently confirmed at the
 component level in [9], p. 1, "Features."
-Cited in: README.md (Protocol: RS-485).
+Cited in: README.md (Protocol: RS-485);
+builds/6s/50A/CAN_485_faraday/README.md (Protocol BOM).
 Date accessed: 2026-08-02.
 
 ---
@@ -117,7 +120,8 @@ CAN FD implementation; ISO 11898-2:2016 itself is not yet a separate
 entry here pending a verified catalog URL. The project MCU's embedded
 CAN peripheral, [1], p. 68, §8.26 "CAN-FD," declares itself "compliant
 to ISO 11898-1:2015 standard."
-Cited in: README.md (Protocol: CAN-FD).
+Cited in: README.md (Protocol: CAN-FD);
+builds/6s/50A/CAN_485_faraday/README.md (Protocol BOM).
 Date accessed: 2026-08-02.
 
 ---
@@ -166,7 +170,10 @@ p. 8, "Pin Configuration and Function Descriptions," Table 10 — pinout
 Candidate part for the RS-485 protocol interface (TODO.md §6.7); not
 yet selected in a bill of materials.
 Cited in: docs/datasheets/ (local reference only; not yet cited in
-README.md pending BOM selection).
+repo-root README.md pending BOM selection); symbols/specs/
+ADM2582E_ADM2587E.json (full 20-pin map, verified against p.8, Table 10);
+builds/6s/50A/CAN_485_faraday/README.md (Protocol BOM, variant choice
+ADM2582E vs. ADM2587E left open).
 Date accessed: 2026-08-02.
 
 ---
@@ -189,7 +196,10 @@ SILENT, AUXIN/AUXOUT). p. 23, "Theory of Operation," "Remote Wake Up" —
 Candidate part for the CAN2.0/CAN-FD protocol interface (TODO.md
 §6.8–6.9); not yet selected in a bill of materials.
 Cited in: docs/datasheets/ (local reference only; not yet cited in
-README.md pending BOM selection).
+repo-root README.md pending BOM selection); symbols/specs/
+ADM3055E_ADM3057E.json (full 20-pin map, verified against p.15, Table 10);
+builds/6s/50A/CAN_485_faraday/README.md (Protocol BOM, variant choice
+ADM3055E vs. ADM3057E left open).
 Date accessed: 2026-08-02.
 
 ---
@@ -328,7 +338,9 @@ highest (most conservative) published cutoff among candidates for
 FET/regulator voltage-margin derating in the interim.
 Candidate cell for voltage-tier derating (TODO.md §5.2); not yet
 selected in a bill of materials.
-Cited in: docs/datasheets/ (not yet present; not yet cited in README.md).
+Cited in: docs/datasheets/ (not yet present; not yet cited in repo-root
+README.md); symbols/specs/INR21700_P42A.json (generic 2-terminal cell
+symbol); builds/6s/50A/CAN_485_faraday/README.md (6S pack BOM, ×6 cells).
 Date accessed: 2026-08-02.
 
 ---
@@ -356,7 +368,9 @@ not as a named EUT design-mitigation category — it is a fitting
 citation for the Grounding and Faraday/shielding EMI tiers (TODO.md
 §7.1) but not for the Isolation tier; see [16] for that.
 Cited in: README.md (Protocol/EMI hardening context — Grounding, Faraday
-tiers); TODO.md §7.1.
+tiers); TODO.md §7.1; builds/6s/50A/CAN_485_faraday/README.md (Faraday-tier
+justification, RE102/CE102 shielding-effectiveness rationale against the
+500 W/m² broadband RF requirement's derived ~434 V/m field strength).
 Date accessed: 2026-08-02.
 
 ---
@@ -441,7 +455,9 @@ switching node area — the Faraday EMI-hardening tier (TODO.md §7.1).
 Alternative real manufacturers in this space, not further verified:
 Laird Technologies, Leader Tech.
 Candidate part; not yet selected in a bill of materials.
-Cited in: docs/datasheets/ (not yet present; not yet cited in README.md).
+Cited in: docs/datasheets/ (not yet present; not yet cited in repo-root
+README.md); symbols/WE_SHC_3671375.kicad_sym (mechanical placeholder
+symbol); builds/6s/50A/CAN_485_faraday/README.md (Faraday-tier BOM).
 Date accessed: 2026-08-02.
 
 ---
@@ -475,7 +491,10 @@ where a smaller SO-8 SMD FET would be leaner if part-count commonality
 were not prioritized.
 Candidate part for the power stage (TODO.md §5.1); not yet selected in
 a bill of materials.
-Cited in: docs/datasheets/ (not yet present; not yet cited in README.md).
+Cited in: docs/datasheets/ (not yet present; not yet cited in repo-root
+README.md); symbols/IRFB4110PBF.kicad_sym (standard TO-220 G/D/S pinout);
+builds/6s/50A/CAN_485_faraday/README.md (50A-tier BOM, ×6: 1 per switch
+position × 2 positions × 3 phases).
 Date accessed: 2026-08-02.
 
 ---
@@ -504,7 +523,11 @@ IDRIVE setting and CSA gain register absorb the per-tier differences
 rather than requiring a different gate-driver part.
 Candidate part for the power stage (TODO.md §5.1); not yet selected in
 a bill of materials.
-Cited in: docs/datasheets/ (not yet present; not yet cited in README.md).
+Cited in: docs/datasheets/ (not yet present; not yet cited in repo-root
+README.md); symbols/DRV8353S.kicad_sym (UNVERIFIED placeholder pin
+numbering — see symbols/specs/DRV8353S.json "verification" field);
+builds/6s/50A/CAN_485_faraday/README.md (50A-tier BOM; note on possible
+overlap with INA240 [22]'s external current-sense function).
 Date accessed: 2026-08-02.
 
 ---
@@ -531,7 +554,11 @@ Vishay shunt series [23] whose resistance value (and, at 80A/120A,
 parallel count) varies by tier.
 Candidate part for the power stage; not yet selected in a bill of
 materials.
-Cited in: docs/datasheets/ (not yet present; not yet cited in README.md).
+Cited in: docs/datasheets/ (not yet present; not yet cited in repo-root
+README.md); symbols/INA240.kicad_sym (UNVERIFIED placeholder pin
+numbering — see symbols/specs/INA240.json "verification" field);
+builds/6s/50A/CAN_485_faraday/README.md (50A-tier BOM; open question on
+overlap with DRV8353S [21]'s integrated shunt-sense amplifiers).
 Date accessed: 2026-08-02.
 
 ---
@@ -563,7 +590,10 @@ would be needed for those tiers and was not pursued further.
 Candidate part answering the current-sensing selection (TODO.md §5.3);
 not yet selected in a bill of materials; the 80A/120A shunt sizing gap
 remains open.
-Cited in: docs/datasheets/ (not yet present; not yet cited in README.md).
+Cited in: docs/datasheets/ (not yet present; not yet cited in repo-root
+README.md); symbols/WSLP2512.kicad_sym (generic 2-terminal pinout);
+builds/6s/50A/CAN_485_faraday/README.md (50A-tier BOM, 1 mΩ ×3, one per
+phase).
 Date accessed: 2026-08-02.
 
 ---

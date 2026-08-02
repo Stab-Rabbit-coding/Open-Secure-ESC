@@ -1,0 +1,31 @@
+{
+  "name": "ADM3055E_ADM3057E",
+  "reference": "U",
+  "footprint": "Package_SO:SOIC-20W_7.5x12.8mm_P1.27mm",
+  "datasheet": "docs/datasheets/analog-devices-adm3055e-adm3057e-datasheet.pdf",
+  "description": "Analog Devices ADM3055E/ADM3057E signal+power isolated CAN FD transceiver -- candidate part for the CAN2.0/CAN-FD protocol interface (TODO.md 6.8-6.9).",
+  "citation": "[6], [10]",
+  "verification": "VERIFIED -- full 20-pin map read directly from the local copy of [10], p.15, Table 10 'Pin Function Descriptions'. Part itself is still 'Candidate (unverified)' status in docs/decision-matrix.xlsx (not yet locked into a BOM revision) -- only the PIN MAP is verified here, not final part selection.",
+  "pins": [
+    {"num": "1",  "name": "GND1",    "etype": "power_in",     "side": "left"},
+    {"num": "2",  "name": "GND1",    "etype": "power_in",     "side": "left"},
+    {"num": "3",  "name": "VCC",     "etype": "power_in",     "side": "left"},
+    {"num": "4",  "name": "VIO",     "etype": "power_in",     "side": "left"},
+    {"num": "5",  "name": "RXD",     "etype": "output",       "side": "left"},
+    {"num": "6",  "name": "SILENT",  "etype": "input",        "side": "left"},
+    {"num": "7",  "name": "TXD",     "etype": "input",        "side": "left"},
+    {"num": "8",  "name": "STBY",    "etype": "input",        "side": "left"},
+    {"num": "9",  "name": "AUXIN",   "etype": "input",        "side": "left"},
+    {"num": "10", "name": "GND1",    "etype": "power_in",     "side": "left"},
+    {"num": "11", "name": "GND2",    "etype": "power_in",     "side": "right"},
+    {"num": "12", "name": "RS",      "etype": "input",        "side": "right"},
+    {"num": "13", "name": "CANL",    "etype": "bidirectional","side": "right"},
+    {"num": "14", "name": "CANH",    "etype": "bidirectional","side": "right"},
+    {"num": "15", "name": "GND2",    "etype": "power_in",     "side": "right"},
+    {"num": "16", "name": "VISOIN",  "etype": "power_in",     "side": "right"},
+    {"num": "17", "name": "AUXOUT",  "etype": "output",       "side": "right"},
+    {"num": "18", "name": "GNDISO",  "etype": "power_in",     "side": "right"},
+    {"num": "19", "name": "VISOOUT", "etype": "power_out",    "side": "right"},
+    {"num": "20", "name": "GNDISO",  "etype": "power_in",     "side": "right"}
+  ]
+}
