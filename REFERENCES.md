@@ -467,24 +467,25 @@ steel, tin plating; operating temperature −40 °C to +125 °C; RoHS/REACh
 compliant. **Correction from the previously secondary-sourced entry:**
 order code 3671375 is the **cover only** — the datasheet's own text
 reads "Assembly with Frame: Frame (3670375), Cover (3671375)." A
-complete shield requires both order codes; 3670375 (the frame) is not
-yet in this repo's BOM or `docs/datasheets/`. This local datasheet is a
-5-page mechanical/packaging spec only and does **not** contain a
-shielding-effectiveness figure — the "up to 60 dB, 500 MHz–3 GHz" claim
-carried over from the prior secondary-sourced pass remains unverified
-against a primary source; strike it from any "verified" claim until the
-frame's datasheet or a shielding-effectiveness test report is obtained.
+complete shield requires both order codes. **Update 2026-08-02: the
+frame's own datasheet has since been added and verified — see [30].**
+This local datasheet is a 5-page mechanical/packaging spec only and
+does **not** contain a shielding-effectiveness figure — the "up to
+60 dB, 500 MHz–3 GHz" claim carried over from the prior
+secondary-sourced pass remains unverified against a primary source
+(the frame's datasheet [30] doesn't state it either); strike it from
+any "verified" claim until a shielding-effectiveness test report is
+obtained.
 Candidate for board-level shielding over the gate-drive/high-di/dt
 switching node area — the Faraday EMI-hardening tier (TODO.md §7.1).
 Alternative real manufacturers in this space, not further verified:
 Laird Technologies, Leader Tech.
-Candidate part; not yet selected in a bill of materials — and even if
-selected, the BOM is missing its required frame (3670375).
+Candidate part; not yet selected in a bill of materials.
 Cited in: docs/datasheets/3671375.pdf; symbols/WE_SHC_3671375.kicad_sym
-(mechanical placeholder symbol, cover only); symbols/specs/WE_SHC_3671375.json
-(verification field updated with the frame/cover correction);
-builds/6s/50A/CAN_485_faraday/README.md (Faraday-tier BOM — needs
-updating to add the frame line item).
+(mechanical placeholder symbol, cover only — see [30]/`WE_SHC_3670375.kicad_sym`
+for the frame); symbols/specs/WE_SHC_3671375.json (verification field
+updated with the frame/cover correction);
+builds/6s/50A/CAN_485_faraday/README.md (Faraday-tier BOM).
 Date accessed: 2026-08-02.
 
 ---
@@ -539,25 +540,40 @@ Date accessed: 2026-08-02.
 
 ---
 
-**[21]** Texas Instruments Incorporated, *DRV835x 9-V to 75-V
-Three-Phase Smart Gate Driver with Integrated Current Shunt Amplifiers*
-(DRV8353S variant: SPI configuration interface), datasheet, literature
-no. SLVSDY6, Rev. A (Aug. 2018; a later revision letter likely exists —
-`UNVERIFIED`), Texas Instruments Incorporated, Dallas, TX, USA. [Online].
-Available: https://www.ti.com/lit/ds/symlink/drv8353.pdf (live fetch
-blocked: HTTP 403, 2026-08-02).
-No local copy yet — `UNVERIFIED — needs primary source (see TODO.md)`.
-Section/page: not verified — live fetch blocked this session; specs
-corroborated via distributor/search-indexed excerpts, not read from the
-primary PDF. Indexed content: recommended VM operating range 9 V to
-75 V (spans 2S ≈8.4 V through 12S ≈50.4 V max charge per [14], with
-~25 V headroom at 12S — tighter margin than the FET's [20] ~2×,
-flagged as needing a transient/spike analysis, e.g. a TVS clamp on VM,
-before locking the 10S/12S BOM variant); three integrated bidirectional
-current-shunt amplifiers for low-side per-phase shunt sensing (gain
-settings `UNVERIFIED`); configurable peak gate-drive current settings
-(reported 50/100/150/300/450/700/1000 mA); integrated UVLO, gate-drive
-UVLO, VDS overcurrent monitoring, and gate-driver fault detection.
+**[21]** Texas Instruments Incorporated, *DRV8350, DRV8350R, DRV8353,
+DRV8353R: 9-V to 100-V Three-Phase Smart Gate Driver*, datasheet,
+literature no. SLVSDY6A, August 2018 (revised June 2019), Texas
+Instruments Incorporated, Dallas, TX, USA. [Online]. Available:
+https://www.ti.com/lit/ds/symlink/drv8353.pdf.
+Local copy: `docs/datasheets/drv8353.pdf` (101 pp.) — `VERIFIED` (added
+2026-08-02). Corrects the prior revision guess ("Rev. A, Aug. 2018,
+later revision letter likely exists") — SLVSDY6A *is* the current
+revision, per the local PDF's own header on every page.
+Section/page: p.3, Sec. 5 "Device Comparison Table" — confirms DRV8353S
+= 3 integrated shunt amplifiers, no buck regulator, SPI interface,
+distinct from DRV8353H (same shunt/buck config, hardware-pin
+configuration instead of SPI) and from the DRV8350-family (0 shunt
+amplifiers) and DRV8353R-family (adds a 350 mA buck regulator) parts
+covered by the same document. pp.6-7, Sec. 6 "Pin Configuration and
+Functions," "DRV8353S RTA Package, 40-Pin WQFN With Exposed Thermal
+Pad" and "Pin Functions — 40-Pin DRV8353 Devices" — full verified
+40-pin map, see `symbols/specs/DRV8353S.json`. Absolute max ratings
+(p.11 area): applied PWM 0-200 kHz (INHx/INLx); gate-drive current
+0-25 mA average (GHx/GLx); shunt-amp output current 0-5 mA (SOx). Sec.
+8.3.1.4.1 "IDRIVE: MOSFET Slew-Rate Control" (p.36) confirms IDRIVE is
+a real, documented feature of this device family for controlling
+MOSFET VDS slew rate via gate-drive current — but on the S (SPI)
+variant used here it is set through an SPI register, not the
+dedicated IDRIVE pin that exists only on the H (hardware-configured)
+variant (that pin is correctly absent from `DRV8353S.json`'s pin map).
+Recommended VM operating range (device-family absolute max is 9-100 V
+per the front-page banner; VM-specific recommended-operating figures
+were not independently re-extracted this pass) spans this repo's 2S
+through 12S pack-voltage range per [14] with meaningful headroom at
+every tier — the previously-flagged "~25 V headroom at 12S, tighter
+than the FET's ~2×" concern is unchanged by this verification pass and
+still needs the transient/spike analysis (e.g. a TVS clamp on VM) noted
+before locking the 10S/12S BOM variant.
 Proposed as the same part for all 7 amperage tiers — the SPI-programmable
 IDRIVE setting and CSA gain register absorb the per-tier differences
 rather than requiring a different gate-driver part.
@@ -565,9 +581,9 @@ Alternative real manufacturer considered: Infineon MOTIX™
 TLE9180D-31QK, primary datasheet now local — see [29], `VERIFIED`.
 Candidate part for the power stage (TODO.md §5.1); not yet selected in
 a bill of materials.
-Cited in: docs/datasheets/ (not yet present; not yet cited in repo-root
-README.md); symbols/DRV8353S.kicad_sym (UNVERIFIED placeholder pin
-numbering — see symbols/specs/DRV8353S.json "verification" field);
+Cited in: docs/datasheets/drv8353.pdf; symbols/DRV8353S.kicad_sym
+(VERIFIED full 40-pin RTA/WQFN pin numbering — see
+symbols/specs/DRV8353S.json "verification" field);
 builds/6s/50A/CAN_485_faraday/README.md (50A-tier BOM; note on possible
 overlap with INA240 [22]'s external current-sense function).
 Date accessed: 2026-08-02.
@@ -832,6 +848,44 @@ adopting it would still require the separate firmware-driver work
 already flagged (TODO.md §8.4).
 Cited in: docs/datasheets/infineon-tle9180d-31qk-datasheet-en.pdf only
 — not yet referenced from any build BOM or symbol.
+Date accessed: 2026-08-02.
+
+---
+
+**[30]** Würth Elektronik eiSos GmbH & Co. KG, *WE-SHC Two-piece
+Seamless Shielding Cabinet*, order code 3670375, datasheet rev.
+ViM 002.000 (2025-05-12), Würth Elektronik eiSos GmbH & Co. KG,
+Waldenburg, Germany. [Online]. Available:
+https://www.we-online.com/components/products/datasheet/3670375.pdf
+(not independently re-fetched — local copy provided directly).
+Local copy: `docs/datasheets/3670375.pdf` (6 pp.) — `VERIFIED` (added
+2026-08-02).
+This is the **frame** half of the two-piece shield whose cover
+(order code 3671375) is cited at [19] — same revision code and date
+(ViM 002.000, 2025-05-12) as the cover, consistent with a matched-pair
+release. Section/page: p.1 dimensional drawing, "Assembly with Frame."
+Confirmed directly from the local PDF: "Assembly with Frame: Frame
+(3670375), Cover (3671375)" — text matches [19]'s citation of the same
+sentence from the cover's side, closing the loop. Inner 28.7 mm ×
+36.9 mm / outer 29.3 mm × 37.5 mm (marginally smaller than the cover's
+29.5 mm × 37.7 mm inner / 30.1 mm × 38.3 mm outer, consistent with the
+frame nesting inside the cover); frame wall height 6.2 mm / 6.5 mm
+(±0.2 mm, two figures given for different wall features, not
+independently resolved from the extracted text which package feature
+each applies to); an 8.0 mm (±0.2 mm) diameter feature, likely a
+clip/mounting cutout — not confirmed from text alone, would need the
+actual drawing image to pin down; core steel, tin plating; operating
+temperature −40 °C to +125 °C; RoHS/REACh compliant — all matching the
+cover's material/certification claims. Does not contain a
+shielding-effectiveness (dB) figure, same gap as [19].
+This closes the "3670375 frame missing" gap flagged when [19] (the
+cover) was first verified — both order codes needed for a complete
+Faraday-tier shield are now locally verified, though neither is yet
+placed in the build's actual `kicad/` schematic or locked into a
+bill of materials (TODO.md §7.1, §12.1).
+Cited in: docs/datasheets/3670375.pdf; symbols/WE_SHC_3670375.kicad_sym
+(mechanical placeholder symbol, frame); symbols/specs/WE_SHC_3670375.json;
+builds/6s/50A/CAN_485_faraday/README.md (Faraday-tier BOM).
 Date accessed: 2026-08-02.
 
 ---

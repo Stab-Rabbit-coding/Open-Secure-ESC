@@ -23,24 +23,26 @@ detail belongs in design docs, not here.
 - [~] 1.10 Re-run live fetch (or manual PDF download) for [12]-[23] once
       network access allows — this session's WebFetch returned HTTP 403
       for every domain tried (including a neutral control URL); all specs
-      in [12]-[23] are corroborated via secondary search sources only,
-      not read from a primary PDF, and none has a local verified copy.
+      in [12]-[23] were originally corroborated via secondary search
+      sources only, not read from a primary PDF, and none had a local
+      verified copy.
       2026-08-02 update: manual PDF downloads resolved [14], [19], [20],
-      [22], [23] (VERIFIED, local copies added) plus four alternative-part
-      citations [26]-[29] (Molicel P45B, Samsung SDI 40T, Analog Devices
-      AD8410A, Infineon TLE9180D-31QK — none adopted into the BOM).
-      **[27] (Samsung 40T) is marked "Confidential Proprietary" by
-      Samsung on every page — flagged for the repo owner to decide
-      whether it should be removed rather than committed; see [27].**
-      Two other manual downloads added the same day turned out NOT to
-      resolve any open citation — [24] (Vishay WSL, doc 30100) is a
-      related-but-different family from [23] (WSLP2512, doc 30122,
+      [21], [22], [23], [30] (VERIFIED, local copies added) plus four
+      alternative-part citations [26]-[29] (Molicel P45B, Samsung SDI
+      40T, Analog Devices AD8410A, Infineon TLE9180D-31QK — none
+      adopted into the BOM). **[27] (Samsung 40T) is marked "Confidential
+      Proprietary" by Samsung on every page — flagged for the repo owner
+      to decide whether it should be removed rather than committed; see
+      [27].** Two other manual downloads added the same day turned out
+      NOT to resolve any open citation — [24] (Vishay WSL, doc 30100) is
+      a related-but-different family from [23] (WSLP2512, doc 30122,
       since resolved separately); [25] (Würth WE-SHC 3690103020) is a
-      ~3mm single-IC-scale shield, not the missing 3670375 frame that
-      pairs with [19]'s 3671375 cover. Still fully missing a local
-      copy: [21] (DRV8353S) and the WE-SHC 3670375 frame (no citation
-      tag yet) — these are the only two gaps remaining for this
-      build's own BOM (§12.1).
+      ~3mm single-IC-scale shield, not [19]/[30]'s 3671375/3670375
+      cover+frame pair (since resolved separately). Every BOM line in
+      this build's own BOM (§12.1) now has a locally verified primary
+      datasheet; [12], [13], [16]-[18] (standards/parts not used by
+      this build's own BOM) remain open, so this item stays `[~]`
+      rather than `[x]` at the [12]-[23] range level.
 
 ## 2. Requirements
 
@@ -65,8 +67,9 @@ detail belongs in design docs, not here.
 
 - [~] 5.1 Gate driver + FET selection per amperage tier (10/20/30/40/50/80/120 A)
       — candidates: Infineon IRFB4110PBF FET [20] (1x-3x parallel per
-      tier), TI DRV8353S gate driver [21] (same part all tiers); not yet
-      settled in BOM, no local verified datasheets yet
+      tier), TI DRV8353S gate driver [21] (same part all tiers); both
+      VERIFIED against local datasheets 2026-08-02, not yet settled in
+      a bill of materials
 - [~] 5.2 Voltage tier variants (2S/4S/6S/8S/12S) — component derating table
       — candidate cell Molicel INR-21700-P42A [14], VERIFIED against
       local datasheet 2026-08-02, gives nominal/max/min table (2S
@@ -97,9 +100,11 @@ detail belongs in design docs, not here.
       — standards found: MIL-STD-461G [15] (Grounding, Faraday), IEC
       62368-1 [16] (Isolation classification), IEC/TR 61000-5-2 [17]
       (Grounding, layout-only); candidate parts: ADuM4221 isolated gate
-      driver [18] (Isolation), Würth WE-SHC 3671375 [19] (Faraday);
+      driver [18] (Isolation), Würth WE-SHC 3671375 cover [19] + 3670375
+      frame [30] (Faraday) — both VERIFIED against local datasheets
+      2026-08-02, no shielding-effectiveness dB figure in either;
       Grounding tier confirmed layout-only, no part needed. Clause/page
-      pins still open (see 1.10).
+      pins for [15]-[18] still open (see 1.10).
 - [ ] 7.2 Layout guidelines per tier
 - [ ] 7.3 Pre-compliance test plan
 
@@ -138,16 +143,17 @@ detail belongs in design docs, not here.
 - [x] 11.3 SLB9672 [2] symbol — full 32-pin, VERIFIED, footprint-complete
 - [x] 11.4 ADM2582E/ADM2587E [9] and ADM3055E/ADM3057E [10] symbols — full
       20-pin, VERIFIED against local PDFs
-- [~] 11.5 DRV8353S [21] symbol — UNVERIFIED placeholder pin numbering (no
-      primary datasheet reachable this session); replace once TODO.md 1.10
-      resolves. INA240 [22] resolved 2026-08-02: local datasheet added
-      (`docs/datasheets/ina240.pdf`), symbol regenerated with VERIFIED
+- [x] 11.5 DRV8353S [21] and INA240 [22] symbols — both resolved
+      2026-08-02: local datasheets added, symbols regenerated. DRV8353S:
+      full 40-pin VERIFIED map (RTA/WQFN package, SPI-variant column of
+      the datasheet's pin table — see `symbols/specs/DRV8353S.json`),
+      replacing the prior 26-pin sequential placeholder. INA240: VERIFIED
       D/SOIC-8 8-pin map (see `symbols/specs/INA240.json`).
 - [x] 11.6 IRFB4110PBF [20], WSLP2512 [23], INR21700-P42A [14],
-      WE-SHC 3671375 [15], [19] symbols — generic/mechanical pinouts, no
-      part-specific pin diagram needed. All four now additionally
-      VERIFIED (electrical/dimensional ratings) against local
-      datasheets added 2026-08-02.
+      WE-SHC 3671375 cover [15], [19] and 3670375 frame [15], [19], [30]
+      symbols — generic/mechanical pinouts, no part-specific pin diagram
+      needed. All five now additionally VERIFIED (electrical/dimensional
+      ratings) against local datasheets added 2026-08-02.
 
 ## 12. Per-Build Instances (builds/`<voltage>`/`<amperage>`/`<variant>`/)
 
