@@ -37,7 +37,7 @@ KiCad symbols and their own pin-map verification status are in
 
 | Part | Qty | Citation | Status |
 | --- | --- | --- | --- |
-| Molicel INR-21700-P42A cell | 6 (series) | [14] | Candidate (unverified) — pack: 21.6 V nominal / 25.2 V max / 15.0 V min |
+| Molicel INR-21700-P42A cell | 6 (series) | [14] | Candidate — datasheet VERIFIED locally 2026-08-02 (`docs/datasheets/INR21700P42A-V4-80092.pdf`), not yet locked into BOM — pack: 21.6 V nominal / 25.2 V max / 15.0 V min |
 | Bulk input capacitor, V ≥ 25.2 V (≈2× margin recommended → ≥50 V rated) | TBD (generic `Device:C_Polarized`) | [14], [20], [21] | Generic part, not sourced individually — size against final layout |
 
 ### Amperage tier — 50A
@@ -45,8 +45,8 @@ KiCad symbols and their own pin-map verification status are in
 | Part | Qty | Citation | Status |
 | --- | --- | --- | --- |
 | Infineon IRFB4110PBF power MOSFET | 6 (1 per switch position × 2 positions × 3 phases; "FET Qty/Phase Leg" = 1 at 50A) | [20] | Candidate — datasheet VERIFIED locally 2026-08-02 (`docs/datasheets/infineon-irfb4110-datasheet-en.pdf`), not yet locked into BOM |
-| TI DRV8353S 3-phase gate driver (SPI variant) | 1 | [21] | Candidate (unverified) — integrates 3 per-phase shunt-sense amplifiers itself |
-| Vishay WSLP2512 shunt, 1 mΩ | 3 (one per phase; "Shunt Qty Needed" = 1 parallel device per location at 50A) | [23] | Candidate (unverified) |
+| TI DRV8353S 3-phase gate driver (SPI variant) | 1 | [21] | Candidate — datasheet VERIFIED locally 2026-08-02 (`docs/datasheets/drv8353.pdf`), not yet locked into BOM — integrates 3 per-phase shunt-sense amplifiers itself |
+| Vishay WSLP2512 shunt, 1 mΩ | 3 (one per phase; "Shunt Qty Needed" = 1 parallel device per location at 50A) | [23] | Candidate — datasheet VERIFIED locally 2026-08-02 (`docs/datasheets/wslp.pdf`), not yet locked into BOM |
 | TI INA240 current-sense amp, 200 V/V gain | 3 (one per phase) — **open, see note below** | [22] | Candidate — datasheet VERIFIED locally 2026-08-02 (`docs/datasheets/ina240.pdf`), not yet locked into BOM |
 
 **Open design question, not resolved here:** REFERENCES.md [21] states
@@ -78,7 +78,7 @@ full pin assignment and its sourcing.
 | Part | Qty | Citation | Status |
 | --- | --- | --- | --- |
 | Würth Elektronik WE-SHC 3671375 shielding **cover** | 1 (sized to the gate-drive / high-di/dt switching-node area) | [15], [19] | Candidate — datasheet VERIFIED locally 2026-08-02 (`docs/datasheets/3671375.pdf`), mechanical part, no schematic signal pins, see `symbols/WE_SHC_3671375.kicad_sym` |
-| Würth Elektronik WE-SHC 3670375 shielding **frame** (required pair to the 3671375 cover above — the local datasheet's own text: "Assembly with Frame: Frame (3670375), Cover (3671375)") | 1 | [19] | **Open gap** — not yet added to this BOM or `docs/datasheets/`; the cover alone does not shield anything |
+| Würth Elektronik WE-SHC 3670375 shielding **frame** (required pair to the 3671375 cover above — both datasheets' own text: "Assembly with Frame: Frame (3670375), Cover (3671375)") | 1 | [15], [19], [30] | Candidate — datasheet VERIFIED locally 2026-08-02 (`docs/datasheets/3670375.pdf`), mechanical part, no schematic signal pins, see `symbols/WE_SHC_3670375.kicad_sym` |
 
 **Why Faraday, not a lower tier, for this environment:** the stated
 requirement is a 500 W/m² broadband RF environment. Converting that power
@@ -113,20 +113,31 @@ existing layout guidance ([15], [17]) already in the base decision matrix.
 - CAN-FD transceiver variant (ADM3055E vs. ADM3057E) and RS-485 transceiver
   variant (ADM2582E vs. ADM2587E) — isolation-voltage / data-rate tradeoff,
   not specified in the build request.
-- DRV8353S vs. external INA240 current-sense sourcing (see BOM note above).
-- WE-SHC 3670375 frame is missing from this BOM (see EMI Hardening table
-  above) — the 3671375 line item is the cover only and cannot shield
-  anything by itself.
-- Remaining parts without a local, primary-source datasheet: Molicel
-  INR-21700-P42A [14], TI DRV8353S [21], Vishay WSLP2512 [23] — need a
-  datasheet pass (blocked this session/all recent sessions by a
-  network-egress policy denial; see `TODO.md` 1.10) before those BOM lines
-  can move past "Candidate."
-- IRFB4110PBF [20], INA240 [22], and the WE-SHC 3671375 cover [19] now
-  have a locally verified primary datasheet (2026-08-02) confirming the
-  figures already used in this BOM — still "Candidate" only in the sense
-  that the part hasn't been formally locked in per `AGENTS.md` §5, not
-  because the data is unverified.
+- DRV8353S vs. external INA240 current-sense sourcing (see BOM note above)
+  — a design-review question, unaffected by DRV8353S's datasheet now
+  being verified.
+- **Every part in this build's BOM now has a locally verified primary
+  datasheet** — the last two gaps (TI DRV8353S [21] and the WE-SHC
+  3670375 frame [30]) were closed 2026-08-02. Two earlier lookalike PDFs
+  (`docs/datasheets/wsl.pdf`, `docs/datasheets/3690103020.pdf`) had not
+  resolved these gaps — see [24]/[25] in `REFERENCES.md` for why (wrong
+  Vishay family, and a shield at the wrong physical scale) — the actual
+  correct documents (`docs/datasheets/drv8353.pdf`, `.../3670375.pdf`)
+  were added separately and confirmed to match.
+- None of this means the BOM is "settled" per `AGENTS.md` §5 — every
+  line is still "Candidate" in the sense that no part has been formally
+  locked in, and several open design questions above (control-loop
+  topology, transceiver variants, DRV8353S-vs-INA240 sourcing) remain
+  genuinely unresolved. Datasheet verification and BOM lock-in are two
+  different gates.
+- Four alternative-manufacturer datasheets were also added 2026-08-02
+  (Molicel P45B, Samsung SDI 40T, Analog Devices AD8410A, Infineon
+  TLE9180D-31QK — see `REFERENCES.md` [26]-[29]) but none is adopted
+  into this BOM; they're reference material for the open design
+  questions above. **The Samsung 40T datasheet is marked "Confidential
+  Proprietary" by Samsung on every page** — flagged in [27] for the
+  repo owner to decide whether it belongs in a shared/public repo at
+  all, independent of its technical accuracy.
 
 ## Folder contents
 

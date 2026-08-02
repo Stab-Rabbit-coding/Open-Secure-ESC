@@ -65,12 +65,13 @@ against kiutils 1.4.8).
 | `SLB9672.kicad_sym` | [2] | VERIFIED (full 32-pin, footprint-complete) |
 | `ADM2582E_ADM2587E.kicad_sym` | [4], [9] | VERIFIED (full 20-pin); part selection itself still "Candidate" in `docs/decision-matrix.xlsx` |
 | `ADM3055E_ADM3057E.kicad_sym` | [6], [10] | VERIFIED (full 20-pin); part selection itself still "Candidate" |
-| `DRV8353S.kicad_sym` | [21] | UNVERIFIED PLACEHOLDER pin numbering (no local datasheet copy) |
+| `DRV8353S.kicad_sym` | [21] | VERIFIED (full 40-pin, RTA/WQFN package; local datasheet) |
 | `INA240.kicad_sym` | [22] | VERIFIED (full 8-pin, D/SOIC-8 package; local datasheet) |
 | `IRFB4110PBF.kicad_sym` | [20] | Standard TO-220AB G/D/S pinout convention; ratings VERIFIED (local datasheet) |
-| `WSLP2512.kicad_sym` | [23] | Generic 2-terminal chip pinout; values unverified |
-| `INR21700_P42A.kicad_sym` | [14] | Generic 2-terminal cell pinout; values unverified |
-| `WE_SHC_3671375.kicad_sym` | [15], [19] | Mechanical shield **cover** — no functional schematic pins (placeholder GND-bond pin only); dimensions VERIFIED (local datasheet), but the paired frame (part 3670375) is not yet in this repo |
+| `WSLP2512.kicad_sym` | [23] | Generic 2-terminal chip pinout; values VERIFIED (local datasheet) |
+| `INR21700_P42A.kicad_sym` | [14] | Generic 2-terminal cell pinout; values VERIFIED (local datasheet) |
+| `WE_SHC_3671375.kicad_sym` | [15], [19] | Mechanical shield **cover** — no functional schematic pins (placeholder GND-bond pin only); dimensions VERIFIED (local datasheet); pairs with the frame below |
+| `WE_SHC_3670375.kicad_sym` | [15], [19], [30] | Mechanical shield **frame** — same treatment as the cover above; dimensions VERIFIED (local datasheet) |
 
 "UNVERIFIED PLACEHOLDER" pin maps must not be sent to fab — see each
 `specs/*.json` `verification` field and `TODO.md` 1.10 for what would need to
