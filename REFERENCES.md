@@ -10,27 +10,29 @@ Last reviewed: 2026-08-02.
 
 ---
 
-**[1]** STMicroelectronics, *STM32G431x6 STM32G431x8 STM32G431xB — Arm®
-Cortex®-M4 32-bit MCU+FPU, 170 MHz/213 DMIPS, up to 128 KB Flash, 32 KB
-SRAM, rich analog, math accelerator*, datasheet — production data,
-DS12589, Rev. 6, STMicroelectronics, Geneva, Switzerland, 2021-10.
-[Online]. Available:
-https://www.st.com/resource/en/datasheet/stm32g431c6.pdf
-Product page: https://www.st.com/en/microcontrollers-microprocessors/stm32g431c6.html
-Local verified copy: `docs/datasheets/stm32g431c6.pdf` (198 pp.).
-Section/page: p. 2/198, "Table 1. Device summary" — STM32G431x6 subfamily
-includes ordering codes STM32G431C6, STM32G431K6, STM32G431R6,
-STM32G431V6, STM32G431M6; "C" = 48/49-pin package, "6" = 32 Kbytes Flash
-(confirmed against the ordering information scheme below). p. 42/198,
-§3.33 "Controller area network (FDCAN1)" — "compliant with ISO 11898-1
-(CAN protocol specification version 2.0 part A, B) and CAN FD protocol
-specification version 1.0" (cf. [5], [6]). p. 50/198, §4.10 "Pin
-definition," Table 12 — full pinout. p. 194/198, §7 "Ordering
-information," Table 101 "Ordering information scheme" — decodes
-STM32G431C6: device family STM32, product type G (general-purpose),
-sub-family 431, pin count C (48/49 pins), code size 6 (32 Kbytes),
-package/temperature range suffixes not fixed by this ordering code alone
-(T=LQFP, U=UFQFPN, I=UFBGA, Y=WLCSP; select per BOM).
+**[1]** Texas Instruments Incorporated, *MSPM0G350x Mixed-Signal
+Microcontrollers With CAN-FD Interface*, datasheet — production data,
+SLASEX6C, Rev. C, Texas Instruments Incorporated, Dallas, TX, USA,
+2023-02 (revised 2025-10). [Online]. Available:
+https://www.ti.com/lit/ds/symlink/mspm0g3507.pdf
+(live fetch blocked: HTTP 403, 2026-08-02 — see TODO.md 1.4).
+Product page: https://www.ti.com/product/MSPM0G3507
+(live fetch blocked: HTTP 403, 2026-08-02).
+Local verified copy: `docs/datasheets/mspm0g3507.pdf` (120 pp.).
+Section/page: p. 6, Table 5-1 "Device Comparison" — MSPM0G3507SPMR/
+SPTR/SRGZR/SRHBR/SDGSR28 variants: 128 KB flash, 32 KB SRAM, one CAN
+peripheral; package options 64-pin LQFP, 48-pin LQFP, 48-pin VQFN,
+32-pin VQFN, 28-pin VSSOP. p. 68, §8.26 "CAN-FD" — "controller area
+network (CAN) controller enables communication with a CAN2.0A, CAN2.0B,
+or CAN-FD bus and is compliant to ISO 11898-1:2015 standard supporting
+up to 5Mbit/s bit rate" (cf. [5], [6]). p. 7, §6.1 "Pin Diagrams"; p.
+11, §6.2 "Pin Attributes"; p. 14, §6.3 "Signal Descriptions" — full
+pinout. p. 77, §10.2 "Device Nomenclature," Table 10-1 "Device
+Nomenclature" — decodes MSPM0G3507SRHBR: MCU platform MSPM0 (Arm
+Cortex-M0+), product family G (80 MHz), device subfamily 350 (CAN-FD,
+2x ADC, 2x OPA, 3x COMP), flash memory 7 (128 KB), temperature range S
+(-40°C to 125°C); package type and distribution format per Section 12
+"Mechanical, Packaging, and Orderable Information" (select per BOM).
 Cited in: README.md (MCU line).
 Date accessed: 2026-08-02.
 
@@ -94,9 +96,9 @@ Section/page: Part A (Standard Format, 11-bit identifier) and Part B
 claim not yet pinned; verify against the mirrored PDF before quoting
 page-level detail. Note: this specification has been superseded for new
 designs by ISO 11898-1 [6]; retained here only insofar as "CAN2.0" is
-referenced by name in README.md. The project MCU's embedded FDCAN
-peripheral, [1], p. 42/198, declares compliance with "CAN protocol
-specification version 2.0 part A, B" by name.
+referenced by name in README.md. The project MCU's embedded CAN
+peripheral, [1], p. 68, §8.26 "CAN-FD," declares support for "CAN2.0A,
+CAN2.0B, or CAN-FD" by name.
 Cited in: README.md (Protocol: CAN2.0).
 Date accessed: 2026-08-02.
 
@@ -113,8 +115,8 @@ ISO 11898-2:2016 (physical layer), not this Part 1 (data link layer)
 document — the two parts are distinct and both apply to a complete
 CAN FD implementation; ISO 11898-2:2016 itself is not yet a separate
 entry here pending a verified catalog URL. The project MCU's embedded
-FDCAN peripheral, [1], p. 42/198, declares compliance with "CAN FD
-protocol specification version 1.0."
+CAN peripheral, [1], p. 68, §8.26 "CAN-FD," declares itself "compliant
+to ISO 11898-1:2015 standard."
 Cited in: README.md (Protocol: CAN-FD).
 Date accessed: 2026-08-02.
 
@@ -217,6 +219,355 @@ Date accessed: 2026-08-02.
 
 ---
 
+**[12]** Analog Devices, Inc., *ADM3232E — ±15 kV ESD Protected, 3.3 V,
+RS-232 Line Driver/Receiver*, data sheet, Rev. B, Analog Devices, Inc.,
+Wilmington, MA, USA. [Online]. Available:
+https://www.analog.com/media/en/technical-documentation/data-sheets/ADM3232E.pdf
+(live fetch blocked: HTTP 403, 2026-08-02).
+Product page: https://www.analog.com/en/products/adm3232e.html
+(live fetch blocked: HTTP 403, 2026-08-02).
+No local copy yet — `UNVERIFIED — needs primary source (see TODO.md)`.
+Section/page: not verified — this session's WebFetch tool returned HTTP
+403 for every domain attempted (ti.com, analog.com, digikey.com, and a
+neutral non-vendor control URL), so no PDF could be opened directly.
+Specs below are corroborated across multiple independent distributor/
+search-indexed excerpts of the manufacturer's own datasheet text, not
+read from the primary document: 2-channel RS-232/V.28 transceiver;
+operates from a single 3.3 V supply (matches the project MCU's native
+logic rail, [1]); data rates up to 460 kbps; conforms to EIA/TIA-232-E
+and ITU-T V.28; ±15 kV ESD protection on both RS-232 and TTL/CMOS I/O
+pins; 16-lead SOIC/TSSOP. Alternative considered: Texas Instruments
+MAX3232 (literature number SLLS410, exact current revision letter
+conflicting across sources — UNVERIFIED), 3–5.5 V supply, ±15 kV ESD,
+up to 250 kbit/s; not selected over ADM3232E because it needs a wider
+supply range for the same 3.3 V-native benefit.
+Candidate part for the RS-232 protocol interface (TODO.md §6.6); not yet
+selected in a bill of materials; needs a local verified PDF copy before
+citation can be upgraded from candidate to settled.
+Cited in: docs/datasheets/ (not yet present; not yet cited in README.md
+pending BOM selection).
+Date accessed: 2026-08-02.
+
+---
+
+**[13]** Texas Instruments Incorporated, *BLDC and PMSM Control Using
+Sensorless FOC Algorithm Based on MSPM0 MCUs*, application brief, doc.
+SLAAE96A, Texas Instruments Incorporated, Dallas, TX, USA. [Online].
+Available: https://www.ti.com/lit/ab/slaae96a/slaae96a.pdf
+(live fetch blocked: HTTP 403, 2026-08-02); also
+https://www.ti.com/document-viewer/lit/html/SLAAE96
+(live fetch blocked: HTTP 403, 2026-08-02).
+No local copy yet — `UNVERIFIED — needs primary source (see TODO.md)`.
+Section/page: not verified — live fetch blocked this session (same
+tooling failure as [12]); content corroborated via multiple independent
+search-indexed excerpts, not read from the primary PDF. Indexed content
+explicitly lists MSPM0G3505/3506/3507 (this project's MCU family, [1])
+among supported devices; describes an observer-based sensorless
+field-oriented-control algorithm that estimates rotor position/speed
+from motor electrical signals using the MCU's own ADC/OPA/COMP
+peripherals (already present per [1], p. 77, Table 10-1: "2x ADC, 2x
+OPA, 3x COMP") — requiring no additional feedback-sensor BOM part for
+either Closed-loop differential or Closed-loop PID control (TODO.md
+§§8.2–8.3). Related TI documents surfaced but not independently
+verified: SLAAE95A ("Trapezoidal control of BLDC motors using MSPM0")
+and SPRAD34 ("MSPM0 Motor Control" middleware application note), both
+suggesting a sensored/hybrid path is also supported by the same SDK.
+Fallback candidate if a Hall-sensored (or hybrid start-up) topology is
+preferred instead: Texas Instruments, *DRV5013 Digital-Latch Hall
+Effect Sensor*, datasheet (revision letter conflicting across sources,
+Rev. N vs. Rev. K — UNVERIFIED), with companion application brief doc.
+SLVAEG3 ("Brushless DC Motor Commutation Using Hall-Effect Sensors")
+naming DRV5013 for BLDC commutation feedback; indexed specs: 2.5–38 V
+supply with reverse-polarity protection to −22 V, open-drain output
+(30 mA sink, pullable to the MCU's 3.3 V rail), 30 kHz bandwidth,
+SOT-23/TO-92. URL: https://www.ti.com/lit/ds/symlink/drv5013.pdf (live
+fetch blocked: HTTP 403, 2026-08-02).
+Candidate design decision for the control-loop feedback question
+(TODO.md §§8.2–8.3); not yet settled in a design doc.
+Cited in: docs/datasheets/ (not yet present; not yet cited in README.md).
+Date accessed: 2026-08-02.
+
+---
+
+**[14]** E-One Moli Energy Corp. (Molicel), *Product Data Sheet, Model
+INR-21700-P42A Lithium-Ion Rechargeable Battery*, doc.
+INR21700P42A-V4-80092 (revision provenance inconsistent across mirrors —
+one mirror captioned "Doc #: INR21700P42A-01, Rev.: 0.2," another
+"Version 1.7" — exact current revision `UNVERIFIED`), E-One Moli Energy
+Corp., Taiwan. [Online]. Available:
+https://www.molicel.com/wp-content/uploads/INR21700P42A-V4-80092.pdf
+(live fetch blocked: HTTP 403, 2026-08-02).
+No local copy yet — `UNVERIFIED — needs primary source (see TODO.md)`.
+Section/page: not verified — live fetch blocked this session; content
+corroborated identically across four independent distributor/mirror
+sources (dnkpower.com, 18650batterystore.com, batemo.com, aboutenergy.io)
+quoting the same per-cell table: nominal 3.60 V, max charge 4.20 V,
+discharge cutoff 2.50 V; standard charge 4.2 A (1.5 h); capacity 4200 mAh
+typ./4000 mAh min. Cross-check source (pouch/LiPo format, corroborating
+but not primary): Kokam Co., Ltd., *Cell Specification Data, SLPB
+65216216*, Kokam Co., Ltd., Republic of Korea, available
+https://liionbms.com/pdf/kokam/SLPB65216216.pdf (live fetch blocked,
+2026-08-02) — indexed content: nominal 3.7 V, charge 4.2 V ±0.03 V,
+discharge cutoff 2.7 V, differing from [14]'s 2.5 V cutoff because
+minimum cutoff voltage is cell-model-dependent (industry range ≈2.5–3.0
+V/cell). Standards considered as regulatory backing but not used as the
+numeric source (paywalled, catalog-only): IEC 62133-2:2017, IEC, Geneva,
+https://webstore.iec.ch/en/publication/32662 (section/page not verified
+— paywalled); UL 2054, Ed. 3 (2021-11-17), UL Standards & Engagement,
+https://www.shopulstandards.com/ProductDetail.aspx?productId=UL2054_3_S_20211117
+(section/page not verified — paywalled).
+Per-tier pack voltage table derived from this entry (nominal / max /
+min, cells × per-cell value): 2S 7.2/8.4/5.0 V; 4S 14.4/16.8/10.0 V; 6S
+21.6/25.2/15.0 V; 8S 28.8/33.6/20.0 V; 12S 43.2/50.4/30.0 V. Design
+decision flagged per `AGENTS.md` §4: the 2.5 V/cell minimum is specific
+to this cell; a different cell selection (e.g. [14]'s Kokam cross-check
+at 2.7 V/cell, or the commonly-seen 3.0 V/cell convention) shifts the
+"min" column upward. Recommend re-deriving this table against the
+actual cell selected at BOM finalization (TODO.md §10.2) and using the
+highest (most conservative) published cutoff among candidates for
+FET/regulator voltage-margin derating in the interim.
+Candidate cell for voltage-tier derating (TODO.md §5.2); not yet
+selected in a bill of materials.
+Cited in: docs/datasheets/ (not yet present; not yet cited in README.md).
+Date accessed: 2026-08-02.
+
+---
+
+**[15]** Department of Defense (USA), *Interface Standard: Requirements
+for the Control of Electromagnetic Interference Characteristics of
+Subsystems and Equipment*, MIL-STD-461G, U.S. Department of Defense,
+2015-12-11 (supersedes MIL-STD-461F, 2007-12-10). [Online,
+government-hosted mirror]. Available:
+https://s3vi.ndc.nasa.gov/ssri-kb/static/resources/MIL-STD-461G.pdf
+(live fetch blocked: HTTP 403, 2026-08-02 — not independently
+re-verified against this repo's [7], which uses the same host class).
+Section/page: not verified — live fetch blocked this session; content
+corroborated via independent secondary technical summaries (Interference
+Technology magazine's reviews of MIL-STD-461 bonding/grounding and
+general requirements), not read from the primary PDF. Corroborated
+scope: general requirements for EUT bonding to a ground plane (or a
+defined metallic ground plane when installation is unspecified), and
+dedicated radiated/conducted emissions and susceptibility test methods
+(e.g. RE102, CE102, CS101/CS114/CS115/CS116) whose rationale motivates
+shielding and grounding as mitigations. Scope gap flagged explicitly per
+`AGENTS.md` §1.3: MIL-STD-461G's own text treats "isolation" mainly as
+test-setup isolation transformers (protecting measurement equipment),
+not as a named EUT design-mitigation category — it is a fitting
+citation for the Grounding and Faraday/shielding EMI tiers (TODO.md
+§7.1) but not for the Isolation tier; see [16] for that.
+Cited in: README.md (Protocol/EMI hardening context — Grounding, Faraday
+tiers); TODO.md §7.1.
+Date accessed: 2026-08-02.
+
+---
+
+**[16]** International Electrotechnical Commission, *Audio/video,
+information and communication technology equipment — Part 1: Safety
+requirements*, IEC 62368-1:2018, Ed. 3.0, IEC, Geneva, Switzerland,
+2018-10. [Online]. Available: https://webstore.iec.ch/en/publication/27412
+Section/page: not verified — standard is paywalled; only the IEC
+catalog/scope listing is accessible without purchase (same pattern as
+this repo's [6]). Cited as the authoritative basis for basic/reinforced
+insulation and creepage/clearance classification, against which
+isolation components such as [18] are certified — used for the
+Isolation EMI-hardening tier (TODO.md §7.1) rather than MIL-STD-461G
+([15]), whose own scope does not name "isolation" as a design
+mitigation category (see [15]'s scope-gap note).
+Cited in: README.md (EMI hardening — Isolation tier); TODO.md §7.1.
+Date accessed: 2026-08-02.
+
+---
+
+**[17]** International Electrotechnical Commission, *Electromagnetic
+compatibility (EMC) — Part 5: Installation and mitigation guidelines —
+Section 2: Earthing and cabling*, IEC/TR 61000-5-2:1997, Ed. 1.0, IEC,
+Geneva, Switzerland, 1997-11 (Technical Report, not a full International
+Standard; current withdrawal/stabilization status not verified this
+session). [Online]. Available:
+https://webstore.iec.ch/en/publication/4234
+Section/page: not verified — paywalled; catalog abstract confirms scope
+is "earthing practices ... in industrial, commercial and residential
+installations" for EMC-sensitive equipment — a layout/practice
+guideline, not a purchasable component spec. Used to support treating
+the Grounding EMI-hardening tier (TODO.md §7.1) as layout/practice-only
+(single-point ground topology, continuous ground-plane layout,
+star-grounding of high-di/dt power-stage return paths) rather than a
+BOM part, alongside [15]'s general bonding requirements.
+Cited in: README.md (EMI hardening — Grounding tier); TODO.md §7.1–7.2.
+Date accessed: 2026-08-02.
+
+---
+
+**[18]** Analog Devices, Inc., *ADuM4221/ADuM4221-1/ADuM4221-2 —
+Isolated, Half-Bridge Gate Drivers with Adjustable Dead Time, 4 A
+Output*, data sheet, Rev. B, Analog Devices, Inc., Wilmington, MA, USA.
+[Online]. Available:
+https://www.analog.com/media/en/technical-documentation/data-sheets/adum4221_4221-1_4221-2.pdf
+(live fetch blocked: HTTP 403, 2026-08-02).
+No local copy yet — `UNVERIFIED — needs primary source (see TODO.md)`.
+Section/page: not verified — live fetch blocked this session; content
+corroborated via independent search-indexed excerpts, not read from the
+primary PDF. Indexed content: ADI iCoupler-based digital isolation;
+5700 V rms isolation rating; datasheet's own safety limit data table
+indicates suitability for reinforced isolation per [16]; UL 1577 proof
+test at ≥6840 V rms for 1 s; 16-lead wide-body SOIC (increased
+creepage/clearance). Candidate for galvanic isolation on the gate-drive
+signal path between MCU-side logic and high-side/low-side FET gates —
+the Isolation EMI-hardening tier (TODO.md §7.1). Note: TODO.md §7.1
+should specify whether the Isolation tier covers gate-drive isolation,
+feedback/telemetry signal isolation, or both, before final part
+selection — ADuM4221's non-gate-driver siblings (e.g. ADuM3220,
+ADuM1200-series) would apply to the signal-only case.
+Candidate part; not yet selected in a bill of materials.
+Cited in: docs/datasheets/ (not yet present; not yet cited in README.md).
+Date accessed: 2026-08-02.
+
+---
+
+**[19]** Würth Elektronik eiSos GmbH & Co. KG, *WE-SHC Two-piece
+Seamless Shielding Cabinet*, part no. 3671375, datasheet, Würth
+Elektronik eiSos GmbH & Co. KG, Waldenburg, Germany. [Online].
+Available: https://www.we-online.com/components/products/datasheet/3671375.pdf
+(live fetch blocked: HTTP 403, 2026-08-02).
+No local copy yet — `UNVERIFIED — needs primary source (see TODO.md)`.
+Section/page: not verified — live fetch blocked this session; content
+corroborated across the WE-SHC product-family page and distributor
+(Mouser/DigiKey) listings, not read from the primary PDF. Indexed
+content: tin-plated two-piece (grid frame + removable cover) board-level
+shield; shielding effectiveness up to 60 dB over 500 MHz–3 GHz; part
+3671375 inner 29.5 mm ±0.2 mm / outer 30.1 mm ±0.2 mm, height ≈3.8 mm
+(ref). Candidate for board-level shielding over the gate-drive/high-di/dt
+switching node area — the Faraday EMI-hardening tier (TODO.md §7.1).
+Alternative real manufacturers in this space, not further verified:
+Laird Technologies, Leader Tech.
+Candidate part; not yet selected in a bill of materials.
+Cited in: docs/datasheets/ (not yet present; not yet cited in README.md).
+Date accessed: 2026-08-02.
+
+---
+
+**[20]** Infineon Technologies AG, *IRFB4110PbF — HEXFET Power MOSFET*,
+datasheet, Rev. 01-01 (filename-inferred; cover-page date `UNVERIFIED`),
+Infineon Technologies AG, Neubiberg, Germany. [Online]. Available:
+https://www.infineon.com/assets/row/public/documents/24/49/infineon-irfb4110-datasheet-en.pdf
+(live fetch blocked: HTTP 403, 2026-08-02).
+No local copy yet — `UNVERIFIED — needs primary source (see TODO.md)`.
+Section/page: not verified — this session's WebFetch tool returned HTTP
+403 for every domain attempted, including ti.com, infineon.com, vishay.com,
+analog.com, allegromicro.com, distributor mirrors, and a neutral
+non-vendor control URL — no PDF was opened directly. Specs below are
+corroborated across ≥2 independent distributor listings (DigiKey, RS,
+LCSC), not read from the primary document: VDSS = 100 V; RDS(on) = 3.7 mΩ
+typ./4.5 mΩ max (exact test condition, e.g. VGS, `UNVERIFIED`); ID = 120 A
+package-limited continuous rating (exact Tc binding `UNVERIFIED`; a
+higher 180 A "silicon-limited" figure also appears in listings — the
+more conservative 120 A figure is used here); TO-220AB package.
+Voltage-headroom design assumption (judgment call per `AGENTS.md` §4,
+not itself a datasheet claim): sized against a 4.2 V/cell LiPo/Li-ion
+max-charge convention (cf. [14]) → 12S max ≈ 50.4 V, giving ~2× headroom
+against this FET's 100 V rating; this convention is not yet tied to the
+project's actual selected cell.
+Proposed for all 7 amperage tiers (10A–120A) with parallel count per
+phase leg varying: 1× (10A–50A), 2× (80A), 3× (120A) — chosen to
+maximize BOM commonality across tiers per the research brief, at the
+cost of being oversized/cost-inefficient for the smallest tiers (10A–30A),
+where a smaller SO-8 SMD FET would be leaner if part-count commonality
+were not prioritized.
+Candidate part for the power stage (TODO.md §5.1); not yet selected in
+a bill of materials.
+Cited in: docs/datasheets/ (not yet present; not yet cited in README.md).
+Date accessed: 2026-08-02.
+
+---
+
+**[21]** Texas Instruments Incorporated, *DRV835x 9-V to 75-V
+Three-Phase Smart Gate Driver with Integrated Current Shunt Amplifiers*
+(DRV8353S variant: SPI configuration interface), datasheet, literature
+no. SLVSDY6, Rev. A (Aug. 2018; a later revision letter likely exists —
+`UNVERIFIED`), Texas Instruments Incorporated, Dallas, TX, USA. [Online].
+Available: https://www.ti.com/lit/ds/symlink/drv8353.pdf (live fetch
+blocked: HTTP 403, 2026-08-02).
+No local copy yet — `UNVERIFIED — needs primary source (see TODO.md)`.
+Section/page: not verified — live fetch blocked this session; specs
+corroborated via distributor/search-indexed excerpts, not read from the
+primary PDF. Indexed content: recommended VM operating range 9 V to
+75 V (spans 2S ≈8.4 V through 12S ≈50.4 V max charge per [14], with
+~25 V headroom at 12S — tighter margin than the FET's [20] ~2×,
+flagged as needing a transient/spike analysis, e.g. a TVS clamp on VM,
+before locking the 10S/12S BOM variant); three integrated bidirectional
+current-shunt amplifiers for low-side per-phase shunt sensing (gain
+settings `UNVERIFIED`); configurable peak gate-drive current settings
+(reported 50/100/150/300/450/700/1000 mA); integrated UVLO, gate-drive
+UVLO, VDS overcurrent monitoring, and gate-driver fault detection.
+Proposed as the same part for all 7 amperage tiers — the SPI-programmable
+IDRIVE setting and CSA gain register absorb the per-tier differences
+rather than requiring a different gate-driver part.
+Candidate part for the power stage (TODO.md §5.1); not yet selected in
+a bill of materials.
+Cited in: docs/datasheets/ (not yet present; not yet cited in README.md).
+Date accessed: 2026-08-02.
+
+---
+
+**[22]** Texas Instruments Incorporated, *INA240 −4-V to 80-V,
+Bidirectional, Ultra-Precise Current Sense Amplifier With Enhanced PWM
+Rejection*, datasheet, literature no. SBOS633 (`UNVERIFIED` — not
+independently confirmed against the PDF cover page), Texas Instruments
+Incorporated, Dallas, TX, USA. [Online]. Available:
+https://www.ti.com/lit/gpn/INA240 (live fetch blocked: HTTP 403,
+2026-08-02).
+No local copy yet — `UNVERIFIED — needs primary source (see TODO.md)`.
+Section/page: not verified — live fetch blocked this session; specs
+corroborated via distributor/search-indexed excerpts, not read from the
+primary PDF. Indexed content: common-mode voltage range −4 V to +80 V
+independent of supply (for a low-side per-phase shunt referenced near
+ground, this covers all voltage tiers 2S–12S per [14]); four fixed
+gains (20/50/100/200 V/V); enhanced PWM rejection, explicitly marketed
+for motor-drive/PWM common-mode transients; supply 2.7–5.5 V, ~2.4 mA
+max.
+Candidate part answering the current-sensing selection (TODO.md §5.3);
+proposed as the same part for all 7 amperage tiers, paired with the
+Vishay shunt series [23] whose resistance value (and, at 80A/120A,
+parallel count) varies by tier.
+Candidate part for the power stage; not yet selected in a bill of
+materials.
+Cited in: docs/datasheets/ (not yet present; not yet cited in README.md).
+Date accessed: 2026-08-02.
+
+---
+
+**[23]** Vishay Dale (Vishay Intertechnology, Inc.), *WSLP — Power Metal
+Strip® Resistors*, datasheet, document no. 30122 (revision/date on one
+mirror indexed as 10-Aug-2018 — exact current revision `UNVERIFIED`),
+Vishay Intertechnology, Inc., Malvern, PA, USA. [Online]. Available:
+https://www.vishay.com/docs/30122/wslp.pdf (live fetch blocked: HTTP
+403, 2026-08-02).
+No local copy yet — `UNVERIFIED — needs primary source (see TODO.md)`.
+Section/page: not verified — live fetch blocked this session; specs
+corroborated via distributor/search-indexed excerpts, not read from the
+primary PDF. Indexed content: WSLP2512 package resistance range 0.5 mΩ
+to 10 mΩ, power rating 3.0 W at 70°C, AEC-Q200 qualified metal-strip
+construction. Per-tier sizing (engineering calculation against the
+3 W/2512-package rating, not itself a datasheet claim): 10 mΩ (10A),
+5 mΩ (20A), 2 mΩ (30A), 1.5 mΩ (40A), 1 mΩ (50A); at 80A/120A a single
+WSLP2512 exceeds its 3 W rating (3.2 W and 7.2 W respectively at the
+sizes that would otherwise apply), so 2–4 devices in parallel (or a
+higher-power Vishay sibling part, not yet selected) are required —
+flagged as an open gap, not a drop-in substitution. Alternative
+considered: Allegro MicroSystems ACS732/ACS733 galvanically-isolated
+Hall-effect current sensor ICs (up to ±65 A, e.g. ACS733KLATR-65AB-T,
+20 mV/A, <1 mΩ internal resistance, 3600–4800 VRMS isolation) — not
+selected because the family tops out below the 80A/120A tiers, breaking
+BOM commonality; a higher-range Allegro part (e.g. ACS781/ACS758 family)
+would be needed for those tiers and was not pursued further.
+Candidate part answering the current-sensing selection (TODO.md §5.3);
+not yet selected in a bill of materials; the 80A/120A shunt sizing gap
+remains open.
+Cited in: docs/datasheets/ (not yet present; not yet cited in README.md).
+Date accessed: 2026-08-02.
+
+---
+
 ## Pending Verification — Not Yet Cited
 
 The following items are named in `README.md` but currently have **no**
@@ -228,17 +579,44 @@ to a standard until one is located and verified (see `AGENTS.md` §1.3):
 - **SBus** — proprietary Futaba Corporation protocol; no publicly published
   official specification located. Needs authoritative sourcing (Futaba
   technical documentation) or must remain marked reverse-engineered/
-  unofficial in any implementation notes.
+  unofficial in any implementation notes. Hardware note (verified
+  directly against the local copy of [1], p. 67, §8.23 "UART," Table
+  8-15 "UART Features"): the MSPM0G3507's UART peripherals list LIN,
+  DALI, IrDA, ISO7816 Smart Card, and Manchester coding modes, but no
+  RX/TX signal-inversion or polarity-select feature — SBus's inverted
+  UART signaling would need external hardware signal inversion (e.g. a
+  single-transistor inverter or logic buffer). This is an implementation
+  detail, not a standards claim, and does not resolve the "no official
+  spec" gap above.
 - **DBus** — proprietary protocol (context-dependent, e.g. DJI); no
   publicly published official specification located. Same treatment as
-  SBus above.
+  SBus above, including the external-signal-inversion hardware note.
 - **UART / TTL / SPI** — de facto industry conventions, not governed by a
   single ratified standard body document in the way RS-232/RS-485/CAN are.
   If a specific controller's SPI/UART peripheral behavior is being cited,
   cite the MCU datasheet section directly, not "SPI" as a standard.
-- **EMI hardening tiers (Isolation, Grounding, Faraday)** — no citation yet
-  tying these terms to a specific EMC standard (e.g. IEC 61000 series,
-  MIL-STD-461). Required before EMI hardening claims are made in design
-  docs.
+- **EMI hardening tiers (Isolation, Grounding, Faraday)** — governing
+  standards and candidate components now identified: MIL-STD-461G [15]
+  (Grounding, Faraday/shielding), IEC 62368-1 [16] (Isolation
+  classification), IEC/TR 61000-5-2 [17] (Grounding, layout-only
+  guidance), ADuM4221 [18] (Isolation candidate part), WE-SHC 3671375
+  [19] (Faraday candidate part). Still open: none of [15]–[19] has a
+  locally verified PDF copy or a page/clause-level pin (this session's
+  live-fetch tooling was blocked — see the methodology note below); a
+  follow-up pass must open the primary documents directly before these
+  move from "candidate" to "settled."
+
+**Methodology note on [12]–[23] (2026-08-02):** every new entry added in
+this pass was researched with the live-fetch tool (WebFetch) returning
+HTTP 403 for every domain attempted this session, including a neutral
+non-vendor control URL used purely as a sanity check — a broader failure
+than the vendor-specific blocks noted for [2] and [6]. All specs in
+[12]–[23] are therefore corroborated via ≥2 independent secondary
+sources (distributor listings, search-indexed excerpts of the
+manufacturer's own datasheet text) rather than read directly from a
+primary PDF, and none has a local verified copy in `docs/datasheets/`
+yet. Every such entry is marked accordingly and must not be treated as
+a settled citation — re-attempt direct fetch or manual PDF download in
+a future session before design docs cite these as verified.
 
 Track resolution of these items in `TODO.md`.
