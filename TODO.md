@@ -20,11 +20,27 @@ detail belongs in design docs, not here.
       invert note added citing [1] p.67 §8.23; PWM/UART/TTL/SPI need no
       external standard, cite MCU datasheet directly)
 - [ ] 1.9 CONTRIBUTING.md — citation workflow quick-reference (derive from AGENTS.md §2)
-- [ ] 1.10 Re-run live fetch (or manual PDF download) for [12]-[23] once
+- [~] 1.10 Re-run live fetch (or manual PDF download) for [12]-[23] once
       network access allows — this session's WebFetch returned HTTP 403
       for every domain tried (including a neutral control URL); all specs
       in [12]-[23] are corroborated via secondary search sources only,
-      not read from a primary PDF, and none has a local verified copy
+      not read from a primary PDF, and none has a local verified copy.
+      2026-08-02 update: manual PDF downloads resolved [14], [19], [20],
+      [22] (VERIFIED, local copies added) plus four alternative-part
+      citations [26]-[29] (Molicel P45B, Samsung SDI 40T, Analog Devices
+      AD8410A, Infineon TLE9180D-31QK — none adopted into the BOM).
+      **[27] (Samsung 40T) is marked "Confidential Proprietary" by
+      Samsung on every page — flagged for the repo owner to decide
+      whether it should be removed rather than committed; see [27].**
+      Two other manual downloads added the same day turned out NOT to
+      resolve any open citation — [24] (Vishay WSL, doc 30100) is a
+      related-but-different family from the still-missing [23]
+      (WSLP2512, doc 30122); [25] (Würth WE-SHC 3690103020) is a ~3mm
+      single-IC-scale shield, not the missing 3670375 frame that pairs
+      with [19]'s 3671375 cover. Still fully missing a local copy: [21]
+      (DRV8353S), [23] (WSLP2512), and the WE-SHC 3670375 frame (no
+      citation tag yet) — these are the only three gaps remaining for
+      this build's own BOM (§12.1).
 
 ## 2. Requirements
 
@@ -52,9 +68,10 @@ detail belongs in design docs, not here.
       tier), TI DRV8353S gate driver [21] (same part all tiers); not yet
       settled in BOM, no local verified datasheets yet
 - [~] 5.2 Voltage tier variants (2S/4S/6S/8S/12S) — component derating table
-      — candidate cell Molicel INR-21700-P42A [14] gives nominal/max/min
-      table (2S 7.2/8.4/5.0V ... 12S 43.2/50.4/30.0V); cell not yet
-      selected in BOM, cutoff voltage is cell-dependent (see [14] note)
+      — candidate cell Molicel INR-21700-P42A [14], VERIFIED against
+      local datasheet 2026-08-02, gives nominal/max/min table (2S
+      7.2/8.4/5.0V ... 12S 43.2/50.4/30.0V); cell not yet selected in
+      BOM, cutoff voltage is cell-dependent (see [14] note)
 - [~] 5.3 Current sensing (shunt/hall) selection + citation — candidates:
       Vishay WSLP2512 shunt [23] + TI INA240 amplifier [22], same parts
       across tiers except 80A/120A where single-shunt power rating is

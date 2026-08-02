@@ -37,7 +37,7 @@ KiCad symbols and their own pin-map verification status are in
 
 | Part | Qty | Citation | Status |
 | --- | --- | --- | --- |
-| Molicel INR-21700-P42A cell | 6 (series) | [14] | Candidate (unverified) — pack: 21.6 V nominal / 25.2 V max / 15.0 V min |
+| Molicel INR-21700-P42A cell | 6 (series) | [14] | Candidate — datasheet VERIFIED locally 2026-08-02 (`docs/datasheets/INR21700P42A-V4-80092.pdf`), not yet locked into BOM — pack: 21.6 V nominal / 25.2 V max / 15.0 V min |
 | Bulk input capacitor, V ≥ 25.2 V (≈2× margin recommended → ≥50 V rated) | TBD (generic `Device:C_Polarized`) | [14], [20], [21] | Generic part, not sourced individually — size against final layout |
 
 ### Amperage tier — 50A
@@ -116,17 +116,32 @@ existing layout guidance ([15], [17]) already in the base decision matrix.
 - DRV8353S vs. external INA240 current-sense sourcing (see BOM note above).
 - WE-SHC 3670375 frame is missing from this BOM (see EMI Hardening table
   above) — the 3671375 line item is the cover only and cannot shield
-  anything by itself.
-- Remaining parts without a local, primary-source datasheet: Molicel
-  INR-21700-P42A [14], TI DRV8353S [21], Vishay WSLP2512 [23] — need a
-  datasheet pass (blocked this session/all recent sessions by a
-  network-egress policy denial; see `TODO.md` 1.10) before those BOM lines
-  can move past "Candidate."
-- IRFB4110PBF [20], INA240 [22], and the WE-SHC 3671375 cover [19] now
-  have a locally verified primary datasheet (2026-08-02) confirming the
-  figures already used in this BOM — still "Candidate" only in the sense
-  that the part hasn't been formally locked in per `AGENTS.md` §5, not
-  because the data is unverified.
+  anything by itself. Two more PDFs were manually added 2026-08-02
+  (`docs/datasheets/wsl.pdf`, `docs/datasheets/3690103020.pdf`) but
+  neither resolves this or any other open gap — see [24]/[25] in
+  `REFERENCES.md` for exactly why (wrong Vishay family, and a shield at
+  the wrong physical scale, respectively).
+- Remaining parts without a local, primary-source datasheet: TI DRV8353S
+  [21] and Vishay WSLP2512 [23] — need a datasheet pass (blocked this
+  session/all recent sessions by a network-egress policy denial; see
+  `TODO.md` 1.10) before those two BOM lines can move past "Candidate."
+  Plus the WE-SHC 3670375 frame noted above.
+- Molicel INR-21700-P42A [14], IRFB4110PBF [20], INA240 [22], and the
+  WE-SHC 3671375 cover [19] now all have a locally verified primary
+  datasheet (2026-08-02) confirming the figures already used in this
+  BOM — still "Candidate" only in the sense that the part hasn't been
+  formally locked in per `AGENTS.md` §5, not because the data is
+  unverified. That means **every BOM line in this document now has a
+  verified primary datasheet except DRV8353S, WSLP2512, and the missing
+  WE-SHC frame** — see `REFERENCES.md` [21], [23], [19] respectively.
+- Four alternative-manufacturer datasheets were also added 2026-08-02
+  (Molicel P45B, Samsung SDI 40T, Analog Devices AD8410A, Infineon
+  TLE9180D-31QK — see `REFERENCES.md` [26]-[29]) but none is adopted
+  into this BOM; they're reference material for the open design
+  questions above. **The Samsung 40T datasheet is marked "Confidential
+  Proprietary" by Samsung on every page** — flagged in [27] for the
+  repo owner to decide whether it belongs in a shared/public repo at
+  all, independent of its technical accuracy.
 
 ## Folder contents
 

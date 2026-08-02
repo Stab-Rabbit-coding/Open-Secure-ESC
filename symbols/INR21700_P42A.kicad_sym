@@ -9,7 +9,7 @@
     (property "Footprint" "" (id 2) (at 0 0 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Datasheet" "https://www.molicel.com/wp-content/uploads/INR21700P42A-V4-80092.pdf" (id 3) (at 0 0 0)
+    (property "Datasheet" "docs/datasheets/INR21700P42A-V4-80092.pdf" (id 3) (at 0 0 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Description" "Molicel INR-21700-P42A 21700 Li-ion cell -- candidate cell for voltage-tier derating; this build (6S) uses 6 in series: nominal 21.6V, max 25.2V, min 15.0V per docs/decision-matrix.xlsx Voltage sheet / REFERENCES.md [14]." (id 4) (at 0 0 0)
@@ -18,7 +18,7 @@
     (property "Citation" "[14]" (id 5) (at 0 0 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Verification" "Generic 2-terminal cylindrical-cell pinout (+ / -, package-defined, not part-specific). Voltage/capacity values are 'Candidate (unverified)' per REFERENCES.md [14] (live fetch HTTP 403, corroborated only via secondary distributor/mirror sources) -- confirm against the primary datasheet before fab. See TODO.md 1.10 and 5.2." (id 6) (at 0 0 0)
+    (property "Verification" "Generic 2-terminal cylindrical-cell pinout (+ / -, package-defined, not part-specific -- unchanged by the datasheet becoming available). Voltage/capacity values now VERIFIED directly from the local datasheet (added 2026-08-02): nominal 3.6V, charge 4.2V, discharge cutoff 2.5V, capacity 4200mAh typ/4000mAh min, continuous discharge 45A -- matches every figure previously corroborated only via secondary sources, no discrepancy found. See TODO.md 5.2." (id 6) (at 0 0 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (symbol "INR21700_P42A_0_1"
