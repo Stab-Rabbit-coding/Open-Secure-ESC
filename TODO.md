@@ -13,8 +13,17 @@ detail belongs in design docs, not here.
 - [ ] 1.5 Verify [2] SLB9672 datasheet page refs for compliance claims (blocked: 403 on infineon.com)
 - [ ] 1.6 Verify [3]-[7] section/page pins once standards obtained (paywalled)
 - [ ] 1.7 Confirm MIL-STD-1553B vs -1553C target revision, update [7]
-- [ ] 1.8 Source authoritative refs: SBus, DBus, PWM-interface, UART/TTL/SPI, EMI tiers
+- [~] 1.8 Source authoritative refs: SBus, DBus, PWM-interface, UART/TTL/SPI, EMI tiers
+      (EMI standards found: MIL-STD-461G [15], IEC 62368-1 [16], IEC/TR
+      61000-5-2 [17]; SBus/DBus still lack an official spec — hardware
+      invert note added citing [1] p.67 §8.23; PWM/UART/TTL/SPI need no
+      external standard, cite MCU datasheet directly)
 - [ ] 1.9 CONTRIBUTING.md — citation workflow quick-reference (derive from AGENTS.md §2)
+- [ ] 1.10 Re-run live fetch (or manual PDF download) for [12]-[23] once
+      network access allows — this session's WebFetch returned HTTP 403
+      for every domain tried (including a neutral control URL); all specs
+      in [12]-[23] are corroborated via secondary search sources only,
+      not read from a primary PDF, and none has a local verified copy
 
 ## 2. Requirements
 - [ ] 2.1 Functional requirements spec (per voltage/amperage/protocol/control/EMI variant)
@@ -33,9 +42,18 @@ detail belongs in design docs, not here.
 - [ ] 4.3 Key provisioning process
 
 ## 5. Hardware — Power Stage
-- [ ] 5.1 Gate driver + FET selection per amperage tier (10/20/30/40/50/80/120 A)
-- [ ] 5.2 Voltage tier variants (2S/4S/6S/8S/12S) — component derating table
-- [ ] 5.3 Current sensing (shunt/hall) selection + citation
+- [~] 5.1 Gate driver + FET selection per amperage tier (10/20/30/40/50/80/120 A)
+      — candidates: Infineon IRFB4110PBF FET [20] (1x-3x parallel per
+      tier), TI DRV8353S gate driver [21] (same part all tiers); not yet
+      settled in BOM, no local verified datasheets yet
+- [~] 5.2 Voltage tier variants (2S/4S/6S/8S/12S) — component derating table
+      — candidate cell Molicel INR-21700-P42A [14] gives nominal/max/min
+      table (2S 7.2/8.4/5.0V ... 12S 43.2/50.4/30.0V); cell not yet
+      selected in BOM, cutoff voltage is cell-dependent (see [14] note)
+- [~] 5.3 Current sensing (shunt/hall) selection + citation — candidates:
+      Vishay WSLP2512 shunt [23] + TI INA240 amplifier [22], same parts
+      across tiers except 80A/120A where single-shunt power rating is
+      exceeded (open gap, no part selected yet for those two tiers)
 
 ## 6. Hardware — Protocol Interfaces
 - [ ] 6.1 PWM input stage
@@ -43,21 +61,29 @@ detail belongs in design docs, not here.
 - [ ] 6.3 DBus input stage (flag UNVERIFIED spec, C-pending)
 - [ ] 6.4 UART/TTL transceiver
 - [ ] 6.5 SPI interface
-- [ ] 6.6 RS-232 transceiver per [3]
+- [~] 6.6 RS-232 transceiver per [3]; candidate part ADM3232E [12]
 - [ ] 6.7 RS-485 transceiver per [4]; candidate part ADM2582E/ADM2587E [9]
 - [ ] 6.8 CAN 2.0 controller/transceiver per [5]; candidate part ADM3055E/ADM3057E [10]
 - [ ] 6.9 CAN-FD controller/transceiver per [6]; candidate part ADM3055E/ADM3057E [10]
 - [ ] 6.10 MIL-STD-1553B interface per [7]; candidate module Alta MEZ-E1553 [11]
 
 ## 7. Hardware — EMI Hardening
-- [ ] 7.1 Define tier requirements: None / Isolation / Grounding / Faraday (needs C, see REFERENCES.md pending)
+- [~] 7.1 Define tier requirements: None / Isolation / Grounding / Faraday
+      — standards found: MIL-STD-461G [15] (Grounding, Faraday), IEC
+      62368-1 [16] (Isolation classification), IEC/TR 61000-5-2 [17]
+      (Grounding, layout-only); candidate parts: ADuM4221 isolated gate
+      driver [18] (Isolation), Würth WE-SHC 3671375 [19] (Faraday);
+      Grounding tier confirmed layout-only, no part needed. Clause/page
+      pins still open (see 1.10).
 - [ ] 7.2 Layout guidelines per tier
 - [ ] 7.3 Pre-compliance test plan
 
 ## 8. Firmware
 - [ ] 8.1 Control loop: Open-loop
-- [ ] 8.2 Control loop: Closed-loop differential
-- [ ] 8.3 Control loop: Closed-loop PID
+- [~] 8.2 Control loop: Closed-loop differential — feedback approach:
+      sensorless FOC per TI SLAAE96A [13] (no extra BOM part; MCU's own
+      ADC/OPA/COMP per [1]); Hall-sensored fallback DRV5013 noted in [13]
+- [~] 8.3 Control loop: Closed-loop PID — same feedback approach as 8.2
 - [ ] 8.4 Protocol drivers (per §6)
 - [ ] 8.5 TPM integration / secure boot firmware
 - [ ] 8.6 Fault handling (overcurrent/thermal/comm-loss)
