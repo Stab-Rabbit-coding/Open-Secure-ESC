@@ -8,7 +8,7 @@ counterpart to `kicad/` (schematic/symbols) and `gerbers/` (fab output).
 ## Requested build parameters
 
 | Axis | Selection |
-|---|---|
+| --- | --- |
 | Voltage | 6S |
 | Amperage | 50A |
 | Protocol | CAN-FD **and** RS-485 (both present simultaneously, not alternatives) |
@@ -29,21 +29,21 @@ KiCad symbols and their own pin-map verification status are in
 ### MCU / trust anchor (common to all builds, README.md)
 
 | Part | Qty | Citation | Status |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | TI MSPM0G3507SPMR (64-pin LQFP) | 1 | [1] | Verified (local datasheet). Package choice (64-LQFP, out of the 5 offered) is this build's own decision — needs CAN-FD + spare UART + dual SPI + 4 analog channels + SWD concurrently; see `symbols/specs/MSPM0G3507.json`. |
 | Infineon SLB9672 TPM 2.0 | 1 | [2] | Verified (local datasheet) |
 
 ### Voltage tier — 6S
 
 | Part | Qty | Citation | Status |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Molicel INR-21700-P42A cell | 6 (series) | [14] | Candidate (unverified) — pack: 21.6 V nominal / 25.2 V max / 15.0 V min |
 | Bulk input capacitor, V ≥ 25.2 V (≈2× margin recommended → ≥50 V rated) | TBD (generic `Device:C_Polarized`) | [14], [20], [21] | Generic part, not sourced individually — size against final layout |
 
 ### Amperage tier — 50A
 
 | Part | Qty | Citation | Status |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Infineon IRFB4110PBF power MOSFET | 6 (1 per switch position × 2 positions × 3 phases; "FET Qty/Phase Leg" = 1 at 50A) | [20] | Candidate — datasheet VERIFIED locally 2026-08-02 (`docs/datasheets/infineon-irfb4110-datasheet-en.pdf`), not yet locked into BOM |
 | TI DRV8353S 3-phase gate driver (SPI variant) | 1 | [21] | Candidate (unverified) — integrates 3 per-phase shunt-sense amplifiers itself |
 | Vishay WSLP2512 shunt, 1 mΩ | 3 (one per phase; "Shunt Qty Needed" = 1 parallel device per location at 50A) | [23] | Candidate (unverified) |
@@ -63,7 +63,7 @@ choice.
 ### Protocol — CAN-FD + RS-485 (both, concurrently)
 
 | Part | Qty | Citation | Status |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Analog Devices ADM3055E **or** ADM3057E isolated CAN-FD transceiver | 1 | [6], [10] | Candidate (unverified) — **open**: ADM3055E (5000 V rms isolation) vs. ADM3057E (3750 V rms) not chosen here; pick per this build's actual isolation requirement (not specified by the request) |
 | Analog Devices ADM2582E **or** ADM2587E isolated RS-485 transceiver | 1 | [4], [9] | Candidate (unverified) — **open**: ADM2582E (16 Mbps) vs. ADM2587E (500 kbps) not chosen here; pick per this build's actual RS-485 data-rate requirement (not specified by the request) |
 
@@ -76,7 +76,7 @@ full pin assignment and its sourcing.
 ### EMI Hardening — Faraday tier
 
 | Part | Qty | Citation | Status |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Würth Elektronik WE-SHC 3671375 shielding **cover** | 1 (sized to the gate-drive / high-di/dt switching-node area) | [15], [19] | Candidate — datasheet VERIFIED locally 2026-08-02 (`docs/datasheets/3671375.pdf`), mechanical part, no schematic signal pins, see `symbols/WE_SHC_3671375.kicad_sym` |
 | Würth Elektronik WE-SHC 3670375 shielding **frame** (required pair to the 3671375 cover above — the local datasheet's own text: "Assembly with Frame: Frame (3670375), Cover (3671375)") | 1 | [19] | **Open gap** — not yet added to this BOM or `docs/datasheets/`; the cover alone does not shield anything |
 
@@ -87,7 +87,7 @@ plane-wave relation `E_rms = sqrt(S · η₀)` (S = power density, η₀ ≈ 376
 free-space impedance — a physical constant, not a project-specific
 citation):
 
-```
+```text
 E_rms = sqrt(500 W/m² × 376.73 Ω) ≈ 434 V/m
 ```
 
