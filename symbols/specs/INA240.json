@@ -1,17 +1,19 @@
 {
   "name": "INA240",
   "reference": "U",
-  "footprint": "",
-  "datasheet": "https://www.ti.com/lit/gpn/INA240",
+  "footprint": "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",
+  "datasheet": "docs/datasheets/ina240.pdf",
   "description": "TI INA240 -4V to 80V bidirectional current-sense amplifier -- candidate current-sense part for the power stage, paired with the WSLP2512 shunt (TODO.md 5.3).",
   "citation": "[22]",
-  "verification": "UNVERIFIED PLACEHOLDER PIN MAP -- REFERENCES.md [22] has no local copy of the primary datasheet (live fetch returned HTTP 403 for every domain tried, including this session's re-check on 2026-08-02). Pin NUMBERS below are sequential placeholders (1..6), NOT read from a pin diagram, and package (SOIC-8/VSSOP-8 etc.) is not confirmed. Pin NAMES are the functional signals corroborated in REFERENCES.md [22] (differential shunt input, fixed-gain output, single reference pin, 2.7-5.5V supply). Replace this file's pin map (and re-run the generator) once a primary PDF is obtained -- see TODO.md 1.10 and 5.3.",
+  "verification": "VERIFIED -- full 8-pin map read directly from the local copy of [22] (TI SBOS662C, 'Revised December 2021'), Sec. 6 'Pin Configuration and Functions', Table 6-1 'Pin Functions', Figure 6-2 'D Package 8-Pin SOIC Top View'. This spec uses the D (SOIC-8) package pinout. The PW (TSSOP-8) package variant uses a DIFFERENT pin numbering for the same signals -- 1 NC, 2 IN+, 3 IN-, 4 GND, 5 VS, 6 REF2, 7 REF1, 8 OUT (Figure 6-1) -- if TSSOP is selected instead, regenerate against that map, not this one. Device also confirmed: gains fixed per part suffix (INA240A1=20V/V, A2=50V/V, A3=100V/V, A4=200V/V, Sec. 5 Table 5-1); supply 2.7-5.5V, 2.4mA max; common-mode -4V to +80V.",
   "pins": [
-    {"num": "1", "name": "VS",  "etype": "power_in", "side": "top"},
-    {"num": "2", "name": "GND", "etype": "power_in", "side": "bottom"},
-    {"num": "3", "name": "IN+", "etype": "input",  "side": "left"},
-    {"num": "4", "name": "IN-", "etype": "input",  "side": "left"},
-    {"num": "5", "name": "REF", "etype": "input",  "side": "right"},
-    {"num": "6", "name": "OUT", "etype": "output", "side": "right"}
+    {"num": "1", "name": "IN-",   "etype": "input",       "side": "left"},
+    {"num": "2", "name": "GND",   "etype": "power_in",    "side": "bottom"},
+    {"num": "3", "name": "REF2",  "etype": "input",       "side": "right"},
+    {"num": "4", "name": "NC",    "etype": "no_connect",  "side": "right"},
+    {"num": "5", "name": "OUT",   "etype": "output",      "side": "right"},
+    {"num": "6", "name": "VS",    "etype": "power_in",    "side": "top"},
+    {"num": "7", "name": "REF1",  "etype": "input",       "side": "right"},
+    {"num": "8", "name": "IN+",   "etype": "input",       "side": "left"}
   ]
 }
