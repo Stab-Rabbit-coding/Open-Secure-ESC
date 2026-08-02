@@ -43,10 +43,10 @@ detail belongs in design docs, not here.
 - [ ] 6.4 UART/TTL transceiver
 - [ ] 6.5 SPI interface
 - [ ] 6.6 RS-232 transceiver per [3]
-- [ ] 6.7 RS-485 transceiver per [4]
-- [ ] 6.8 CAN 2.0 controller/transceiver per [5]
-- [ ] 6.9 CAN-FD controller/transceiver per [6]
-- [ ] 6.10 MIL-STD-1553B interface per [7]
+- [ ] 6.7 RS-485 transceiver per [4]; candidate part ADM2582E/ADM2587E [9]
+- [ ] 6.8 CAN 2.0 controller/transceiver per [5]; candidate part ADM3055E/ADM3057E [10]
+- [ ] 6.9 CAN-FD controller/transceiver per [6]; candidate part ADM3055E/ADM3057E [10]
+- [ ] 6.10 MIL-STD-1553B interface per [7]; candidate module Alta MEZ-E1553 [11]
 
 ## 7. Hardware — EMI Hardening
 - [ ] 7.1 Define tier requirements: None / Isolation / Grounding / Faraday (needs C, see REFERENCES.md pending)
