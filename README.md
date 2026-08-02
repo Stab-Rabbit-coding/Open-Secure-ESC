@@ -13,6 +13,19 @@ Build Options:
 * Control: Open, Closed-Diff, Closed-PID
 * EMI Hardening: None, Isolation, Grounding, Faraday
 
+## Repository layout
+
+* `symbols/` — shared KiCad symbol library (one `.kicad_sym` per component),
+  generated from citable pin specs; see `symbols/README.md`.
+* `builds/<voltage>/<amperage>/<variant>/` — per-build instantiation of the
+  axis options above: a descriptive `README.md` (BOM drawn from
+  `docs/decision-matrix.xlsx`, with citations), a `kicad/` subfolder
+  (schematic + shared-library wiring), and a `gerbers/` subfolder
+  (fabrication output once a layout exists). Example:
+  `builds/6s/50A/CAN_485_faraday/`.
+* `docs/decision-matrix.xlsx` — per-axis BOM/workflow decision matrix that
+  every build folder is generated from.
+
 ## License
 
 Licensed under the CERN Open Hardware Licence Version 2 — Permissive

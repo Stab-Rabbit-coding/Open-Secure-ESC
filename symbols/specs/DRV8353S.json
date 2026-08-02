@@ -1,0 +1,41 @@
+{
+  "name": "DRV8353S",
+  "reference": "U",
+  "footprint": "",
+  "datasheet": "https://www.ti.com/lit/ds/symlink/drv8353.pdf",
+  "description": "TI DRV8353S 9-75V three-phase smart gate driver (SPI configuration variant) -- candidate gate driver for the power stage, all amperage tiers (TODO.md 5.1).",
+  "citation": "[21]",
+  "verification": "UNVERIFIED PLACEHOLDER PIN MAP -- REFERENCES.md [21] has no local copy of the SLVSDY6 primary datasheet (live fetch returned HTTP 403 for every domain tried, including this session's re-check on 2026-08-02). Pin NUMBERS below are sequential placeholders (1..26), NOT read from a pin diagram, and MUST NOT be trusted for layout/fab. Pin NAMES are the functional signals corroborated in REFERENCES.md [21] (VM range, SPI config interface, 3x integrated shunt-amp CSAs, 3-phase gate outputs, UVLO/fault reporting) plus standard DRV835x-family naming; the PWM control scheme (1x/3x/6x-PWM) is itself unresolved per [21] and the 6x-PWM INHx/INLx pin set assumed here is a design placeholder, not a confirmed datasheet claim. Replace this file's pin map (and re-run the generator) once a primary PDF is obtained -- see TODO.md 1.10 and 5.1.",
+  "pins": [
+    {"num": "1",  "name": "VM",      "etype": "power_in",     "side": "top"},
+    {"num": "2",  "name": "GND",     "etype": "power_in",     "side": "top"},
+
+    {"num": "3",  "name": "SCLK",    "etype": "input",  "side": "left"},
+    {"num": "4",  "name": "SDI",     "etype": "input",  "side": "left"},
+    {"num": "5",  "name": "SDO",     "etype": "output", "side": "left"},
+    {"num": "6",  "name": "SCS",     "etype": "input",  "side": "left"},
+    {"num": "7",  "name": "nSLEEP",  "etype": "input",  "side": "left"},
+    {"num": "8",  "name": "nFAULT",  "etype": "open_collector", "side": "left"},
+
+    {"num": "9",  "name": "INHA", "etype": "input", "side": "left"},
+    {"num": "10", "name": "INLA", "etype": "input", "side": "left"},
+    {"num": "11", "name": "INHB", "etype": "input", "side": "left"},
+    {"num": "12", "name": "INLB", "etype": "input", "side": "left"},
+    {"num": "13", "name": "INHC", "etype": "input", "side": "left"},
+    {"num": "14", "name": "INLC", "etype": "input", "side": "left"},
+
+    {"num": "15", "name": "GHA", "etype": "output",  "side": "right"},
+    {"num": "16", "name": "SHA", "etype": "passive", "side": "right"},
+    {"num": "17", "name": "GLA", "etype": "output",  "side": "right"},
+    {"num": "18", "name": "GHB", "etype": "output",  "side": "right"},
+    {"num": "19", "name": "SHB", "etype": "passive", "side": "right"},
+    {"num": "20", "name": "GLB", "etype": "output",  "side": "right"},
+    {"num": "21", "name": "GHC", "etype": "output",  "side": "right"},
+    {"num": "22", "name": "SHC", "etype": "passive", "side": "right"},
+    {"num": "23", "name": "GLC", "etype": "output",  "side": "right"},
+
+    {"num": "24", "name": "SOA", "etype": "output", "side": "bottom"},
+    {"num": "25", "name": "SOB", "etype": "output", "side": "bottom"},
+    {"num": "26", "name": "SOC", "etype": "output", "side": "bottom"}
+  ]
+}

@@ -99,3 +99,32 @@ detail belongs in design docs, not here.
 - [ ] 10.2 BOM finalization per variant
 - [ ] 10.3 Manufacturing/fab release
 - [ ] 10.4 v1.0 documentation freeze
+
+## 11. Shared KiCad Symbol Library (symbols/)
+- [x] 11.1 Generator + JSON-spec workflow (`symbols/tools/gen_kicad_symbol.py`,
+      `symbols/specs/*.json`) so future components/builds source a pin map
+      once and regenerate rather than hand-edit S-expressions
+- [x] 11.2 MSPM0G3507 [1] symbol — pin subset VERIFIED against local PDF
+      Table 6-2 (64-LQFP column); full 64-pin symbol not yet built
+- [x] 11.3 SLB9672 [2] symbol — full 32-pin, VERIFIED, footprint-complete
+- [x] 11.4 ADM2582E/ADM2587E [9] and ADM3055E/ADM3057E [10] symbols — full
+      20-pin, VERIFIED against local PDFs
+- [~] 11.5 DRV8353S [21] and INA240 [22] symbols — UNVERIFIED placeholder
+      pin numbering (no primary datasheet reachable this session); replace
+      once TODO.md 1.10 resolves
+- [x] 11.6 IRFB4110PBF [20], WSLP2512 [23], INR21700-P42A [14],
+      WE-SHC 3671375 [15][19] symbols — generic/mechanical pinouts, no
+      part-specific pin diagram needed
+
+## 12. Per-Build Instances (builds/<voltage>/<amperage>/<variant>/)
+- [~] 12.1 `builds/6s/50A/CAN_485_faraday/` — 6S, 50A, CAN-FD + RS-485
+      (concurrent), Faraday EMI tier (sized against a 500 W/m² broadband RF
+      requirement, derived ~434 V/m). BOM drafted from
+      `docs/decision-matrix.xlsx` (README.md in that folder); `kicad/`
+      contains a project skeleton wired to `symbols/` but no placed
+      components; `gerbers/` empty pending a PCB layout. Blocked on the
+      same open items as 1.10/5.1-5.3/6.7-6.9/7.1: most BOM lines are still
+      `Candidate (unverified)`, and the CAN-FD/RS-485 transceiver variant
+      choice (isolation voltage vs. data rate) and DRV8353S-vs-INA240
+      current-sense sourcing are open design questions, not resolved in
+      that build's README.

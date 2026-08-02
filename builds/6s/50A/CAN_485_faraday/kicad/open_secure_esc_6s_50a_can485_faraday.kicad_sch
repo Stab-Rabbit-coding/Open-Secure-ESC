@@ -1,0 +1,22 @@
+(kicad_sch (version 20211014) (generator open_secure_esc_symgen)
+
+  (uuid 2d167c65-6785-4f09-8f70-bed7db62fb19)
+
+  (paper "A3")
+
+  (title_block
+    (title "Open-Secure-ESC -- 6S / 50A / CAN-FD+RS-485 / Faraday")
+    (date "2026-08-02")
+    (rev "0.1-skeleton")
+    (company "Open-Secure-ESC project (CERN-OHL-P v2)")
+    (comment 1 "Build spec: builds/6s/50A/CAN_485_faraday/README.md")
+    (comment 2 "BOM/citations: docs/decision-matrix.xlsx, REFERENCES.md")
+    (comment 3 "Symbols: ../../../../symbols/ (see symbols/README.md) via kicad/sym-lib-table")
+    (comment 4 "Status: project skeleton only -- no components placed yet, see README.md Status")
+  )
+  (lib_symbols)
+
+  (sheet_instances
+    (path "/" (page "1"))
+  )
+)

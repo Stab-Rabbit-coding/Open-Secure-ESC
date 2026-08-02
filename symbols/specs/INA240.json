@@ -1,0 +1,17 @@
+{
+  "name": "INA240",
+  "reference": "U",
+  "footprint": "",
+  "datasheet": "https://www.ti.com/lit/gpn/INA240",
+  "description": "TI INA240 -4V to 80V bidirectional current-sense amplifier -- candidate current-sense part for the power stage, paired with the WSLP2512 shunt (TODO.md 5.3).",
+  "citation": "[22]",
+  "verification": "UNVERIFIED PLACEHOLDER PIN MAP -- REFERENCES.md [22] has no local copy of the primary datasheet (live fetch returned HTTP 403 for every domain tried, including this session's re-check on 2026-08-02). Pin NUMBERS below are sequential placeholders (1..6), NOT read from a pin diagram, and package (SOIC-8/VSSOP-8 etc.) is not confirmed. Pin NAMES are the functional signals corroborated in REFERENCES.md [22] (differential shunt input, fixed-gain output, single reference pin, 2.7-5.5V supply). Replace this file's pin map (and re-run the generator) once a primary PDF is obtained -- see TODO.md 1.10 and 5.3.",
+  "pins": [
+    {"num": "1", "name": "VS",  "etype": "power_in", "side": "top"},
+    {"num": "2", "name": "GND", "etype": "power_in", "side": "bottom"},
+    {"num": "3", "name": "IN+", "etype": "input",  "side": "left"},
+    {"num": "4", "name": "IN-", "etype": "input",  "side": "left"},
+    {"num": "5", "name": "REF", "etype": "input",  "side": "right"},
+    {"num": "6", "name": "OUT", "etype": "output", "side": "right"}
+  ]
+}

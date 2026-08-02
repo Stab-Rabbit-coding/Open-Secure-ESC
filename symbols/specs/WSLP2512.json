@@ -1,0 +1,13 @@
+{
+  "name": "WSLP2512",
+  "reference": "R",
+  "footprint": "Resistor_SMD:R_2512_6332Metric",
+  "datasheet": "https://www.vishay.com/docs/30122/wslp.pdf",
+  "description": "Vishay Dale WSLP2512 Power Metal Strip current-sense shunt resistor, 2512 package -- candidate shunt for the power stage current-sense chain, paired with INA240 (TODO.md 5.3). This build (50A tier): 1 mOhm, qty 1, per docs/decision-matrix.xlsx Amperage sheet.",
+  "citation": "[23]",
+  "verification": "Generic 2-terminal chip-resistor pinout (universally standardized, package-defined, not part-specific -- no per-part pin diagram needed). Resistance/power-rating values are 'Candidate (unverified)' per REFERENCES.md [23] (live fetch HTTP 403, no local copy) -- confirm against the primary datasheet before fab. See TODO.md 1.10 and 5.3.",
+  "pins": [
+    {"num": "1", "name": "~", "etype": "passive", "side": "left"},
+    {"num": "2", "name": "~", "etype": "passive", "side": "right"}
+  ]
+}

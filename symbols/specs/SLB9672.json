@@ -1,0 +1,47 @@
+{
+  "name": "SLB9672",
+  "reference": "U",
+  "footprint": "Package_DFN_QFN:QFN-32-1EP_5x5mm_P0.5mm",
+  "datasheet": "docs/datasheets/infineon-slb9672-tpm20-spi-fw16.xx-datasheet-rev1.3.pdf",
+  "description": "Infineon OPTIGA TPM SLB9672 TPM 2.0, PG-UQFN-32-1/-2 -- project TPM per README.md.",
+  "citation": "[2]",
+  "verification": "VERIFIED -- full 32-pin map read directly from the local copy of [2], p.17-19, Table 11 'I/O Signals', Table 12 'Power supply', Table 13 'Not connected', Fig. 7 'Typical schematic'. All 32 physical package pins are represented, including NC/NCI pins, so this symbol is footprint-complete.",
+  "pins": [
+    {"num": "1",  "name": "VDD", "etype": "power_in", "side": "top"},
+    {"num": "14", "name": "VDD", "etype": "power_in", "side": "top"},
+    {"num": "22", "name": "VDD", "etype": "power_in", "side": "top"},
+    {"num": "2",  "name": "GND", "etype": "power_in", "side": "bottom"},
+    {"num": "9",  "name": "GND", "etype": "power_in", "side": "bottom"},
+    {"num": "23", "name": "GND", "etype": "power_in", "side": "bottom"},
+    {"num": "32", "name": "GND", "etype": "power_in", "side": "bottom"},
+
+    {"num": "20", "name": "CS#",   "etype": "input",          "side": "left"},
+    {"num": "19", "name": "SCLK",  "etype": "input",          "side": "left"},
+    {"num": "21", "name": "MOSI",  "etype": "input",          "side": "left"},
+    {"num": "24", "name": "MISO",  "etype": "tri_state",      "side": "left"},
+    {"num": "18", "name": "PIRQ#", "etype": "open_collector", "side": "left"},
+    {"num": "17", "name": "RST#",  "etype": "input",          "side": "left"},
+
+    {"num": "3", "name": "GPIO_00", "etype": "bidirectional", "side": "right"},
+    {"num": "4", "name": "GPIO_01", "etype": "bidirectional", "side": "right"},
+    {"num": "7", "name": "GPIO_02", "etype": "bidirectional", "side": "right"},
+
+    {"num": "8",  "name": "NCI/VDD", "etype": "passive", "side": "right"},
+    {"num": "10", "name": "NCI/VDD", "etype": "passive", "side": "right"},
+    {"num": "16", "name": "NCI/GND", "etype": "passive", "side": "right"},
+
+    {"num": "5",  "name": "NCI", "etype": "no_connect", "side": "bottom"},
+    {"num": "6",  "name": "NC",  "etype": "no_connect", "side": "bottom"},
+    {"num": "11", "name": "NCI", "etype": "no_connect", "side": "bottom"},
+    {"num": "12", "name": "NCI", "etype": "no_connect", "side": "bottom"},
+    {"num": "13", "name": "NCI", "etype": "no_connect", "side": "bottom"},
+    {"num": "15", "name": "NCI", "etype": "no_connect", "side": "bottom"},
+    {"num": "25", "name": "NCI", "etype": "no_connect", "side": "bottom"},
+    {"num": "26", "name": "NCI", "etype": "no_connect", "side": "bottom"},
+    {"num": "27", "name": "NCI", "etype": "no_connect", "side": "bottom"},
+    {"num": "28", "name": "NCI", "etype": "no_connect", "side": "bottom"},
+    {"num": "29", "name": "NC",  "etype": "no_connect", "side": "bottom"},
+    {"num": "30", "name": "NC",  "etype": "no_connect", "side": "bottom"},
+    {"num": "31", "name": "NCI", "etype": "no_connect", "side": "bottom"}
+  ]
+}

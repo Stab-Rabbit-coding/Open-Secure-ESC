@@ -1,0 +1,12 @@
+{
+  "name": "WE_SHC_3671375",
+  "reference": "SH",
+  "footprint": "",
+  "datasheet": "https://www.we-online.com/components/products/datasheet/3671375.pdf",
+  "description": "Wurth Elektronik WE-SHC two-piece board-level shielding cabinet, part 3671375 -- candidate Faraday-tier EMI shield over the gate-drive / high-di/dt switching-node area (TODO.md 7.1). This build (Faraday EMI tier) uses it per docs/decision-matrix.xlsx EMI Hardening sheet.",
+  "citation": "[15], [19]",
+  "verification": "MECHANICAL / NO-SCHEMATIC-SIGNAL PART -- a shielding can has no functional electrical pins; it is placed and sized on the PCB layout (frame soldered to the board's shield-ground pour) and represented here purely as a schematic placeholder with one 'shield-to-ground bond' reference pin so it can be dropped on a sheet and net-tied to GND. Shielding-effectiveness and dimensional values are 'Candidate (unverified)' per REFERENCES.md [19] (live fetch HTTP 403, corroborated only via secondary distributor sources) -- confirm against the primary datasheet, and size the can against the actual gate-drive layout, before fab. See TODO.md 1.10 and 7.1-7.2.",
+  "pins": [
+    {"num": "1", "name": "SHIELD_GND", "etype": "passive", "side": "bottom"}
+  ]
+}
