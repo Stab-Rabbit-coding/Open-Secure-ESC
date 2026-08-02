@@ -10,17 +10,27 @@ Last reviewed: 2026-08-02.
 
 ---
 
-**[1]** STMicroelectronics, *STM32L431xx — Ultra-low-power Arm® Cortex®-M4
-32-bit MCU+FPU, Bluetooth® 5, up to 256 KB Flash, USB, LP-WFI 130 nA*,
-datasheet, STMicroelectronics, Geneva, Switzerland. [Online]. Available:
-https://www.st.com/resource/en/datasheet/stm32l431cb.pdf
-Product page: https://www.st.com/en/microcontrollers-microprocessors/stm32l431kc.html
-Section/page: covers the STM32L431xx family (includes STM32L431KC); exact
-document ID, revision, and page/section for the KCU6 (UFQFPN32, 256 KB
-Flash) ordering code — **not verified**, ST's datasheet PDF and product
-page returned HTTP 403 to automated fetch. A contributor with browser
-access must confirm the doc ID/revision and record the specific
-device-summary table page before this entry is treated as complete.
+**[1]** STMicroelectronics, *STM32G431x6 STM32G431x8 STM32G431xB — Arm®
+Cortex®-M4 32-bit MCU+FPU, 170 MHz/213 DMIPS, up to 128 KB Flash, 32 KB
+SRAM, rich analog, math accelerator*, datasheet — production data,
+DS12589, Rev. 6, STMicroelectronics, Geneva, Switzerland, 2021-10.
+[Online]. Available:
+https://www.st.com/resource/en/datasheet/stm32g431c6.pdf
+Product page: https://www.st.com/en/microcontrollers-microprocessors/stm32g431c6.html
+Local verified copy: `docs/datasheets/stm32g431c6.pdf` (198 pp.).
+Section/page: p. 2/198, "Table 1. Device summary" — STM32G431x6 subfamily
+includes ordering codes STM32G431C6, STM32G431K6, STM32G431R6,
+STM32G431V6, STM32G431M6; "C" = 48/49-pin package, "6" = 32 Kbytes Flash
+(confirmed against the ordering information scheme below). p. 42/198,
+§3.33 "Controller area network (FDCAN1)" — "compliant with ISO 11898-1
+(CAN protocol specification version 2.0 part A, B) and CAN FD protocol
+specification version 1.0" (cf. [5], [6]). p. 50/198, §4.10 "Pin
+definition," Table 12 — full pinout. p. 194/198, §7 "Ordering
+information," Table 101 "Ordering information scheme" — decodes
+STM32G431C6: device family STM32, product type G (general-purpose),
+sub-family 431, pin count C (48/49 pins), code size 6 (32 Kbytes),
+package/temperature range suffixes not fixed by this ordering code alone
+(T=LQFP, U=UFQFPN, I=UFBGA, Y=WLCSP; select per BOM).
 Cited in: README.md (MCU line).
 Date accessed: 2026-08-02.
 
@@ -84,7 +94,9 @@ Section/page: Part A (Standard Format, 11-bit identifier) and Part B
 claim not yet pinned; verify against the mirrored PDF before quoting
 page-level detail. Note: this specification has been superseded for new
 designs by ISO 11898-1 [6]; retained here only insofar as "CAN2.0" is
-referenced by name in README.md.
+referenced by name in README.md. The project MCU's embedded FDCAN
+peripheral, [1], p. 42/198, declares compliance with "CAN protocol
+specification version 2.0 part A, B" by name.
 Cited in: README.md (Protocol: CAN2.0).
 Date accessed: 2026-08-02.
 
@@ -100,7 +112,9 @@ FD-capable transceiver, [10], declares compliance specifically with
 ISO 11898-2:2016 (physical layer), not this Part 1 (data link layer)
 document — the two parts are distinct and both apply to a complete
 CAN FD implementation; ISO 11898-2:2016 itself is not yet a separate
-entry here pending a verified catalog URL.
+entry here pending a verified catalog URL. The project MCU's embedded
+FDCAN peripheral, [1], p. 42/198, declares compliance with "CAN FD
+protocol specification version 1.0."
 Cited in: README.md (Protocol: CAN-FD).
 Date accessed: 2026-08-02.
 

@@ -2,7 +2,7 @@
 
 All builds:
 
-MCU: STM32L431KCU6 [1]
+MCU: STM32G431C6 [1]
 TPM: SLB9672 [2]
 
 Build Options:
