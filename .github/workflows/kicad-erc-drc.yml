@@ -1,0 +1,110 @@
+name: KiCad ERC/DRC
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**/*.kicad_sch"
+      - "**/*.kicad_pcb"
+      - "**/*.kicad_pro"
+      - ".github/workflows/kicad-erc-drc.yml"
+  pull_request:
+    paths:
+      - "**/*.kicad_sch"
+      - "**/*.kicad_pcb"
+      - "**/*.kicad_pro"
+      - ".github/workflows/kicad-erc-drc.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kicad-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  erc-drc:
+    name: ERC / DRC
+    runs-on: ubuntu-latest
+    # Official KiCad CI image, built for headless kicad-cli use.
+    # https://www.kicad.org/download/docker/
+    container:
+      image: kicad/kicad:9.0
+      # The image's default user can't write to the runner's mounted
+      # _temp dir (owned by the host runner UID), which breaks actions'
+      # post-job state handling. Run as root to avoid that permission gap.
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Find KiCad projects
+        id: find
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t projects < <(find . -name '*.kicad_pro' -not -path './.git/*' | sort)
+          if [ "${#projects[@]}" -eq 0 ]; then
+            echo "No .kicad_pro projects found in the repo yet — nothing to check."
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            printf '%s\n' "${projects[@]}" > /tmp/kicad-projects.txt
+            printf 'Found %d KiCad project(s):\n' "${#projects[@]}"
+            printf '  %s\n' "${projects[@]}"
+          fi
+
+      - name: Run ERC + DRC for each project
+        if: steps.find.outputs.found == 'true'
+        shell: bash
+        run: |
+          set -uo pipefail
+          status=0
+          mkdir -p reports
+
+          while IFS= read -r proj; do
+            base="${proj%.kicad_pro}"
+            sch="${base}.kicad_sch"
+            pcb="${base}.kicad_pcb"
+            name=$(basename "$base")
+
+            if [ -f "$sch" ]; then
+              echo "::group::ERC — $sch"
+              if ! kicad-cli sch erc \
+                --exit-code-violations \
+                --severity-error \
+                --format json \
+                --output "reports/${name}-erc.json" \
+                "$sch"; then
+                status=1
+              fi
+              echo "::endgroup::"
+            else
+              echo "::warning::No schematic found for project $proj (expected $sch)"
+            fi
+
+            if [ -f "$pcb" ]; then
+              echo "::group::DRC — $pcb"
+              if ! kicad-cli pcb drc \
+                --exit-code-violations \
+                --severity-error \
+                --format json \
+                --output "reports/${name}-drc.json" \
+                "$pcb"; then
+                status=1
+              fi
+              echo "::endgroup::"
+            else
+              echo "::warning::No PCB found for project $proj (expected $pcb)"
+            fi
+          done < /tmp/kicad-projects.txt
+
+          exit $status
+
+      - name: Upload ERC/DRC reports
+        if: steps.find.outputs.found == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kicad-erc-drc-reports
+          path: reports/
+          retention-days: 30

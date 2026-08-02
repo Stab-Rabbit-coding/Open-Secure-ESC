@@ -8,6 +8,7 @@ trust). Violating these rules is a defect, not a style issue.
 ## 1. Mandatory Rules
 
 ### 1.1 Strict conformity to verified, authoritative standards
+
 - Every technical claim, part selection, protocol implementation, and design
   decision MUST conform to a verified, authoritative source: the component
   manufacturer's own datasheet/errata, the official standards body (IEEE,
@@ -19,6 +20,7 @@ trust). Violating these rules is a defect, not a style issue.
   marked `UNVERIFIED` (see §3) instead of asserted as fact.
 
 ### 1.2 IEEE-formatted citations in REFERENCES.md
+
 - Every cited standard, datasheet, specification, regulation, or external
   claim used anywhere in this repo (code comments, docs, schematics notes,
   commit messages describing a design rationale) MUST have a corresponding
@@ -28,6 +30,7 @@ trust). Violating these rules is a defect, not a style issue.
   in `REFERENCES.md`.
 
 ### 1.3 No fabrication or assumption
+
 - No reference, specification, standard revision, part number, electrical
   parameter, or design decision will ever be fabricated, guessed, inferred
   from training data without verification, or "assumed to probably be
@@ -62,7 +65,7 @@ trust). Violating these rules is a defect, not a style issue.
 Use this exact marker anywhere a claim, spec, or decision cannot yet be
 traced to a primary source:
 
-```
+```text
 UNVERIFIED — needs primary source (see TODO.md)
 ```
 

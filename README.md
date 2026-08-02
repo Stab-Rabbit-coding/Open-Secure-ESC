@@ -35,4 +35,3 @@ Licensed under the CERN Open Hardware Licence Version 2 — Permissive
 
 Contributions (human or AI) are governed by `AGENTS.md`. All citations
 above are indexed in `REFERENCES.md`. Work is tracked in `TODO.md`.
-

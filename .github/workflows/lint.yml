@@ -1,0 +1,123 @@
+name: Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lint-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  markdown:
+    name: Markdown lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install markdownlint-cli2
+        run: npm install -g markdownlint-cli2
+
+      - name: Run markdownlint-cli2
+        run: markdownlint-cli2 "**/*.md"
+
+  yaml:
+    name: YAML lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Run yamllint
+        run: yamllint --config-file .yamllint.yml .
+
+  actions:
+    name: GitHub Actions lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run actionlint
+        run: |
+          bash <(curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          ./actionlint -color
+
+  python:
+    name: Python lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Check for Python sources
+        id: pyfiles
+        run: |
+          if git ls-files -- '*.py' | grep -q .; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            echo "No Python files in the repo yet — nothing to lint."
+          fi
+
+      - name: Install ruff
+        if: steps.pyfiles.outputs.found == 'true'
+        run: pip install ruff
+
+      - name: Ruff check
+        if: steps.pyfiles.outputs.found == 'true'
+        run: ruff check .
+
+      - name: Ruff format check
+        if: steps.pyfiles.outputs.found == 'true'
+        run: ruff format --check .
+
+  whitespace:
+    name: Repo hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: No trailing whitespace
+        run: |
+          # shellcheck disable=SC2016
+          if git grep -In ' $' -- . ':!*.pdf' ':!*.xlsx' ':!*.png' ':!*.jpg'; then
+            echo "::error::Trailing whitespace found (see lines above)."
+            exit 1
+          fi
+
+      - name: Files end with a trailing newline
+        run: |
+          status=0
+          while IFS= read -r -d '' f; do
+            [ -s "$f" ] || continue
+            if [ -n "$(tail -c1 "$f")" ]; then
+              echo "::error file=$f::Missing trailing newline"
+              status=1
+            fi
+          done < <(git ls-files -z -- '*.md' '*.py' '*.yml' '*.yaml' '*.sh')
+          exit $status
+
+      - name: No merge-conflict markers
+        run: |
+          if git grep -InE '^(<<<<<<<|=======|>>>>>>>)( |$)' -- . ':!*.pdf'; then
+            echo "::error::Unresolved merge-conflict markers found."
+            exit 1
+          fi

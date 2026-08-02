@@ -1,0 +1,13 @@
+{
+  // markdownlint-cli2 config — see https://github.com/DavidAnson/markdownlint
+  "config": {
+    "default": true,
+    // REFERENCES.md follows IEEE citation style with long URLs/titles on a
+    // single line by design; wrapping them would harm readability.
+    "MD013": false,
+    // Citation lists intentionally use bare URLs rather than link syntax.
+    "MD034": false
+  },
+  "globs": ["**/*.md"],
+  "ignores": ["**/node_modules/**"]
+}
