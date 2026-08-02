@@ -15,12 +15,13 @@ Usage:
     python3 gen_kicad_symbol.py specs/FOO.json [specs/BAR.json ...] -o ../
     python3 gen_kicad_symbol.py specs/*.json -o ../   # regenerate everything
 """
+
 import argparse
 import json
 import sys
 from pathlib import Path
 
-from kiutils.items.common import Effects, Font, Property, Position
+from kiutils.items.common import Effects, Font, Position, Property
 from kiutils.symbol import Symbol, SymbolLib, SyRect
 
 GRID = 2.54
@@ -79,11 +80,23 @@ def build_symbol(spec: dict) -> SymbolLib:
 
     lib = SymbolLib(version="20211014", generator="open_secure_esc_symgen")
 
-    top = Symbol(entryName=name, inBom=True, onBoard=True,
-                 pinNames=True, pinNamesOffset=1.016, hidePinNumbers=False)
+    top = Symbol(
+        entryName=name,
+        inBom=True,
+        onBoard=True,
+        pinNames=True,
+        pinNamesOffset=1.016,
+        hidePinNumbers=False,
+    )
 
     props = [
-        ("Reference", spec.get("reference", "U"), 0, Position(0, half_h + 2 * GRID, 0), False),
+        (
+            "Reference",
+            spec.get("reference", "U"),
+            0,
+            Position(0, half_h + 2 * GRID, 0),
+            False,
+        ),
         ("Value", name, 1, Position(0, half_h + GRID, 0), False),
         ("Footprint", spec.get("footprint", ""), 2, Position(0, 0, 0), True),
         ("Datasheet", spec.get("datasheet", ""), 3, Position(0, 0, 0), True),
@@ -92,14 +105,18 @@ def build_symbol(spec: dict) -> SymbolLib:
         ("Verification", spec.get("verification", ""), 6, Position(0, 0, 0), True),
     ]
     for key, value, pid, pos, hide in props:
-        prop = Property(key=key, value=value, id=pid, position=pos,
-                         effects=_font_effects(hide=hide))
+        prop = Property(
+            key=key, value=value, id=pid, position=pos, effects=_font_effects(hide=hide)
+        )
         top.properties.append(prop)
 
     body = Symbol(entryName=name, unitId=0, styleId=1)
-    body.graphicItems.append(SyRect(
-        start=Position(-half_w, half_h), end=Position(half_w, -half_h),
-    ))
+    body.graphicItems.append(
+        SyRect(
+            start=Position(-half_w, half_h),
+            end=Position(half_w, -half_h),
+        )
+    )
 
     unit = Symbol(entryName=name, unitId=1, styleId=1)
     for p, x, y, angle in coords:
@@ -113,6 +130,7 @@ def build_symbol(spec: dict) -> SymbolLib:
 
 def _make_pin(p, x, y, angle):
     from kiutils.symbol import SymbolPin
+
     return SymbolPin(
         electricalType=p["etype"],
         graphicalStyle="line",
@@ -128,7 +146,9 @@ def _make_pin(p, x, y, angle):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("specs", nargs="+", help="JSON pin-spec file(s)")
-    ap.add_argument("-o", "--outdir", default=".", help="Output directory for .kicad_sym files")
+    ap.add_argument(
+        "-o", "--outdir", default=".", help="Output directory for .kicad_sym files"
+    )
     args = ap.parse_args(argv)
 
     outdir = Path(args.outdir)

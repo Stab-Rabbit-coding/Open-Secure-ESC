@@ -336,6 +336,18 @@ at 2.7 V/cell, or the commonly-seen 3.0 V/cell convention) shifts the
 actual cell selected at BOM finalization (TODO.md §10.2) and using the
 highest (most conservative) published cutoff among candidates for
 FET/regulator voltage-margin derating in the interim.
+Alternative real cells considered, not further verified (2026-08-02
+search pass, secondary sources only — high-drain vape/DIY-battery
+community bench tests, not manufacturer test data): E-One Moli Energy's
+own INR-21700-P45B (same manufacturer/family; secondary sources report
+~7% higher capacity and ~22% lower DCR than P42A at every discharge
+rate tested — the strongest same-supplier swap-in if capacity/DCR
+matter more than the existing BOM citation); Samsung SDI
+INR21700-40T (Republic of Korea; same secondary sources report P42A
+outperforming it at equal discharge current). No US/UK/EU-headquartered
+cell manufacturer was found competing in this high-drain 21700
+cylindrical-cell class — production is concentrated in Taiwan/South
+Korea/Japan/China industry-wide, not a gap specific to this BOM choice.
 Candidate cell for voltage-tier derating (TODO.md §5.2); not yet
 selected in a bill of materials.
 Cited in: docs/datasheets/ (not yet present; not yet cited in repo-root
@@ -439,45 +451,62 @@ Date accessed: 2026-08-02.
 ---
 
 **[19]** Würth Elektronik eiSos GmbH & Co. KG, *WE-SHC Two-piece
-Seamless Shielding Cabinet*, part no. 3671375, datasheet, Würth
-Elektronik eiSos GmbH & Co. KG, Waldenburg, Germany. [Online].
-Available: https://www.we-online.com/components/products/datasheet/3671375.pdf
+Seamless Shielding Cabinet*, order code 3671375, datasheet rev.
+ViM 002.000 (2025-05-12), Würth Elektronik eiSos GmbH & Co. KG,
+Waldenburg, Germany. [Online]. Available:
+https://www.we-online.com/components/products/datasheet/3671375.pdf
 (live fetch blocked: HTTP 403, 2026-08-02).
-No local copy yet — `UNVERIFIED — needs primary source (see TODO.md)`.
-Section/page: not verified — live fetch blocked this session; content
-corroborated across the WE-SHC product-family page and distributor
-(Mouser/DigiKey) listings, not read from the primary PDF. Indexed
-content: tin-plated two-piece (grid frame + removable cover) board-level
-shield; shielding effectiveness up to 60 dB over 500 MHz–3 GHz; part
-3671375 inner 29.5 mm ±0.2 mm / outer 30.1 mm ±0.2 mm, height ≈3.8 mm
-(ref). Candidate for board-level shielding over the gate-drive/high-di/dt
+Local copy: `docs/datasheets/3671375.pdf` — `VERIFIED` (added 2026-08-02).
+Section/page: p.1 dimensional drawing and general information, p.1
+"Assembly with Frame." Confirmed directly from the local PDF: inner
+29.5 mm × 37.7 mm / outer 30.1 mm × 38.3 mm, height 3.8 mm (ref); core
+steel, tin plating; operating temperature −40 °C to +125 °C; RoHS/REACh
+compliant. **Correction from the previously secondary-sourced entry:**
+order code 3671375 is the **cover only** — the datasheet's own text
+reads "Assembly with Frame: Frame (3670375), Cover (3671375)." A
+complete shield requires both order codes; 3670375 (the frame) is not
+yet in this repo's BOM or `docs/datasheets/`. This local datasheet is a
+5-page mechanical/packaging spec only and does **not** contain a
+shielding-effectiveness figure — the "up to 60 dB, 500 MHz–3 GHz" claim
+carried over from the prior secondary-sourced pass remains unverified
+against a primary source; strike it from any "verified" claim until the
+frame's datasheet or a shielding-effectiveness test report is obtained.
+Candidate for board-level shielding over the gate-drive/high-di/dt
 switching node area — the Faraday EMI-hardening tier (TODO.md §7.1).
 Alternative real manufacturers in this space, not further verified:
 Laird Technologies, Leader Tech.
-Candidate part; not yet selected in a bill of materials.
-Cited in: docs/datasheets/ (not yet present; not yet cited in repo-root
-README.md); symbols/WE_SHC_3671375.kicad_sym (mechanical placeholder
-symbol); builds/6s/50A/CAN_485_faraday/README.md (Faraday-tier BOM).
+Candidate part; not yet selected in a bill of materials — and even if
+selected, the BOM is missing its required frame (3670375).
+Cited in: docs/datasheets/3671375.pdf; symbols/WE_SHC_3671375.kicad_sym
+(mechanical placeholder symbol, cover only); symbols/specs/WE_SHC_3671375.json
+(verification field updated with the frame/cover correction);
+builds/6s/50A/CAN_485_faraday/README.md (Faraday-tier BOM — needs
+updating to add the frame line item).
 Date accessed: 2026-08-02.
 
 ---
 
 **[20]** Infineon Technologies AG, *IRFB4110PbF — HEXFET Power MOSFET*,
-datasheet, Rev. 01-01 (filename-inferred; cover-page date `UNVERIFIED`),
-Infineon Technologies AG, Neubiberg, Germany. [Online]. Available:
+datasheet (revision/date not printed as a discrete field in the local
+PDF's extracted text; page footer shows a 2014-era International
+Rectifier copyright artifact, pre-dating Infineon's acquisition of IR —
+exact current revision still `UNVERIFIED`), Infineon Technologies AG,
+Neubiberg, Germany. [Online]. Available:
 https://www.infineon.com/assets/row/public/documents/24/49/infineon-irfb4110-datasheet-en.pdf
 (live fetch blocked: HTTP 403, 2026-08-02).
-No local copy yet — `UNVERIFIED — needs primary source (see TODO.md)`.
-Section/page: not verified — this session's WebFetch tool returned HTTP
-403 for every domain attempted, including ti.com, infineon.com, vishay.com,
-analog.com, allegromicro.com, distributor mirrors, and a neutral
-non-vendor control URL — no PDF was opened directly. Specs below are
-corroborated across ≥2 independent distributor listings (DigiKey, RS,
-LCSC), not read from the primary document: VDSS = 100 V; RDS(on) = 3.7 mΩ
-typ./4.5 mΩ max (exact test condition, e.g. VGS, `UNVERIFIED`); ID = 120 A
-package-limited continuous rating (exact Tc binding `UNVERIFIED`; a
-higher 180 A "silicon-limited" figure also appears in listings — the
-more conservative 120 A figure is used here); TO-220AB package.
+Local copy: `docs/datasheets/infineon-irfb4110-datasheet-en.pdf` —
+`VERIFIED` (added 2026-08-02).
+Section/page: p.1 "Absolute Maximum Ratings" / electrical summary table,
+p.2 "Static @ TJ = 25°C" table. Confirmed directly from the local PDF,
+matching every figure previously corroborated only via secondary
+sources — no discrepancy found: VDSS = 100 V; RDS(on) = 3.7 mΩ
+typ./4.5 mΩ max; ID (silicon-limited, TC = 25°C) = 180 A; ID
+(package/wire-bond-limited, TC = 25°C) = 120 A (the datasheet's own
+footnote: "Bond wire current limit is 120A... current limitations
+arising from heating of the device leads may occur with some lead
+mounting arrangements" — confirms the more conservative 120 A figure,
+already used in this build's design margin, is the correct one to
+design against); VGS(th) = 2.0–4.0 V; package TO-220AB.
 Voltage-headroom design assumption (judgment call per `AGENTS.md` §4,
 not itself a datasheet claim): sized against a 4.2 V/cell LiPo/Li-ion
 max-charge convention (cf. [14]) → 12S max ≈ 50.4 V, giving ~2× headroom
@@ -489,10 +518,18 @@ maximize BOM commonality across tiers per the research brief, at the
 cost of being oversized/cost-inefficient for the smallest tiers (10A–30A),
 where a smaller SO-8 SMD FET would be leaner if part-count commonality
 were not prioritized.
+Alternative real manufacturers in this space, not further verified
+(2026-08-02 search pass, secondary/distributor listings only — no
+primary datasheet opened for any of them either): onsemi (USA),
+STMicroelectronics (Switzerland/EU), Toshiba (Japan) each publish
+comparable 100 V TO-220 N-channel power MOSFETs aimed at motor-drive
+applications; none was found with a head-to-head RDS(on)/ID spec
+comparison from a primary source this session, so no like-for-like
+numeric comparison is possible yet.
 Candidate part for the power stage (TODO.md §5.1); not yet selected in
 a bill of materials.
-Cited in: docs/datasheets/ (not yet present; not yet cited in repo-root
-README.md); symbols/IRFB4110PBF.kicad_sym (standard TO-220 G/D/S pinout);
+Cited in: docs/datasheets/infineon-irfb4110-datasheet-en.pdf;
+symbols/IRFB4110PBF.kicad_sym (standard TO-220 G/D/S pinout);
 builds/6s/50A/CAN_485_faraday/README.md (50A-tier BOM, ×6: 1 per switch
 position × 2 positions × 3 phases).
 Date accessed: 2026-08-02.
@@ -521,6 +558,17 @@ UVLO, VDS overcurrent monitoring, and gate-driver fault detection.
 Proposed as the same part for all 7 amperage tiers — the SPI-programmable
 IDRIVE setting and CSA gain register absorb the per-tier differences
 rather than requiring a different gate-driver part.
+Alternative real manufacturer considered, not further verified
+(2026-08-02 search pass, secondary/distributor listings only): Infineon
+MOTIX™ TLE9180D-series (Germany/EU) — a 3-phase gate driver family
+(TLE9180D-21QK/-31QK/-32QK) with 2–3 integrated current-sense
+amplifiers per variant and ISO 26262 functional-safety qualification.
+Candidate for supply-chain diversification away from a single US
+supplier (TI) and for the functional-safety pedigree this project's
+trust/security scope may eventually want, but its VM operating range
+and SPI/register interface are unconfirmed against this build's 6S
+(≤25.2 V) through 12S (≤50.4 V) span and would require a separate
+firmware driver (TODO.md §8.4) — not a drop-in part swap.
 Candidate part for the power stage (TODO.md §5.1); not yet selected in
 a bill of materials.
 Cited in: docs/datasheets/ (not yet present; not yet cited in repo-root
@@ -534,31 +582,48 @@ Date accessed: 2026-08-02.
 
 **[22]** Texas Instruments Incorporated, *INA240 −4-V to 80-V,
 Bidirectional, Ultra-Precise Current Sense Amplifier With Enhanced PWM
-Rejection*, datasheet, literature no. SBOS633 (`UNVERIFIED` — not
-independently confirmed against the PDF cover page), Texas Instruments
-Incorporated, Dallas, TX, USA. [Online]. Available:
-https://www.ti.com/lit/gpn/INA240 (live fetch blocked: HTTP 403,
-2026-08-02).
-No local copy yet — `UNVERIFIED — needs primary source (see TODO.md)`.
-Section/page: not verified — live fetch blocked this session; specs
-corroborated via distributor/search-indexed excerpts, not read from the
-primary PDF. Indexed content: common-mode voltage range −4 V to +80 V
-independent of supply (for a low-side per-phase shunt referenced near
-ground, this covers all voltage tiers 2S–12S per [14]); four fixed
-gains (20/50/100/200 V/V); enhanced PWM rejection, explicitly marketed
-for motor-drive/PWM common-mode transients; supply 2.7–5.5 V, ~2.4 mA
-max.
+Rejection*, datasheet, literature no. SBOS662C, July 2016 (revised
+December 2021), Texas Instruments Incorporated, Dallas, TX, USA.
+[Online]. Available: https://www.ti.com/lit/gpn/INA240 (live fetch
+blocked: HTTP 403, 2026-08-02).
+Local copy: `docs/datasheets/ina240.pdf` — `VERIFIED` (added 2026-08-02).
+**Correction from the previously secondary-sourced entry:** the literature
+number is SBOS662C, not the previously guessed/unverified SBOS633.
+Section/page: p.3 Sec. 5 "Device Comparison" Table 5-1, Sec. 6 "Pin
+Configuration and Functions" Table 6-1 and Figures 6-1/6-2. Confirmed
+directly from the local PDF, matching every figure previously
+corroborated only via secondary sources — no discrepancy found:
+common-mode voltage range −4 V to +80 V independent of supply (for a
+low-side per-phase shunt referenced near ground, this covers all
+voltage tiers 2S–12S per [14]); four fixed gains, one per part suffix
+(INA240A1 = 20 V/V, A2 = 50 V/V, A3 = 100 V/V, A4 = 200 V/V); enhanced
+PWM rejection, explicitly marketed for motor-drive/PWM common-mode
+transients; supply 2.7–5.5 V, 2.4 mA max; 132 dB DC CMRR / 93 dB AC
+CMRR at 50 kHz; offered in 8-pin TSSOP (PW) and 8-pin SOIC (D)
+packages, which use *different* pin numbering for the same 8 signals
+(NC, IN+, IN−, GND, VS, REF1, REF2, OUT) — see
+`symbols/specs/INA240.json` for the full per-package pin table.
 Candidate part answering the current-sensing selection (TODO.md §5.3);
 proposed as the same part for all 7 amperage tiers, paired with the
 Vishay shunt series [23] whose resistance value (and, at 80A/120A,
 parallel count) varies by tier.
+Alternative real manufacturer considered, not further verified
+(2026-08-02 search pass, secondary/distributor listings only): Analog
+Devices AD8410/AD8410A (USA) — a bidirectional current-sense amplifier
+with an internal deglitch circuit marketed for PWM common-mode
+rejection, reported common-mode range −2 V to +70 V (narrower than
+INA240's −4 V to +80 V) and a single fixed 20 V/V gain (vs. INA240's
+four selectable gains 20/50/100/200 V/V — losing that gain flexibility
+would require an external gain stage or accepting one fixed resolution
+across all amperage tiers). No primary datasheet opened for either part
+this session; the comparison above is search-snippet-level only.
 Candidate part for the power stage; not yet selected in a bill of
 materials.
-Cited in: docs/datasheets/ (not yet present; not yet cited in repo-root
-README.md); symbols/INA240.kicad_sym (UNVERIFIED placeholder pin
-numbering — see symbols/specs/INA240.json "verification" field);
-builds/6s/50A/CAN_485_faraday/README.md (50A-tier BOM; open question on
-overlap with DRV8353S [21]'s integrated shunt-sense amplifiers).
+Cited in: docs/datasheets/ina240.pdf; symbols/INA240.kicad_sym (VERIFIED
+D/SOIC-8 pin numbering — see symbols/specs/INA240.json "verification"
+field); builds/6s/50A/CAN_485_faraday/README.md (50A-tier BOM; open
+question on overlap with DRV8353S [21]'s integrated shunt-sense
+amplifiers).
 Date accessed: 2026-08-02.
 
 ---
@@ -636,17 +701,26 @@ to a standard until one is located and verified (see `AGENTS.md` §1.3):
   follow-up pass must open the primary documents directly before these
   move from "candidate" to "settled."
 
-**Methodology note on [12]–[23] (2026-08-02):** every new entry added in
-this pass was researched with the live-fetch tool (WebFetch) returning
-HTTP 403 for every domain attempted this session, including a neutral
-non-vendor control URL used purely as a sanity check — a broader failure
-than the vendor-specific blocks noted for [2] and [6]. All specs in
-[12]–[23] are therefore corroborated via ≥2 independent secondary
-sources (distributor listings, search-indexed excerpts of the
-manufacturer's own datasheet text) rather than read directly from a
-primary PDF, and none has a local verified copy in `docs/datasheets/`
-yet. Every such entry is marked accordingly and must not be treated as
-a settled citation — re-attempt direct fetch or manual PDF download in
-a future session before design docs cite these as verified.
+**Methodology note on [12]–[23] (2026-08-02, updated same day):** every
+new entry added in the first pass was researched with the live-fetch
+tool (WebFetch) returning HTTP 403 for every domain attempted that
+session, including a neutral non-vendor control URL used purely as a
+sanity check — a broader failure than the vendor-specific blocks noted
+for [2] and [6]; independently reconfirmed in a later same-day session
+(curl and WebFetch both 403 on every external domain tried, including
+Wikipedia and anthropic.com — a session-wide egress policy denial, not
+a per-vendor block). All specs in [12]–[23] were therefore originally
+corroborated via ≥2 independent secondary sources (distributor listings,
+search-indexed excerpts of the manufacturer's own datasheet text) rather
+than read directly from a primary PDF. **Update:** three primary PDFs —
+[19] (WE-SHC 3671375 cover), [20] (IRFB4110PBF), [22] (INA240) — were
+added to `docs/datasheets/` later the same day via a direct manual
+push to `main` (not a live fetch — the network block was never lifted)
+and have since been read directly and marked `VERIFIED` in their
+entries above; no discrepancy was found against the prior
+secondary-sourced figures for any of the three. [12]–[18], [21], and
+[23] still have no local copy and remain secondary-sourced only —
+re-attempt direct fetch or manual PDF download before design docs cite
+those as verified.
 
 Track resolution of these items in `TODO.md`.

@@ -36,7 +36,7 @@ guessing twice. Tracked in `TODO.md` 1.10, 3-7.
 ## Libraries available (`sym-lib-table`)
 
 | Library nickname | Symbol | Verified? |
-|---|---|---|
+| --- | --- | --- |
 | `MSPM0G3507` | MCU | pin subset VERIFIED |
 | `SLB9672` | TPM | VERIFIED, full 32-pin |
 | `ADM2582E_ADM2587E` | RS-485 transceiver | VERIFIED, full 20-pin |

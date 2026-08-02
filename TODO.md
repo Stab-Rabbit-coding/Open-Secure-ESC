@@ -111,6 +111,7 @@ detail belongs in design docs, not here.
 - [ ] 10.4 v1.0 documentation freeze
 
 ## 11. Shared KiCad Symbol Library (symbols/)
+
 - [x] 11.1 Generator + JSON-spec workflow (`symbols/tools/gen_kicad_symbol.py`,
       `symbols/specs/*.json`) so future components/builds source a pin map
       once and regenerate rather than hand-edit S-expressions
@@ -119,14 +120,20 @@ detail belongs in design docs, not here.
 - [x] 11.3 SLB9672 [2] symbol — full 32-pin, VERIFIED, footprint-complete
 - [x] 11.4 ADM2582E/ADM2587E [9] and ADM3055E/ADM3057E [10] symbols — full
       20-pin, VERIFIED against local PDFs
-- [~] 11.5 DRV8353S [21] and INA240 [22] symbols — UNVERIFIED placeholder
-      pin numbering (no primary datasheet reachable this session); replace
-      once TODO.md 1.10 resolves
+- [~] 11.5 DRV8353S [21] symbol — UNVERIFIED placeholder pin numbering (no
+      primary datasheet reachable this session); replace once TODO.md 1.10
+      resolves. INA240 [22] resolved 2026-08-02: local datasheet added
+      (`docs/datasheets/ina240.pdf`), symbol regenerated with VERIFIED
+      D/SOIC-8 8-pin map (see `symbols/specs/INA240.json`).
 - [x] 11.6 IRFB4110PBF [20], WSLP2512 [23], INR21700-P42A [14],
-      WE-SHC 3671375 [15][19] symbols — generic/mechanical pinouts, no
-      part-specific pin diagram needed
+      WE-SHC 3671375 [15], [19] symbols — generic/mechanical pinouts, no
+      part-specific pin diagram needed. IRFB4110PBF and WE-SHC 3671375
+      electrical/dimensional ratings additionally VERIFIED against local
+      datasheets 2026-08-02 (WSLP2512 and INR21700-P42A still lack a
+      local copy — see §1.10).
 
-## 12. Per-Build Instances (builds/<voltage>/<amperage>/<variant>/)
+## 12. Per-Build Instances (builds/`<voltage>`/`<amperage>`/`<variant>`/)
+
 - [~] 12.1 `builds/6s/50A/CAN_485_faraday/` — 6S, 50A, CAN-FD + RS-485
       (concurrent), Faraday EMI tier (sized against a 500 W/m² broadband RF
       requirement, derived ~434 V/m). BOM drafted from
