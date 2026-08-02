@@ -102,6 +102,12 @@ class Builder:
             sym.entryName = entry
             for unit in sym.units:
                 unit.entryName = entry
+            if nick == "power":
+                # Mark as a real KiCad power symbol (adds the `(power)` token),
+                # matching how KiCad's own power:PWR_FLAG/power:GND etc. are
+                # authored -- ERC's power-input-pin-not-driven check looks for
+                # this, not just a power_out-typed pin on an ordinary symbol.
+                sym.isPower = True
             self.libcache[key] = sym
         return self.libcache[key]
 
@@ -316,6 +322,7 @@ def power_flag(b, p, dy=-8):
     )
     pin = find(b, ref, "pwr")
     b.wire(xy(pin), p)
+    b.junction(p)
 
 
 def place_all(b):
