@@ -63,8 +63,8 @@ categories, called out explicitly rather than silently blended in:
 2. **Genuinely open design questions, left open rather than resolved here**:
    - DRV8353S's integrated per-phase current-sense amplifier outputs
      (`SOA`/`SOB`/`SOC`) are left unconnected (schematic `no_connect` flags
-     + an on-sheet text note) because this build routes `ADC_IU/IV/IW` from
-     the external INA240 devices instead -- the DRV8353S-vs-INA240 sourcing
+     plus an on-sheet text note) because this build routes `ADC_IU/IV/IW`
+     from the external INA240 devices instead -- the DRV8353S-vs-INA240 sourcing
      question from `../README.md`'s BOM note is **not** silently decided by
      this schematic; both parts are placed, only one path is wired to the
      MCU.

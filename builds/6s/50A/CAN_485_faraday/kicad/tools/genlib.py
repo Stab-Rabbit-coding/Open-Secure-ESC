@@ -4,6 +4,7 @@ Reuses the exact _layout() algorithm from symbols/tools/gen_kicad_symbol.py so
 every symbol on this sheet (sourced BOM parts and the generic Device/Connector
 stand-ins) shares one deterministic geometry rule.
 """
+
 import sys
 from pathlib import Path
 
@@ -11,7 +12,11 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[6]
 sys.path.insert(0, str(REPO / "symbols" / "tools"))
 
-from gen_kicad_symbol import _layout, build_symbol, GRID, PIN_LEN, FONT_SIZE  # noqa: E402
+from gen_kicad_symbol import GRID, _layout, build_symbol  # noqa: E402
+
+# Re-exported for gen_schematic.py / gen_pcb.py -- this module is a shared
+# import hub, not just a spec table.
+__all__ = ["REPO", "GENERIC_SPECS", "_layout", "build_symbol", "GRID"]
 
 # ---------------------------------------------------------------------------
 # Generic, unsourced support parts (resistor / capacitor / generic headers).
@@ -26,8 +31,12 @@ from gen_kicad_symbol import _layout, build_symbol, GRID, PIN_LEN, FONT_SIZE  # 
 
 GENERIC_SPECS = {
     "Device:R": {
-        "name": "R", "reference": "R", "footprint": "Resistor_SMD:R_0805_2012Metric",
-        "datasheet": "", "citation": "", "description": "Generic resistor (KiCad standard Device library stand-in).",
+        "name": "R",
+        "reference": "R",
+        "footprint": "Resistor_SMD:R_0805_2012Metric",
+        "datasheet": "",
+        "citation": "",
+        "description": "Generic resistor (KiCad standard Device library stand-in).",
         "verification": "Generic passive, not part-specific -- no citation required.",
         "pins": [
             {"num": "1", "name": "~", "etype": "passive", "side": "top"},
@@ -35,8 +44,12 @@ GENERIC_SPECS = {
         ],
     },
     "Device:C": {
-        "name": "C", "reference": "C", "footprint": "Capacitor_SMD:C_0805_2012Metric",
-        "datasheet": "", "citation": "", "description": "Generic capacitor (KiCad standard Device library stand-in).",
+        "name": "C",
+        "reference": "C",
+        "footprint": "Capacitor_SMD:C_0805_2012Metric",
+        "datasheet": "",
+        "citation": "",
+        "description": "Generic capacitor (KiCad standard Device library stand-in).",
         "verification": "Generic passive, not part-specific -- no citation required.",
         "pins": [
             {"num": "1", "name": "~", "etype": "passive", "side": "top"},
@@ -44,8 +57,12 @@ GENERIC_SPECS = {
         ],
     },
     "Device:C_Polarized": {
-        "name": "C_Polarized", "reference": "C", "footprint": "Capacitor_THT:CP_Radial_D10.0mm_P5.00mm",
-        "datasheet": "", "citation": "", "description": "Generic polarized (electrolytic) capacitor (KiCad standard Device library stand-in).",
+        "name": "C_Polarized",
+        "reference": "C",
+        "footprint": "Capacitor_THT:CP_Radial_D10.0mm_P5.00mm",
+        "datasheet": "",
+        "citation": "",
+        "description": "Generic polarized (electrolytic) capacitor (KiCad standard Device library stand-in).",
         "verification": "Generic passive, not part-specific -- no citation required.",
         "pins": [
             {"num": "1", "name": "+", "etype": "passive", "side": "top"},
@@ -53,8 +70,12 @@ GENERIC_SPECS = {
         ],
     },
     "Connector_Generic:Conn_01x02": {
-        "name": "Conn_01x02", "reference": "J", "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical",
-        "datasheet": "", "citation": "", "description": "Generic 2-pin connector (KiCad standard Connector_Generic library stand-in).",
+        "name": "Conn_01x02",
+        "reference": "J",
+        "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical",
+        "datasheet": "",
+        "citation": "",
+        "description": "Generic 2-pin connector (KiCad standard Connector_Generic library stand-in).",
         "verification": "Generic connector, not part-specific -- no citation required.",
         "pins": [
             {"num": "1", "name": "Pin_1", "etype": "passive", "side": "left"},
@@ -62,8 +83,12 @@ GENERIC_SPECS = {
         ],
     },
     "Connector_Generic:Conn_01x03": {
-        "name": "Conn_01x03", "reference": "J", "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical",
-        "datasheet": "", "citation": "", "description": "Generic 3-pin connector (KiCad standard Connector_Generic library stand-in).",
+        "name": "Conn_01x03",
+        "reference": "J",
+        "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical",
+        "datasheet": "",
+        "citation": "",
+        "description": "Generic 3-pin connector (KiCad standard Connector_Generic library stand-in).",
         "verification": "Generic connector, not part-specific -- no citation required.",
         "pins": [
             {"num": "1", "name": "Pin_1", "etype": "passive", "side": "left"},
@@ -72,8 +97,12 @@ GENERIC_SPECS = {
         ],
     },
     "Connector_Generic:Conn_01x04": {
-        "name": "Conn_01x04", "reference": "J", "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical",
-        "datasheet": "", "citation": "", "description": "Generic 4-pin connector (KiCad standard Connector_Generic library stand-in).",
+        "name": "Conn_01x04",
+        "reference": "J",
+        "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical",
+        "datasheet": "",
+        "citation": "",
+        "description": "Generic 4-pin connector (KiCad standard Connector_Generic library stand-in).",
         "verification": "Generic connector, not part-specific -- no citation required.",
         "pins": [
             {"num": "1", "name": "Pin_1", "etype": "passive", "side": "left"},
