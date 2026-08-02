@@ -61,6 +61,7 @@ class Builder:
         self.bbox = [1e9, 1e9, -1e9, -1e9]
         self.geo_cache = {}
         self.instances = {}  # ref -> pins_abs dict
+        self.wire_counter = 0
 
     # ---- bookkeeping -----------------------------------------------
     def touch(self, x, y):
@@ -214,18 +215,50 @@ class Builder:
 
         KiCad's schematic `(wire (pts ...))` token is a single straight
         segment -- it does not support a multi-point polyline the way a PCB
-        graphic line does. An L-shaped route is therefore emitted as two
-        separate wire objects sharing the bend coordinate, not one 3-point
-        wire (which real KiCad's parser rejects outright)."""
+        graphic line does. A bent route is therefore emitted as several
+        separate wire objects sharing bend coordinates, not one N-point
+        wire (which real KiCad's parser rejects outright).
+
+        A naive 2-segment L-route reuses the source's native Y (or X) for
+        its first leg and the destination's native X (or Y) for its
+        second. Both of those are shared by every sibling pin in the same
+        stack (e.g. all of DRV8353S's top-row pins share one Y; every
+        pin on a component's right edge shares one X). Two unrelated
+        wires whose long run then falls on that shared coordinate produce
+        collinear, overlapping segments -- which KiCad treats as
+        electrically connected, i.e. a short. ERC caught exactly this
+        (pin_to_pin "Output and Output are connected" between DRV8353S's
+        GHA/GLA/GHB gate-driver outputs, and more) before this fix.
+
+        The fix: every bent route gets a short, per-call-unique lead-in
+        off the source's native row/column and a short per-call-unique
+        lead-out into the destination's, so only those short legs ever
+        touch a "busy" shared coordinate (kept under the 2.54mm pin pitch
+        so they can't overlap an adjacent sibling pin's own lead-in/out);
+        the long traversal in between runs down a row/column unique to
+        this one wire."""
         x1, y1 = p1[0], p1[1]
         x2, y2 = p2[0], p2[1]
-        legs = [(x1, y1)]
-        if x1 != x2 and y1 != y2:
+        if x1 == x2 or y1 == y2:
+            legs = [(x1, y1), (x2, y2)]
+        else:
+            self.wire_counter += 1
+            c = self.wire_counter
+            # Both offsets stay under the 2.54mm pin pitch (so a lead-in/out
+            # leg can't overlap an adjacent sibling pin's own lead-in/out),
+            # but use a large, mutually-offset modulus for fine-grained,
+            # decorrelated spacing -- reduces the odds of two wires with
+            # nearby native coordinates landing on the same middle row/column.
+            lead_in = round((c % 229) * 0.01, 3)  # < 2.29mm
+            lead_out = round(((c + 113) % 229) * 0.01, 3)  # < 2.29mm, phase-shifted
             if bend == "v":
-                legs.append((x1, y2))
+                xm = x1 + lead_in
+                ym = y2 + lead_out
+                legs = [(x1, y1), (xm, y1), (xm, ym), (x2, ym), (x2, y2)]
             else:
-                legs.append((x2, y1))
-        legs.append((x2, y2))
+                ym = y1 + lead_in
+                xm = x2 + lead_out
+                legs = [(x1, y1), (x1, ym), (xm, ym), (xm, y2), (x2, y2)]
         segments = []
         for a, bpt in pairwise(legs):
             c = Connection(
@@ -312,13 +345,24 @@ def rail_all(b, ref, name, direction, label):
         b.label_stub((p[0], p[1]), direction, label)
 
 
-def power_flag(b, p, dy=-8):
-    """Place a PWR_FLAG at p so ERC's power-input-pin-not-driven check
-    doesn't fire on a net that's only carried by same-name labels (or, for
-    an unlabeled net, only by a direct wire) with no regulator/power symbol
-    on this sheet -- see genlib.py's power:PWR_FLAG description."""
+# Dedicated, otherwise-empty lane near the bottom of the sheet (below all
+# placed components -- see build_design()'s bboxes) so PWR_FLAG symbols and
+# their routing don't crowd the dense DRV8353S/phase-leg area and collide
+# with unrelated wires there.
+FLAG_ROW_Y = 780
+FLAG_ROW_X0 = 150
+FLAG_ROW_DX = 40
+
+
+def power_flag(b, p, index):
+    """Place a PWR_FLAG in the dedicated flag row and wire it back to p, so
+    ERC's power-input-pin-not-driven check doesn't fire on a net that's only
+    carried by same-name labels (or, for an unlabeled net, only by a direct
+    wire) with no regulator/power symbol on this sheet -- see genlib.py's
+    power:PWR_FLAG description."""
+    fx = FLAG_ROW_X0 + index * FLAG_ROW_DX
     ref, _ = b.place(
-        "FLG", p[0], p[1] + dy, generic_lib_id="power:PWR_FLAG", value="PWR_FLAG"
+        "FLG", fx, FLAG_ROW_Y, generic_lib_id="power:PWR_FLAG", value="PWR_FLAG"
     )
     pin = find(b, ref, "pwr")
     b.wire(xy(pin), p)
@@ -569,8 +613,17 @@ def wire_all(b, r):
     rail(b, u3, "VISOIN", "right", "CAN_VISOIN_OPEN")
 
     # ---- RS-485 transceiver (U4) --------------------------------------------
-    b.wire(xy(find(b, u4, "Y")), xy(find(b, u4, "A")))
-    b.wire(xy(find(b, u4, "Z")), xy(find(b, u4, "B")))
+    # Y-A and Z-B are both on U4's right edge (shared X); Y/A and Z/B are
+    # interleaved in that pin stack (Y, Z, B, A in stacking order) so a
+    # straight tie between each pair overlaps the *other* pair's span on
+    # that same column. Jog each pair out to its own clear column instead.
+    for name_a, name_b, jog in (("Y", "A", 15), ("Z", "B", 25)):
+        pa = xy(find(b, u4, name_a))
+        pb = xy(find(b, u4, name_b))
+        out_x = pa[0] + jog
+        b.wire(pa, (out_x, pa[1]))
+        b.wire((out_x, pa[1]), (out_x, pb[1]))
+        b.wire((out_x, pb[1]), pb)
     rail(b, u4, "A", "right", "RS485_A")
     rail(b, u4, "B", "right", "RS485_B")
     rail(b, r["j_rs485"], "Pin_1", "left", "RS485_A")
@@ -740,14 +793,14 @@ def wire_all(b, r):
     # its own decoupling cap with no label at all. None of that changes with a
     # PWR_FLAG -- it just tells ERC the omission is intentional, not a
     # dangling input. See genlib.py power:PWR_FLAG and kicad/README.md.
-    power_flag(b, xy(find(b, bt[-1], "-")))  # GND
-    power_flag(b, xy(find(b, r["r_nrst"], "~", 0)))  # 3V3
-    power_flag(b, xy(find(b, bt[0], "+")))  # VM
-    power_flag(b, xy(find(b, u3, "RS")))  # CAN_ISO_GND
-    power_flag(b, xy(find(b, u4, "GND2", 0)))  # RS485_ISO_GND
-    power_flag(b, xy(find(b, u3, "VISOIN")))  # CAN_VISOIN_OPEN
-    power_flag(b, xy(find(b, u4, "VISOIN")))  # RS485_VISOIN_OPEN
-    power_flag(b, xy(find(b, u5, "VREF")))  # DRV8353S.VREF local net (no label)
+    power_flag(b, xy(find(b, bt[-1], "-")), 0)  # GND
+    power_flag(b, xy(find(b, r["r_nrst"], "~", 0)), 1)  # 3V3
+    power_flag(b, xy(find(b, bt[0], "+")), 2)  # VM
+    power_flag(b, xy(find(b, u3, "RS")), 3)  # CAN_ISO_GND
+    power_flag(b, xy(find(b, u4, "GND2", 0)), 4)  # RS485_ISO_GND
+    power_flag(b, xy(find(b, u3, "VISOIN")), 5)  # CAN_VISOIN_OPEN
+    power_flag(b, xy(find(b, u4, "VISOIN")), 6)  # RS485_VISOIN_OPEN
+    power_flag(b, xy(find(b, u5, "VREF")), 7)  # DRV8353S.VREF local net (no label)
 
 
 def title_block():
