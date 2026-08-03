@@ -23,14 +23,31 @@ detail belongs in design docs, not here.
       nxp.com fetch blocked: 403, same pattern as [2]/[6]/[12]-[23]). Still
       open: (a) physical package-pin **numbers** for the 64-pin LQFP — the
       local data sheet explicitly defers this to the S32K1xx Series
-      Reference Manual, not obtained this session;
-      `symbols/specs/S32K144.json`'s `pins[].num` values are an
-      `UNVERIFIED PLACEHOLDER PIN MAP` until that RM (or NXP's IO Signal
-      Description / Signal Multiplexing spreadsheet) is obtained and read.
-      (b) CSEc's message-authentication algorithm detail (AES-128-CMAC per
-      general SHE-HSM industry knowledge) is not yet confirmed against the
-      SHE Functional Specification or the S32K1xx RM's CSEc chapter,
-      neither of which was reachable this session.
+      Reference Manual; that RM is now locally available
+      (`docs/datasheets/S32K-RM.pdf`, see [31]) but its pinout chapter has
+      not yet been read/regenerated into `symbols/specs/S32K144.json`, so
+      `pins[].num` remains an `UNVERIFIED PLACEHOLDER PIN MAP`. **2026-08-03:
+      (b) RESOLVED** — CSEc's message-authentication algorithm
+      (AES-128-CMAC, `CMD_GENERATE_MAC`/`CMD_VERIFY_MAC`) is now VERIFIED
+      directly against the local S32K1xx Reference Manual Ch. 36 §36.5.13;
+      see [31] and `docs/security-mcu-comparison.md` §3.1/§7. The Reference
+      Manual also confirms CSEc's command set is symmetric-only (no
+      RSA/ECC/certificate commands anywhere in Ch. 36) — used in the new
+      security-module comparison doc, see 1.12 below.
+- [x] 1.12 `docs/security-mcu-comparison.md` — NXP S32K144 CSEc vs.
+      Infineon SLB9672 TPM 2.0 comparison (authentication/message-signing,
+      PKI capability, footprint, EMI/ESD/EMC, indicative pricing), plus a
+      survey of three other 5V-class automotive MCU security options
+      (Infineon TLE987x/TLE9879 — no on-chip crypto engine found in its
+      official CMSIS DFP, [32]; Microchip dsPIC33C MPT Secure DSC family,
+      [33] `UNVERIFIED`; Renesas RH850/U2A16 EVITA-Full HSM, [34]
+      `UNVERIFIED`). Supports 4.2. Every external vendor/distributor
+      fetch attempted for the survey (§8/§9 of that doc) returned HTTP 403
+      this session except one Infineon-hosted GitHub file [32]; those
+      sections are explicitly marked `UNVERIFIED — needs primary source`
+      pending a session where nxp.com/infineon.com/microchip.com/
+      renesas.com/digikey.com/mouser.com are reachable, or manual PDF
+      downloads (same workaround as 1.10).
 - [ ] 1.6 Verify [3]-[7] section/page pins once standards obtained (paywalled)
 - [ ] 1.7 Confirm MIL-STD-1553B vs -1553C target revision, update [7]
 - [~] 1.8 Source authoritative refs: SBus, DBus, PWM-interface, UART/TTL/SPI, EMI tiers
@@ -88,7 +105,11 @@ detail belongs in design docs, not here.
       discrete chip, no SPI schematic needed; CSEc is driven entirely by
       firmware over an internal command interface (see 4.4 below).
 - [ ] 4.2 Secure boot / attestation chain design doc (now CSEc/SHE-based —
-      see [31], and 1.11 for what's still open on the SHE spec itself)
+      see [31], and 1.11 for what's still open on the SHE spec itself).
+      `docs/security-mcu-comparison.md` (1.12) now documents CSEc's
+      symmetric-only trust model and its `BOOT_MAC_KEY`-based secure-boot
+      mechanism as background, but a full attestation-chain design doc is
+      still a separate, not-yet-started deliverable.
 - [ ] 4.3 Key provisioning process (CSEc key slots per the SHE Functional
       Specification's command set — spec itself not yet obtained, see 1.11)
 - [ ] 4.4 CSEc firmware integration: message authentication (CMAC

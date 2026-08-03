@@ -6,7 +6,7 @@ the date it was accessed. Fields that could not be independently verified
 (e.g. behind a purchase paywall, or blocked by anti-bot access controls) are
 marked explicitly — never guessed. Tags are cited in-repo as `[n]`.
 
-Last reviewed: 2026-08-02.
+Last reviewed: 2026-08-03.
 
 ---
 
@@ -970,27 +970,106 @@ states, p.89, §10.1 "Package pinouts and signal descriptions": "For package
 pinouts and signal descriptions, refer to the Reference Manual" — i.e. the
 physical package-pin-NUMBER-to-signal assignment (which pin is FlexCAN0_TX,
 which is LPSPI0_SCK, etc.) is NOT contained in this document at all, by the
-document's own statement, and is therefore not available to verify against
-in this repo. The S32K1xx Series Reference Manual itself was not obtained
-this session (nxp.com fetch blocked, see above) — `symbols/specs/S32K144.json`'s
-pin `"num"` values are therefore an `UNVERIFIED PLACEHOLDER PIN MAP` per
-`AGENTS.md` §1.3/§3, not read from any primary source; see that file's own
-`verification` field and `TODO.md` for what would need to be resolved
-before upgrading to VERIFIED. Likewise, this data sheet names the "SHE
-(Secure Hardware Extension) Functional Specification" but does not itself
-spell out the algorithm-level detail (e.g. AES-128-CMAC) of CSEc's
-message-authentication function — that detail is publicly known to be part
-of the SHE specification's command set (`GENERATE_MAC`/`VERIFY_MAC`) from
-general industry familiarity with SHE-compliant HSMs, but this repo has not
-independently obtained and verified either the SHE Functional Specification
-itself or the S32K1xx Reference Manual's CSEc chapter this session, so that
-specific algorithm claim is flagged `UNVERIFIED — needs primary source (see
-TODO.md)` rather than asserted as a settled citation.
+document's own statement. The S32K1xx Series Reference Manual is now
+available locally (see "Local copy — Reference Manual" below), but its
+pinout chapter has not yet been read to resolve this specific gap — that is
+a separate, larger task (regenerating `symbols/specs/S32K144.json`'s pin
+map), tracked in `TODO.md` 1.11(a) and not attempted as part of this update.
+`symbols/specs/S32K144.json`'s pin `"num"` values remain an
+`UNVERIFIED PLACEHOLDER PIN MAP` per `AGENTS.md` §1.3/§3 until that pass is
+done.
+**2026-08-03 update — CSEc algorithm detail now VERIFIED:** this data sheet
+names the "SHE (Secure Hardware Extension) Functional Specification" but
+does not itself spell out the algorithm-level detail of CSEc's
+message-authentication function. That detail — previously flagged
+`UNVERIFIED — needs primary source` in `TODO.md` 1.11(b) — is now confirmed
+directly against the local S32K1xx Series Reference Manual, Rev. 14,
+09/2021 (`docs/datasheets/S32K-RM.pdf`, 2210 pp.), Chapter 36 "Flash Memory
+Module (FTFC)," §36.5.13: `CMD_GENERATE_MAC` (§36.5.13.9, Table 36-82)
+computes `MAC = CMAC_KEY,KEY_ID(MESSAGE, MESSAGE_LENGTH)` — i.e. AES-128
+CMAC — and `CMD_VERIFY_MAC` (§36.5.13.11, Table 36-83) recomputes and
+compares it. The full command set in this chapter is `ENC_ECB`/`DEC_ECB`/
+`ENC_CBC`/`DEC_CBC`/`GENERATE_MAC`/`VERIFY_MAC`/`LOAD_KEY`/`LOAD_PLAIN_KEY`/
+`EXPORT_RAM_KEY` plus RNG/ID commands — no RSA/ECC/certificate command
+exists anywhere in this chapter, confirming CSEc is symmetric-only. Key
+catalog (Table 36-75): `SECRET_KEY` (ROM), `MASTER_ECU_KEY`, `BOOT_MAC_KEY`
+(both Flash), up to 17 user keys `KEY_01`–`KEY_17` (Flash, partition is
+user-configurable, not all 17 simultaneously per §5 of the Data Sheet
+portion above), and the volatile `RAM_KEY` — all AES-128 (16-byte). See
+`docs/security-mcu-comparison.md` §3.1/§7 for the full comparison write-up
+this update supports.
+Local copy — Reference Manual: `docs/datasheets/S32K-RM.pdf` (NXP
+Semiconductors, *S32K1xx Series Reference Manual*, Rev. 14, 09/2021,
+2210 pp.) — `VERIFIED` (local copy read directly, 2026-08-03; live nxp.com
+fetch not reattempted this session, same 403 pattern as the Data Sheet
+above is assumed to still apply and was not retested).
 Candidate replacement decision for the project MCU (was MSPM0G3507, [1],
 now S32K144), and for the project's message-authentication mechanism (was
 external SLB9672 TPM, [2], now on-chip CSEc) — see `README.md`,
 `builds/6s/50A/CAN_485_faraday/README.md`, `symbols/specs/S32K144.json`.
 Date accessed: 2026-08-03.
+
+---
+
+**[32]** Infineon Technologies AG, *Infineon.TLE987x_DFP* (CMSIS device
+family pack description), Infineon GitHub organization, `cmsis_packs`
+repository, path `TLE987x/Infineon.TLE987x_DFP.pdsc`. [Online]. Available:
+https://raw.githubusercontent.com/Infineon/cmsis_packs/master/TLE987x/Infineon.TLE987x_DFP.pdsc
+— `VERIFIED` (live fetch succeeded 2026-08-03; this is the only external
+source in this citation range that was not blocked by HTTP 403 this
+session).
+Section/page: this is a machine-readable device-family-pack XML, not a
+paginated document; the peripheral list it declares for the TLE987x/TLE9879
+family (ADC, timers, UART, SPI, LIN transceiver, bridge driver (BDRV),
+power management unit, DMA) contains no AES/CRC/HSM/SHE or any other
+cryptographic peripheral entry. Used to support the claim in
+`docs/security-mcu-comparison.md` §8.1 that this family's CMSIS-exposed
+peripheral set has no on-chip security/crypto engine. This is verified for
+"not present in this file" specifically — it is not a substitute for the
+full TLE987x/TLE9879 datasheet or user manual, neither of which was
+reachable this session (infineon.com and mouser.com PDF links both
+returned HTTP 403). Package (VQFN-48-EP, 7×7 mm) and pricing figures cited
+alongside this in `docs/security-mcu-comparison.md` §8.1 come from
+distributor search-result snippets (LCSC/JLCPCB), not this source, and are
+marked `UNVERIFIED` there accordingly.
+Cited in: `docs/security-mcu-comparison.md` §8.1.
+Date accessed: 2026-08-03.
+
+---
+
+**[33]** Microchip Technology Inc., *dsPIC33C MPT Secure Digital Signal
+Controllers (DSCs)*, product page. [Online]. Available:
+https://www.microchip.com/en-us/products/microcontrollers/dspic-dscs/dspic33c/secure-dscs
+(live fetch blocked: HTTP 403, 2026-08-03) — **`UNVERIFIED — needs primary
+source`**, section/page not verified; this repo has only a WebSearch
+result-snippet summary of this page's marketing copy (CodeGuard security,
+hardware cryptographic accelerators, anti-tamper/side-channel protection,
+AEC-Q100 Grade 0/1, ISO 26262 process), not the page or datasheet itself.
+Whether the "hardware cryptographic accelerators" this product page
+describes include asymmetric (RSA/ECC) operations, and this family's
+package/pinout/supply-voltage specifics, are not established by anything
+this repo has independently read.
+Cited in: `docs/security-mcu-comparison.md` §8.2.
+Date accessed (search only, not page fetch): 2026-08-03.
+
+---
+
+**[34]** Renesas Electronics Corporation, *RH850/U2A16*, product page.
+[Online]. Available:
+https://www.renesas.com/eu/en/products/microcontrollers-microprocessors/rh850/rh850u2x/rh850u2a16.html
+(live fetch blocked: HTTP 403, 2026-08-03) — **`UNVERIFIED — needs primary
+source`**, section/page not verified; this repo has only a WebSearch
+result-snippet summary (flexible power supply typ. 1.12 V/3.3 V/5.0 V; "HSM
+for Evita-full with dedicated CPU/Flash and HW crypt algorithm support";
+four 400 MHz CPU cores in dual-core lockstep ×2; 16 MB flash; 3.6 MB SRAM;
+a 516-pin package referenced in a separate piggyback-board document), not
+the product page, datasheet, or user's manual itself. Whether this part's
+HSM supports asymmetric/PKI operations (as the general "EVITA-Full" HSM
+tier is understood to, in contrast with SHE/CSEc-class "EVITA-Light" HSMs)
+is not established by anything this repo has independently read for this
+specific part.
+Cited in: `docs/security-mcu-comparison.md` §8.3.
+Date accessed (search only, not page fetch): 2026-08-03.
 
 ---
 
