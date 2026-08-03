@@ -428,7 +428,7 @@ def place_all(b):
 
     # ---- MCU + its local support passives ---------------------------------
     r["u1"], _ = b.place(
-        "U", 460, 290, spec_json_name="MSPM0G3507", value="MSPM0G3507SPMR", ref="U1"
+        "U", 460, 290, spec_json_name="S32K144", value="S32K144", ref="U1"
     )
     r["r_nrst"], _ = b.place(
         "R",
@@ -436,15 +436,7 @@ def place_all(b):
         160,
         generic_lib_id="Device:R",
         value="10k",
-        note="Generic NRST pull-up, engineering default -- not datasheet-sourced.",
-    )
-    r["c_vcore"], _ = b.place(
-        "C",
-        440,
-        160,
-        generic_lib_id="Device:C",
-        value="100nF",
-        note="MSPM0 VCORE decoupling, generic value per typical TI reference design.",
+        note="Generic RESET_B pull-up, engineering default -- not datasheet-sourced.",
     )
     r["c_mcuvdd"], _ = b.place(
         "C",
@@ -454,11 +446,18 @@ def place_all(b):
         value="100nF",
         note="MCU VDD decoupling, generic value. 3V3 regulator selection is an open item -- see ../README.md.",
     )
-
-    # ---- TPM + gate driver -------------------------------------------------
-    r["u2"], _ = b.place(
-        "U", 650, 110, spec_json_name="SLB9672", value="SLB9672", ref="U2"
+    r["c_vdda"], _ = b.place(
+        "C",
+        520,
+        160,
+        generic_lib_id="Device:C",
+        value="100nF",
+        note="MCU VDDA decoupling, generic value. Datasheet [31] p.13 requires VDD and VDDA "
+        "shorted to a common source on PCB -- both rails carry the 3V3 label here per that "
+        "requirement, not an independent design choice.",
     )
+
+    # ---- Gate driver -------------------------------------------------------
     r["u5"], _ = b.place(
         "U", 650, 470, spec_json_name="DRV8353S", value="DRV8353S", ref="U5"
     )
@@ -572,7 +571,7 @@ def place_all(b):
 
 
 def wire_all(b, r):
-    u1, u2, u3, u4, u5 = r["u1"], r["u2"], r["u3"], r["u4"], r["u5"]
+    u1, u3, u4, u5 = r["u1"], r["u3"], r["u4"], r["u5"]
     bt = r["bt"]
 
     # ---- Battery pack series chain + rails --------------------------------
@@ -589,8 +588,8 @@ def wire_all(b, r):
     )
 
     # ---- Debug header ------------------------------------------------------
-    connect(b, r["j_swd"], "Pin_1", u1, "SWDIO")
-    connect(b, r["j_swd"], "Pin_2", u1, "SWCLK")
+    connect(b, r["j_swd"], "Pin_1", u1, "SWD_DIO")
+    connect(b, r["j_swd"], "Pin_2", u1, "SWD_CLK")
     rail(b, r["j_swd"], "Pin_3", "left", "3V3")
     rail(b, r["j_swd"], "Pin_4", "left", "GND")
 
@@ -642,31 +641,21 @@ def wire_all(b, r):
     # ---- MCU power / reset / debug -------------------------------------------
     rail(b, u1, "VDD", "up", "3V3")
     rail(b, u1, "VSS", "down", "GND")
-    connect(b, u1, "VCORE", r["c_vcore"], "~", idx_b=0)
-    rail(b, r["c_vcore"], "~", "down", "GND", index=1)
-    connect(b, u1, "NRST", r["r_nrst"], "~", idx_b=1)
+    rail(b, u1, "VDDA", "up", "3V3")
+    rail(b, u1, "VREFH", "up", "3V3")
+    rail(b, u1, "VREFL_VSSA_VSS", "down", "GND")
+    connect(b, u1, "RESET_B", r["r_nrst"], "~", idx_b=1)
     rail(b, r["r_nrst"], "~", "up", "3V3", index=0)
     rail(b, r["c_mcuvdd"], "~", "up", "3V3", index=0)
     rail(b, r["c_mcuvdd"], "~", "down", "GND", index=1)
-
-    # ---- TPM (U2) -------------------------------------------------------------
-    rail_all(b, u2, "VDD", "up", "3V3")
-    rail_all(b, u2, "GND", "down", "GND")
-    connect(b, u1, "TPM_SPI_CS", u2, "CS#")
-    connect(b, u1, "TPM_SPI_SCK", u2, "SCLK")
-    connect(b, u1, "TPM_SPI_MOSI", u2, "MOSI")
-    connect(b, u2, "MISO", u1, "TPM_SPI_MISO")
-    connect(b, u2, "PIRQ#", u1, "TPM_PIRQ#")
-    connect(b, u1, "TPM_RST#", u2, "RST#")
-    for name in ("GPIO_00", "GPIO_01", "GPIO_02"):
-        b.no_connect(xy(find(b, u2, name)))
-    rail(b, u2, "NCI/VDD", "right", "3V3", index=0)
-    rail(b, u2, "NCI/VDD", "right", "3V3", index=1)
-    rail(b, u2, "NCI/GND", "right", "GND")
-    for num, p in find_all(b, u2, "NCI"):
-        b.no_connect((p[0], p[1]))
-    for num, p in find_all(b, u2, "NC"):
-        b.no_connect((p[0], p[1]))
+    rail(b, r["c_vdda"], "~", "up", "3V3", index=0)
+    rail(b, r["c_vdda"], "~", "down", "GND", index=1)
+    b.text(
+        (460, 130),
+        "No external TPM: message authentication is provided by the S32K144's own on-chip "
+        "CSEc security module (internal peripheral, no dedicated pins) -- see ../README.md",
+        size=1.2,
+    )
 
     # ---- DRV8353S (U5) ---------------------------------------------------------
     rail(b, u5, "VM", "up", "VM")

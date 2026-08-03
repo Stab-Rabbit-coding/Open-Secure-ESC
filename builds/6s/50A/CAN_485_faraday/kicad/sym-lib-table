@@ -1,6 +1,5 @@
 (sym_lib_table
-  (lib (name "MSPM0G3507")(type "KiCad")(uri "${KIPRJMOD}/../../../../../symbols/MSPM0G3507.kicad_sym")(options "")(descr "TI MSPM0G3507 MCU -- REFERENCES.md [1]"))
-  (lib (name "SLB9672")(type "KiCad")(uri "${KIPRJMOD}/../../../../../symbols/SLB9672.kicad_sym")(options "")(descr "Infineon SLB9672 TPM -- REFERENCES.md [2]"))
+  (lib (name "S32K144")(type "KiCad")(uri "${KIPRJMOD}/../../../../../symbols/S32K144.kicad_sym")(options "")(descr "NXP S32K144 MCU with on-chip CSEc security module -- REFERENCES.md [31] (pin numbers UNVERIFIED PLACEHOLDER, see symbols/specs/S32K144.json)"))
   (lib (name "ADM2582E_ADM2587E")(type "KiCad")(uri "${KIPRJMOD}/../../../../../symbols/ADM2582E_ADM2587E.kicad_sym")(options "")(descr "RS-485 isolated transceiver -- REFERENCES.md [4], [9]"))
   (lib (name "ADM3055E_ADM3057E")(type "KiCad")(uri "${KIPRJMOD}/../../../../../symbols/ADM3055E_ADM3057E.kicad_sym")(options "")(descr "CAN-FD isolated transceiver -- REFERENCES.md [6], [10]"))
   (lib (name "DRV8353S")(type "KiCad")(uri "${KIPRJMOD}/../../../../../symbols/DRV8353S.kicad_sym")(options "")(descr "3-phase gate driver -- REFERENCES.md [21] (candidate part, pin map VERIFIED)"))
