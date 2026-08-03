@@ -101,7 +101,12 @@ story (Keystore, CSC/BIM, software ECDSA-P256) layered on top of hardware
 AES/CRC/TRNG that this document did not initially give them credit for — see
 §9.7's note. §8 below (message-signing latency) resolves, with real
 cycle-count data, the standing question of whether an MCU's crypto can keep
-up with the actual authentication rate this design needs.
+up with the actual authentication rate this design needs. On pricing, the
+MSPM0G350x-Q1 (§9.8) turned out to undercut every other candidate in this
+survey by a wide margin (~US$2.79–3.00, repo-owner-confirmed live
+distributor price) while carrying both AEC-Q100 Grade 1 and ISO 26262
+ASIL B (TÜV) certification — the main open question for it is whether its
+Cortex-M0+ core has enough headroom for this project's control loop.
 
 ## 3. Authentication and message signing
 
@@ -687,16 +692,28 @@ document).
   21mm²)** — the smallest footprint of any part in this entire comparison
   — or 32-pin VQFN (5×5mm) if more pins are needed.
 - Same Cortex-M0+ core caveat as §9.7 applies here too.
-- Pricing: not captured this session.
+- **Pricing: ~US$2.79–3.00 across the family**, per the repo owner's direct
+  Mouser observation 2026-08-03 (M0G3507QDGS32RQ1, 32-pin VSSOP, ~US$2.79;
+  most expensive variant in the family ~US$3.00) — this is not a WebSearch
+  snippet like every other price in this document, it's a live distributor
+  page the repo owner read directly, so it carries more weight than this
+  document's other pricing figures, though it's still a single-session
+  price-point snapshot, not a negotiated/contract price. **This is
+  cheaper than every other part in this entire survey**, including the
+  base S32K144 (~US$3.75 at qty 100) and the STM32G431K8T6
+  (~US$2.63–4.51) — by a meaningful margin once AEC-Q100 Grade 1 and
+  ISO 26262 ASIL B certification are factored in as what you're getting
+  for that price.
 
 **Assessment:** on paper, the strongest all-around candidate for a
 security-plus-safety-plus-footprint-plus-automotive-qualification
-combination in this entire survey, if the Cortex-M0+ core's compute
-headroom is sufficient for this project's actual control loop. It doesn't
-have PKI/certificate handling the way the dsPIC33 or SLB9672 do (its
-asymmetric capability is software-only ECDSA-P256 verification, not
-certificate parsing/storage), but for a symmetric-authentication-plus-
-secure-boot design like this project's current one, it's a genuine
+combination in this entire survey, and now also the cheapest, if the
+Cortex-M0+ core's compute headroom is sufficient for this project's actual
+control loop. It doesn't have PKI/certificate handling the way the dsPIC33
+or SLB9672 do (its asymmetric capability is software-only ECDSA-P256
+verification, not certificate parsing/storage), but for a
+symmetric-authentication-plus-secure-boot design like this project's
+current one, it's a genuine
 S32K144 competitor worth the repo owner's continued investigation.
 
 ## 10. Pricing (all figures are distributor-listing snapshots, not verified against a live distributor page this session — see §1)
@@ -714,7 +731,7 @@ S32K144 competitor worth the repo owner's continued investigation.
 | TMS320F280025-Q1 | not captured precisely; active Mouser/TI listing confirmed | search snippet |
 | MSPM0G3107 (base, SRHBR) | not captured precisely; active listing confirmed | Digi-Key search snippet |
 | MSPM0G3107-Q1 (M0G3107QRHBRQ1) | not captured; 12-week lead time quoted | Digi-Key search snippet |
-| MSPM0G350x-Q1 | not captured this session | — |
+| MSPM0G350x-Q1 (M0G3507QDGS32RQ1, 32-VSSOP) | ~US$2.79; family range ~US$2.79–3.00 across variants | Repo owner, direct Mouser observation, 2026-08-03 |
 
 Every WebFetch attempt against digikey.com, mouser.com, nxp.com,
 infineon.com, microchip.com, ti.com, and renesas.com returned HTTP 403 this
