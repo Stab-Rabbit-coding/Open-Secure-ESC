@@ -23,14 +23,47 @@ detail belongs in design docs, not here.
       nxp.com fetch blocked: 403, same pattern as [2]/[6]/[12]-[23]). Still
       open: (a) physical package-pin **numbers** for the 64-pin LQFP — the
       local data sheet explicitly defers this to the S32K1xx Series
-      Reference Manual, not obtained this session;
-      `symbols/specs/S32K144.json`'s `pins[].num` values are an
-      `UNVERIFIED PLACEHOLDER PIN MAP` until that RM (or NXP's IO Signal
-      Description / Signal Multiplexing spreadsheet) is obtained and read.
-      (b) CSEc's message-authentication algorithm detail (AES-128-CMAC per
-      general SHE-HSM industry knowledge) is not yet confirmed against the
-      SHE Functional Specification or the S32K1xx RM's CSEc chapter,
-      neither of which was reachable this session.
+      Reference Manual; that RM is now locally available
+      (`docs/datasheets/S32K-RM.pdf`, see [31]) but its pinout chapter has
+      not yet been read/regenerated into `symbols/specs/S32K144.json`, so
+      `pins[].num` remains an `UNVERIFIED PLACEHOLDER PIN MAP`. **2026-08-03:
+      (b) RESOLVED** — CSEc's message-authentication algorithm
+      (AES-128-CMAC, `CMD_GENERATE_MAC`/`CMD_VERIFY_MAC`) is now VERIFIED
+      directly against the local S32K1xx Reference Manual Ch. 36 §36.5.13;
+      see [31] and `docs/security-mcu-comparison.md` §3.1/§7. The Reference
+      Manual also confirms CSEc's command set is symmetric-only (no
+      RSA/ECC/certificate commands anywhere in Ch. 36) — used in the new
+      security-module comparison doc, see 1.12 below.
+- [x] 1.12 `docs/security-mcu-comparison.md` — NXP S32K144 CSEc vs.
+      Infineon SLB9672 TPM 2.0 comparison (authentication/message-signing
+      latency, PKI capability, footprint, EMI/ESD/EMC, pricing), expanded
+      2026-08-03 into a full 8-candidate survey as more datasheets were
+      added to the repo: Infineon TLE987x/TLE9879 (§9.1, no crypto engine,
+      [32] `UNVERIFIED` beyond the CMSIS pack); Microchip dsPIC33CK512MPT608
+      (§9.2, [33], VERIFIED — full on-die PKI/X.509, AEC-Q100 Grade 1,
+      100-TQFP, 3.0–3.6V not 5V, availability unclear); Renesas RH850/U2A16
+      (§9.3, [34], `UNVERIFIED`); STM32G431K + SLB9672 combo (§9.4, [35]
+      restored from git history + [2], VERIFIED — weakest option: no
+      AEC-Q100, worst ESD, no on-die crypto fallback); Microchip SAM E51G19
+      (§9.5, [36], VERIFIED — AES/TRNG/PUKCC math accelerator + ICM hash
+      engine with real cycle counts, AEC-Q100 Grade 1, 25 mm²); TI
+      TMS320F280025(-Q1) (§9.6, [37], VERIFIED — **excluded**, no crypto
+      module, only DCSM code-protection); TI MSPM0G3107 (§9.7, [38]-[42],
+      VERIFIED — AES/CRC/TRNG + platform secure-boot/Keystore/software-ECDSA
+      per the cybersecurity app note [40], real AES cycle-count latency
+      data from the TRM [39], Cortex-M0+ core is the one weak point); TI
+      MSPM0G350x-Q1 (§9.8, [43], VERIFIED — same security model as 9.7 plus
+      ISO 26262 ASIL B TÜV certification and AEC-Q100 Grade 1 stated
+      directly, smallest footprint (~21 mm²) in the whole survey). New §8
+      resolves the standing "can the bus/crypto keep up" question with the
+      MSPM0/SAM cycle-count data: symmetric MAC is always fast enough
+      (microseconds); only asymmetric/PKI primitives are architecturally
+      unsuited to per-frame authentication, regardless of chip. §6.1 records
+      the 5V-vs-3.3V EMI/SNR design-rationale discussion (repo owner
+      confirmed most of the rest of this project is 3.3V-class). Supports
+      4.2. Repo owner separately confirmed CSC-vs-BIM secure-boot choice is
+      a firmware/SDK decision usable on either MSPM0 part, not gated by
+      silicon variant (noted in [40]'s entry and §9.7/§9.8).
 - [ ] 1.6 Verify [3]-[7] section/page pins once standards obtained (paywalled)
 - [ ] 1.7 Confirm MIL-STD-1553B vs -1553C target revision, update [7]
 - [~] 1.8 Source authoritative refs: SBus, DBus, PWM-interface, UART/TTL/SPI, EMI tiers
@@ -88,7 +121,11 @@ detail belongs in design docs, not here.
       discrete chip, no SPI schematic needed; CSEc is driven entirely by
       firmware over an internal command interface (see 4.4 below).
 - [ ] 4.2 Secure boot / attestation chain design doc (now CSEc/SHE-based —
-      see [31], and 1.11 for what's still open on the SHE spec itself)
+      see [31], and 1.11 for what's still open on the SHE spec itself).
+      `docs/security-mcu-comparison.md` (1.12) now documents CSEc's
+      symmetric-only trust model and its `BOOT_MAC_KEY`-based secure-boot
+      mechanism as background, but a full attestation-chain design doc is
+      still a separate, not-yet-started deliverable.
 - [ ] 4.3 Key provisioning process (CSEc key slots per the SHE Functional
       Specification's command set — spec itself not yet obtained, see 1.11)
 - [ ] 4.4 CSEc firmware integration: message authentication (CMAC
