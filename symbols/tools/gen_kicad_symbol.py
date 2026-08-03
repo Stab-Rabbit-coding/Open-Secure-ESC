@@ -18,6 +18,7 @@ Usage:
 
 import argparse
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -43,6 +44,16 @@ def _layout(pins):
     given. Rearrange visually in the KiCad Symbol Editor if a different
     physical arrangement is wanted -- electrical connectivity (pin number <->
     signal) is the authoritative part, not the on-paper position.
+
+    Sizing rule: KiCad draws each pin's name *inward* from its own side, so a
+    left-side name runs rightward across the body and a bottom-side name runs
+    upward across it. The body therefore has to clear two things at once on
+    each axis -- the pins themselves, and the label text arriving from the
+    perpendicular pair of sides. Sizing only on pin count (the earlier rule)
+    produced a body too small for a part with many pins AND long names, and
+    the two label sets overlapped illegibly. Both constraints are applied
+    below, and each side's pins are then centred in the band the opposing
+    labels leave free.
     """
     sides = {"left": [], "right": [], "top": [], "bottom": []}
     for p in pins:
@@ -50,24 +61,47 @@ def _layout(pins):
 
     v_count = max(len(sides["left"]), len(sides["right"]), 1)
     h_count = max(len(sides["top"]), len(sides["bottom"]), 1)
-    name_maxlen = max([len(p["name"]) for p in pins] + [4])
 
-    half_h = GRID * v_count / 2 + GRID
-    text_w = name_maxlen * FONT_SIZE * 0.62
-    half_w = max(GRID * h_count / 2 + GRID, text_w + GRID)
-    # Snap to grid for a tidier box.
-    half_h = round(half_h / (GRID / 2)) * (GRID / 2)
-    half_w = round(half_w / (GRID / 2)) * (GRID / 2)
+    char_w = FONT_SIZE * 0.62
+    clr = GRID / 2  # breathing room between a label's far end and a pin row
+
+    def _text(side):
+        """Length, in mm, of the longest pin name drawn inward from `side`."""
+        return max([len(p["name"]) for p in sides[side]] + [0]) * char_w
+
+    left_t, right_t = _text("left"), _text("right")
+    top_t, bottom_t = _text("top"), _text("bottom")
+
+    # Width: fit the top/bottom pin columns, and the left+right label text.
+    # Height: fit the left/right pin rows, and the top+bottom label text.
+    half_w = max(
+        GRID * h_count / 2 + GRID,
+        ((h_count - 1) * GRID + left_t + right_t + 2 * clr) / 2,
+    )
+    half_h = max(
+        GRID * v_count / 2 + GRID,
+        ((v_count - 1) * GRID + top_t + bottom_t + 2 * clr) / 2,
+    )
+    # Snap outward to a whole grid step so the body corners land on grid.
+    half_w = math.ceil(half_w / GRID) * GRID
+    half_h = math.ceil(half_h / GRID) * GRID
+
+    # Centre of the band each axis has left over once the opposing side's
+    # label text is reserved; pins are stacked symmetrically about it.
+    y_mid = ((half_h - top_t - clr) + (-half_h + bottom_t + clr)) / 2
+    x_mid = ((-half_w + left_t + clr) + (half_w - right_t - clr)) / 2
+    y_mid = round(y_mid / (GRID / 2)) * (GRID / 2)
+    x_mid = round(x_mid / (GRID / 2)) * (GRID / 2)
 
     coords = []
     for side, plist in sides.items():
         n = len(plist)
         for i, p in enumerate(plist):
             if side in ("left", "right"):
-                y = half_h - GRID / 2 - i * GRID
+                y = y_mid + ((n - 1) / 2 - i) * GRID
                 x = -(half_w + PIN_LEN) if side == "left" else (half_w + PIN_LEN)
             else:
-                x = (i - (n - 1) / 2) * GRID
+                x = x_mid + (i - (n - 1) / 2) * GRID
                 y = half_h + PIN_LEN if side == "top" else -(half_h + PIN_LEN)
             coords.append((p, x, y, SIDE_ANGLE[side]))
     return half_w, half_h, coords
