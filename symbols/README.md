@@ -61,8 +61,7 @@ against kiutils 1.4.8).
 
 | File | Citation | Pin-map status |
 | --- | --- | --- |
-| `MSPM0G3507.kicad_sym` | [1] | VERIFIED (partial — build-specific pin subset; see spec `verification` field) |
-| `SLB9672.kicad_sym` | [2] | VERIFIED (full 32-pin, footprint-complete) |
+| `S32K144.kicad_sym` | [31] | Feature-level facts VERIFIED; pin **numbers** UNVERIFIED PLACEHOLDER (local datasheet defers physical pinout to the S32K1xx Reference Manual, not obtained — see spec `verification` field, `TODO.md`) |
 | `ADM2582E_ADM2587E.kicad_sym` | [4], [9] | VERIFIED (full 20-pin); part selection itself still "Candidate" in `docs/decision-matrix.xlsx` |
 | `ADM3055E_ADM3057E.kicad_sym` | [6], [10] | VERIFIED (full 20-pin); part selection itself still "Candidate" |
 | `DRV8353S.kicad_sym` | [21] | VERIFIED (full 40-pin, RTA/WQFN package; local datasheet) |
@@ -77,6 +76,17 @@ against kiutils 1.4.8).
 `specs/*.json` `verification` field and `TODO.md` 1.10 for what would need to
 be resolved first (a working fetch path or a manually obtained primary PDF).
 
+**2026-08-03: MCU/TPM swap.** `MSPM0G3507.kicad_sym`/`specs/MSPM0G3507.json`
+(project MCU, REFERENCES.md [1]) and `SLB9672.kicad_sym`/`specs/SLB9672.json`
+(external TPM, REFERENCES.md [2]) were removed from this folder. The project
+MCU changed to the NXP S32K144 (`S32K144.kicad_sym`, [31] above), whose
+on-chip CSEc security module now provides message authentication in place of
+the discrete SLB9672 TPM — see root `README.md` and
+`builds/6s/50A/CAN_485_faraday/README.md`. Both REFERENCES.md entries [1]
+and [2] are retained (never repurposed, per `AGENTS.md` §2.5) and marked
+superseded/dropped there; their local datasheet PDFs under
+`docs/datasheets/` are also kept so those citation records stay resolvable.
+
 ## Using this library from a build
 
 Add a project-relative library table entry (see
@@ -87,7 +97,7 @@ pointing at this shared folder. `${KIPRJMOD}` is the folder containing the
 `symbols/`:
 
 ```text
-(lib (name "open_secure_esc")(type "KiCad")(uri "${KIPRJMOD}/../../../../../symbols/MSPM0G3507.kicad_sym")(options "")(descr ""))
+(lib (name "open_secure_esc")(type "KiCad")(uri "${KIPRJMOD}/../../../../../symbols/S32K144.kicad_sym")(options "")(descr ""))
 ```
 
 One `(lib ...)` line per `.kicad_sym` file needed by that build — do not copy

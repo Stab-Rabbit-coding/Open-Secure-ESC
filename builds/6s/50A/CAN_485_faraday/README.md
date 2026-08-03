@@ -30,8 +30,21 @@ KiCad symbols and their own pin-map verification status are in
 
 | Part | Qty | Citation | Status |
 | --- | --- | --- | --- |
-| TI MSPM0G3507SPMR (64-pin LQFP) | 1 | [1] | Verified (local datasheet). Package choice (64-LQFP, out of the 5 offered) is this build's own decision — needs CAN-FD + spare UART + dual SPI + 4 analog channels + SWD concurrently; see `symbols/specs/MSPM0G3507.json`. |
-| Infineon SLB9672 TPM 2.0 | 1 | [2] | Verified (local datasheet) |
+| NXP S32K144 (64-pin LQFP) | 1 | [31] | Feature-level facts verified (local datasheet); physical pin-number map is an UNVERIFIED PLACEHOLDER pending the S32K1xx Reference Manual (see `symbols/specs/S32K144.json`). Package choice (64-LQFP, one of four this device ships in) is this build's own decision — needs 1 FlexCAN-FD instance, 1 spare LPUART, 1 LPSPI (gate driver only — see below), 4 analog channels, SWD concurrently, comfortably within every S32K14x family member's minimum peripheral count. |
+
+**2026-08-03: TPM dropped.** This build no longer includes a discrete TPM.
+The Infineon SLB9672 TPM 2.0 (previously listed here, [2]) has been removed
+from the design; message authentication is instead provided by the S32K144's
+own on-chip CSEc (Cryptographic Services Engine) security module [31], which
+implements the SHE (Secure Hardware Extension) Functional Specification's
+cryptographic function set. Because CSEc has no dedicated external pins (it
+is driven entirely over an internal firmware command interface), dropping
+the SLB9672 also frees the LPSPI channel this build previously reserved for
+TPM SPI traffic — see `symbols/specs/S32K144.json`. The algorithm-level
+detail of CSEc's message-authentication function (e.g. AES-128-CMAC) is not
+yet independently verified against a primary NXP/HIS source in this repo —
+flagged `UNVERIFIED — needs primary source (see TODO.md)` per `AGENTS.md`
+§1.3, tracked in `TODO.md` §4.
 
 ### Voltage tier — 6S
 
@@ -57,7 +70,7 @@ devices at all (e.g. for an MCU-independent overcurrent trip path separate
 from DRV8353S's own CSA outputs) or can rely solely on DRV8353S's
 integrated sensing is an open design-review question — flagged per
 `AGENTS.md` §4 rather than silently picked. The MCU's `ADC_IU`/`ADC_IV`/
-`ADC_IW` pins (`symbols/specs/MSPM0G3507.json`) work with either sourcing
+`ADC_IW` pins (`symbols/specs/S32K144.json`) work with either sourcing
 choice.
 
 ### Protocol — CAN-FD + RS-485 (both, concurrently)
@@ -68,10 +81,16 @@ choice.
 | Analog Devices ADM2582E **or** ADM2587E isolated RS-485 transceiver | 1 | [4], [9] | Candidate (unverified) — **open**: ADM2582E (16 Mbps) vs. ADM2587E (500 kbps) not chosen here; pick per this build's actual RS-485 data-rate requirement (not specified by the request) |
 
 Both protocol stacks fit on the MCU concurrently without pin conflicts: CAN
-on the dedicated CAN peripheral (PA12/PA13, [1] Table 6-2), RS-485 on a
-spare UART (UART3 on PB12/PB13) plus one GPIO for combined DE/RE control of
-the half-duplex transceiver — see `symbols/specs/MSPM0G3507.json` for the
-full pin assignment and its sourcing.
+on one of the S32K144's FlexCAN instances (1 of which supports CAN-FD),
+RS-485 on a spare LPUART plus one GPIO for combined DE/RE control of the
+half-duplex transceiver — see `symbols/specs/S32K144.json` for the full
+signal-role assignment. Note: unlike the now-superseded MSPM0G3507 spec,
+which pinned each signal to a specific verified physical pin number, the
+S32K144 spec's pin numbers are an UNVERIFIED PLACEHOLDER (the local S32K1xx
+data sheet [31] does not contain the physical pinout table — see that
+entry's "Not verified" note) — the module-level claim above (CAN-FD + spare
+LPUART + GPIO fit concurrently) rests on the datasheet's verified
+family-wide peripheral *counts*, not on a specific verified pin location.
 
 ### EMI Hardening — Faraday tier
 

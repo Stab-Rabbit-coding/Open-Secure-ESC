@@ -12,8 +12,8 @@ anything here as final.
   (`version 20211014`) schematic, title block company **Griffing Technology
   LLC**, drawn on an A0 sheet (the previous A3 skeleton was too small for a
   legibly-wired single-sheet MCU + power-stage schematic once populated).
-  44 symbol instances, every documented MCU pin assignment
-  (`symbols/specs/MSPM0G3507.json`) wired point-to-point with real schematic
+  51 symbol instances, every documented MCU signal assignment
+  (`symbols/specs/S32K144.json`) wired point-to-point with real schematic
   wires (`(wire ...)`) to its peer chip; shared rails (GND, VM, 3V3,
   VREF_MID, the two isolated-side grounds, per-phase current-sense/phase
   nodes) are carried by same-name global labels with a short wire stub at
@@ -76,7 +76,7 @@ categories, called out explicitly rather than silently blended in:
      this schematic; both parts are placed, only one path is wired to the
      MCU.
    - `nFAULT` (DRV8353S) is pulled up but not wired to any MCU pin -- the
-     MCU pin map in `symbols/specs/MSPM0G3507.json` doesn't reserve one, and
+     MCU pin map in `symbols/specs/S32K144.json` doesn't reserve one, and
      inventing a new pin assignment here would itself be a fabricated design
      decision.
    - The isolated-side supply pins on both transceivers
@@ -126,8 +126,7 @@ counterpart) marking where that external pack connects.
 
 | Library nickname | Symbol | Verified? |
 | --- | --- | --- |
-| `MSPM0G3507` | MCU | pin subset VERIFIED |
-| `SLB9672` | TPM | VERIFIED, full 32-pin |
+| `S32K144` | MCU (on-chip CSEc security module, no discrete TPM) | feature-level facts VERIFIED; pin numbers UNVERIFIED PLACEHOLDER (see `symbols/specs/S32K144.json`) |
 | `ADM2582E_ADM2587E` | RS-485 transceiver | VERIFIED, full 20-pin |
 | `ADM3055E_ADM3057E` | CAN-FD transceiver | VERIFIED, full 20-pin |
 | `DRV8353S` | gate driver | pin map VERIFIED (footprint still TBD, see above) |

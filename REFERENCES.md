@@ -36,6 +36,16 @@ Cortex-M0+), product family G (80 MHz), device subfamily 350 (CAN-FD,
 Cited in: README.md (MCU line); symbols/specs/MSPM0G3507.json (pin map,
 64-LQFP subset used by this build); builds/6s/50A/CAN_485_faraday/README.md.
 Date accessed: 2026-08-02.
+**SUPERSEDED 2026-08-03: this repo's project MCU changed from the
+MSPM0G3507 to the NXP S32K144 — see [31].** Entry retained in full per
+`AGENTS.md` §2.5 ("never renumber or repurpose an existing tag for a
+different source"); this citation is historical only and is no longer
+referenced by README.md or any current build BOM/schematic.
+`symbols/specs/MSPM0G3507.json` and `symbols/MSPM0G3507.kicad_sym` were
+removed from the repo as part of the MCU swap (unused, superseded by
+`symbols/specs/S32K144.json` / `symbols/S32K144.kicad_sym`, [31]); the local
+datasheet copy `docs/datasheets/mspm0g3507.pdf` this entry's "Local verified
+copy" line points to is kept as-is so this citation record stays resolvable.
 
 ---
 
@@ -60,8 +70,18 @@ bypass, 10 kΩ CS# pull-up).
 Cited in: README.md (TPM line); symbols/specs/SLB9672.json (full 32-pin
 map); builds/6s/50A/CAN_485_faraday/README.md.
 Date accessed: 2026-08-02.
-
----
+**DROPPED 2026-08-03: this repo removed the discrete SLB9672 TPM 2.0 from
+the design.** Message authentication is now provided by the project MCU's
+own on-chip security module instead of an external TPM — see [31] (NXP
+S32K144, Cryptographic Services Engine / CSEc). Entry retained in full per
+`AGENTS.md` §2.5 (never repurpose a citation tag); this citation is
+historical only and is no longer referenced by README.md or any current
+build BOM/schematic. `symbols/specs/SLB9672.json` and
+`symbols/SLB9672.kicad_sym` were removed from the repo (part no longer in
+any design); the local datasheet copy
+`docs/datasheets/infineon-slb9672-tpm20-spi-fw16.xx-datasheet-rev1.3.pdf`
+this entry's "Local verified copy" line points to is kept as-is so this
+citation record stays resolvable.
 
 **[3]** Telecommunications Industry Association, *Interface Between Data
 Terminal Equipment and Data Circuit-Terminating Equipment Employing Serial
@@ -890,6 +910,90 @@ Date accessed: 2026-08-02.
 
 ---
 
+**[31]** NXP Semiconductors, *S32K1xx Data Sheet* (covers S32K116, S32K118,
+S32K142, S32K142W, S32K144, S32K144W, S32K146, S32K148), document S32K1XX,
+Rev. 15, NXP Semiconductors, 5 March 2026 — Product data sheet. [Online].
+Available: https://www.nxp.com/products/S32K144 (product page; live fetch
+blocked: HTTP 403, 2026-08-03) and
+https://www.nxp.com/docs/en/data-sheet/S32K1XXDS.pdf (guessed-at-standard
+NXP doc-ID URL pattern, NOT independently confirmed to resolve — also
+blocked: HTTP 403, 2026-08-03 — do not treat either URL as verified;
+resolve properly before quoting it elsewhere).
+Local copy: `docs/datasheets/S32K1xx.pdf` (108 pp.) — `VERIFIED` (provided
+locally 2026-08-02/03; document's own title page, revision, and date read
+directly from the local PDF, independent of the unverified URLs above).
+Section/page: p.3, §1.1 "Key Features," "Safety and security" — "Cryptographic
+Services Engine (CSEc) implements a comprehensive set of cryptographic
+functions as described in the SHE (Secure Hardware Extension) Functional
+Specification." p.6, Figure 3 "S32K1xx product series comparison" — S32K144
+column: Arm Cortex-M4F core, 80 MHz (RUN) / 112 MHz (HSRUN); CSEc present
+(♦ marker); CRC, ISO 26262 capable up to ASIL-B, MPU, EWM all present; 512 KB
+flash, 64 KB system RAM (+4 KB FlexRAM, +4 KB cache), 4 KB EEPROM emulated by
+FlexRAM (up to 64 KB D-Flash); single supply 2.7-5.5 V; ambient operating
+temperature -40 °C to +105 °C/+125 °C (per ordering option, p.8); packages
+48-pin LQFP, 64-pin LQFP, 100-pin LQFP, 100-pin MAPBGA (this build selects
+64-pin LQFP, document number SOT1699-1 per p.89 Dimensions table — see
+below). Note: several rows in this same figure (e.g. "Number of I/Os,"
+FlexTimer/FlexCAN/LPUART/LPSPI channel counts) render as a single value
+spanning what appear to be two adjacent device columns (K142/K144 or
+K144/K146) once extracted to text — the underlying PDF table clearly shows
+one column per device but pdftotext's text-extraction merges some
+equal-valued adjacent cells, so which exact device each merged figure
+belongs to is not resolved with certainty from this pass; the only such
+figure carried into this repo's design docs ("up to 128 I/Os") is cited with
+that caveat rather than asserted as an exact single-device count. This
+build's actual peripheral use (1 FlexCAN-FD instance, 1 LPUART, 1 LPSPI, 4
+ADC channels, 6 PWM channels) is comfortably below every family member's
+*minimum* published figure in this same table, so the merge ambiguity does
+not affect any design decision actually made here.
+p.8, §4 "Ordering information" — CSEc appears explicitly as an orderable
+feature-option letter ("A1: CAN FD, FlexIO, Security"; "S: Security"),
+package-code table confirms 64-pin LQFP = ordering code "LH"; S32K14x memory
+digit 4 = 512 KB flash (matches "S32K144" naming, cross-checked against the
+512 KB figure in Figure 3). p.13, §5.4 "Power and ground pins," 64 LQFP
+package diagram — real, distinct power/analog-reference pin names: VDD,
+VSS, VDDA, VREFH, and a combined VREFL/VSSA/VSS pin (external CDEC/CREF
+decoupling shown but not itself a package pin). p.14 note — "VSSA and VSS
+are shorted at package level," confirming the combined pin above is a real
+package-level short, not a schematic simplification. p.26, Table
+(AC/DC electrical specifications) — symbol "RESET_B," confirming the real
+reset pin name used by this device family (not the generic "NRST" label
+this repo's now-superseded MSPM0G3507 spec used). p.77, Table (LPSPI/SWD AC
+electrical specifications) — symbols "SWD_CLK" and "SWD_DIO," confirming
+the real 2-wire SWD debug pin names (also referenced by name at p.3, "Up to
+20 MHz TCLK and 25 MHz SWD_CLK"). p.89, "9.1 Obtaining package dimensions"
+table — 64-pin LQFP package document number SOT1699-1, manufacture code
+98ASS23234W (exact package body dimensions not printed in this data sheet;
+would need that SOT drawing itself, not yet obtained).
+**Not verified / explicitly out of scope this pass:** this data sheet
+states, p.89, §10.1 "Package pinouts and signal descriptions": "For package
+pinouts and signal descriptions, refer to the Reference Manual" — i.e. the
+physical package-pin-NUMBER-to-signal assignment (which pin is FlexCAN0_TX,
+which is LPSPI0_SCK, etc.) is NOT contained in this document at all, by the
+document's own statement, and is therefore not available to verify against
+in this repo. The S32K1xx Series Reference Manual itself was not obtained
+this session (nxp.com fetch blocked, see above) — `symbols/specs/S32K144.json`'s
+pin `"num"` values are therefore an `UNVERIFIED PLACEHOLDER PIN MAP` per
+`AGENTS.md` §1.3/§3, not read from any primary source; see that file's own
+`verification` field and `TODO.md` for what would need to be resolved
+before upgrading to VERIFIED. Likewise, this data sheet names the "SHE
+(Secure Hardware Extension) Functional Specification" but does not itself
+spell out the algorithm-level detail (e.g. AES-128-CMAC) of CSEc's
+message-authentication function — that detail is publicly known to be part
+of the SHE specification's command set (`GENERATE_MAC`/`VERIFY_MAC`) from
+general industry familiarity with SHE-compliant HSMs, but this repo has not
+independently obtained and verified either the SHE Functional Specification
+itself or the S32K1xx Reference Manual's CSEc chapter this session, so that
+specific algorithm claim is flagged `UNVERIFIED — needs primary source (see
+TODO.md)` rather than asserted as a settled citation.
+Candidate replacement decision for the project MCU (was MSPM0G3507, [1],
+now S32K144), and for the project's message-authentication mechanism (was
+external SLB9672 TPM, [2], now on-chip CSEc) — see `README.md`,
+`builds/6s/50A/CAN_485_faraday/README.md`, `symbols/specs/S32K144.json`.
+Date accessed: 2026-08-03.
+
+---
+
 ## Pending Verification — Not Yet Cited
 
 The following items are named in `README.md` but currently have **no**
@@ -927,6 +1031,15 @@ to a standard until one is located and verified (see `AGENTS.md` §1.3):
   live-fetch tooling was blocked — see the methodology note below); a
   follow-up pass must open the primary documents directly before these
   move from "candidate" to "settled."
+- **S32K1xx Series Reference Manual and SHE Functional Specification** —
+  needed to upgrade `symbols/specs/S32K144.json`'s pin map from
+  `UNVERIFIED PLACEHOLDER` to `VERIFIED` (physical package-pin numbers for
+  the 64-pin LQFP are not in the local data sheet [31] itself — see that
+  entry's "Not verified" note) and to independently confirm CSEc's
+  message-authentication algorithm (AES-128-CMAC per general SHE-HSM
+  industry knowledge, not yet confirmed against either primary document).
+  Neither document was reachable this session (nxp.com fetch blocked, same
+  pattern as [2]/[6]/[12]-[23]). Tracked in `TODO.md`.
 
 **Methodology note on [12]–[23] (2026-08-02, updated same day):** every
 new entry added in the first pass was researched with the live-fetch

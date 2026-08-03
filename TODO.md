@@ -10,8 +10,27 @@ detail belongs in design docs, not here.
 - [x] 1.2 REFERENCES.md — IEEE bibliography scaffold
 - [x] 1.3 TODO.md — this WBS
 - [x] 1.4 Verify [1] MSPM0G3507 datasheet doc ID/rev/page (local copy
-      verified 2026-08-02; live ti.com fetch blocked: 403)
-- [ ] 1.5 Verify [2] SLB9672 datasheet page refs for compliance claims (blocked: 403 on infineon.com)
+      verified 2026-08-02; live ti.com fetch blocked: 403). **[1] superseded
+      2026-08-03 — project MCU changed to NXP S32K144, see 1.11/[31].**
+- [x] 1.5 Verify [2] SLB9672 datasheet page refs for compliance claims —
+      superseded by dropping the part before this was resolved. **[2]
+      DROPPED 2026-08-03 — TPM removed from design in favor of the S32K144's
+      on-chip CSEc, see 1.11/4.1/[31].**
+- [~] 1.11 Verify [31] NXP S32K1xx Data Sheet claims used in
+      `symbols/specs/S32K144.json`/README.md (local copy VERIFIED
+      2026-08-03 for CSEc, packages, memory, clock, power-pin names,
+      RESET_B/SWD_CLK/SWD_DIO pin names — see [31] for exact pages; live
+      nxp.com fetch blocked: 403, same pattern as [2]/[6]/[12]-[23]). Still
+      open: (a) physical package-pin **numbers** for the 64-pin LQFP — the
+      local data sheet explicitly defers this to the S32K1xx Series
+      Reference Manual, not obtained this session;
+      `symbols/specs/S32K144.json`'s `pins[].num` values are an
+      `UNVERIFIED PLACEHOLDER PIN MAP` until that RM (or NXP's IO Signal
+      Description / Signal Multiplexing spreadsheet) is obtained and read.
+      (b) CSEc's message-authentication algorithm detail (AES-128-CMAC per
+      general SHE-HSM industry knowledge) is not yet confirmed against the
+      SHE Functional Specification or the S32K1xx RM's CSEc chapter,
+      neither of which was reachable this session.
 - [ ] 1.6 Verify [3]-[7] section/page pins once standards obtained (paywalled)
 - [ ] 1.7 Confirm MIL-STD-1553B vs -1553C target revision, update [7]
 - [~] 1.8 Source authoritative refs: SBus, DBus, PWM-interface, UART/TTL/SPI, EMI tiers
@@ -47,21 +66,34 @@ detail belongs in design docs, not here.
 ## 2. Requirements
 
 - [ ] 2.1 Functional requirements spec (per voltage/amperage/protocol/control/EMI variant)
-- [ ] 2.2 Safety requirements (motor runaway, overcurrent, thermal, TPM attestation trust boundary)
+- [ ] 2.2 Safety requirements (motor runaway, overcurrent, thermal, CSEc-based message-authentication trust boundary)
 - [ ] 2.3 Regulatory/EMC targets per market (cite standard, C6)
 - [ ] 2.4 Requirements traceability matrix → REFERENCES.md tags
 
 ## 3. Hardware — MCU Subsystem
 
-- [ ] 3.1 MSPM0G3507 schematic (power, clock, decoupling per [1])
-- [ ] 3.2 Programming/debug interface (SWD)
+- [~] 3.1 S32K144 schematic (power, clock, decoupling per [31]) — MCU/support
+      passives placed and wired in `builds/6s/50A/CAN_485_faraday/kicad/`
+      (VDD/VSS/VDDA/VREFH/VREFL_VSSA_VSS decoupling per [31] p.13's "VDD and
+      VDDA must be shorted to a common source" requirement); physical pin
+      **numbers** still UNVERIFIED PLACEHOLDER, see 1.11.
+- [ ] 3.2 Programming/debug interface (SWD_CLK/SWD_DIO per [31])
 - [ ] 3.3 Peripheral pin mapping vs. protocol variant matrix
 
 ## 4. Hardware — Trust/Security Subsystem
 
-- [ ] 4.1 SLB9672 TPM schematic (SPI per [2])
-- [ ] 4.2 Secure boot / attestation chain design doc
-- [ ] 4.3 Key provisioning process
+- [x] 4.1 ~~SLB9672 TPM schematic (SPI per [2])~~ — **superseded 2026-08-03:
+      external TPM dropped from the design.** Message authentication is now
+      provided by the S32K144's on-chip CSEc security module [31] — no
+      discrete chip, no SPI schematic needed; CSEc is driven entirely by
+      firmware over an internal command interface (see 4.4 below).
+- [ ] 4.2 Secure boot / attestation chain design doc (now CSEc/SHE-based —
+      see [31], and 1.11 for what's still open on the SHE spec itself)
+- [ ] 4.3 Key provisioning process (CSEc key slots per the SHE Functional
+      Specification's command set — spec itself not yet obtained, see 1.11)
+- [ ] 4.4 CSEc firmware integration: message authentication (CMAC
+      generate/verify per SHE) for CAN/RS-485 frame traffic — algorithm
+      detail (AES-128-CMAC) UNVERIFIED against a primary source pending 1.11
 
 ## 5. Hardware — Power Stage
 
@@ -138,9 +170,19 @@ detail belongs in design docs, not here.
 - [x] 11.1 Generator + JSON-spec workflow (`symbols/tools/gen_kicad_symbol.py`,
       `symbols/specs/*.json`) so future components/builds source a pin map
       once and regenerate rather than hand-edit S-expressions
-- [x] 11.2 MSPM0G3507 [1] symbol — pin subset VERIFIED against local PDF
-      Table 6-2 (64-LQFP column); full 64-pin symbol not yet built
-- [x] 11.3 SLB9672 [2] symbol — full 32-pin, VERIFIED, footprint-complete
+- [x] 11.2 ~~MSPM0G3507 [1] symbol~~ — removed 2026-08-03, superseded by
+      11.7 (S32K144). Historical: pin subset VERIFIED against local PDF
+      Table 6-2 (64-LQFP column); full 64-pin symbol was never built.
+- [x] 11.3 ~~SLB9672 [2] symbol~~ — removed 2026-08-03, TPM dropped from
+      the design (see 4.1). Historical: full 32-pin, VERIFIED,
+      footprint-complete.
+- [~] 11.7 S32K144 [31] symbol (`symbols/specs/S32K144.json`) — replaces
+      11.2 as the project MCU. Feature-level facts VERIFIED against the
+      local S32K1xx Data Sheet; pin **numbers** are an
+      `UNVERIFIED PLACEHOLDER PIN MAP` — the local datasheet defers the
+      physical pinout to the S32K1xx Series Reference Manual (not
+      obtained, nxp.com fetch blocked: 403). Do not send to fab until
+      resolved — see 1.11.
 - [x] 11.4 ADM2582E/ADM2587E [9] and ADM3055E/ADM3057E [10] symbols — full
       20-pin, VERIFIED against local PDFs
 - [x] 11.5 DRV8353S [21] and INA240 [22] symbols — both resolved
@@ -168,3 +210,8 @@ detail belongs in design docs, not here.
       choice (isolation voltage vs. data rate) and DRV8353S-vs-INA240
       current-sense sourcing are open design questions, not resolved in
       that build's README.
+      **2026-08-03: MCU/TPM swap applied to this build** — U1 is now
+      S32K144 (was MSPM0G3507), the SLB9672 TPM (U2) was removed, schematic
+      and PCB regenerated via `kicad/tools/gen_schematic.py`/`gen_pcb.py`
+      (connectivity check clean, `check_shorts.py` clean, kiutils
+      round-trip validated). See 1.11/3.1/4.1 for what's still open.

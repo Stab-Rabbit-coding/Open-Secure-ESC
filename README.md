@@ -2,8 +2,8 @@
 
 All builds:
 
-MCU: MSPM0G3507 [1]
-TPM: SLB9672 [2]
+MCU: NXP S32K144 [31]
+Message authentication: on-chip CSEc (Cryptographic Services Engine, SHE-compliant) security module built into the S32K144 [31] — no discrete TPM (the previously used Infineon SLB9672 [2] has been dropped from this design)
 
 Build Options:
 

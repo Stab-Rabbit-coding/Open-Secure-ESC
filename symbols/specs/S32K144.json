@@ -1,0 +1,45 @@
+{
+  "name": "S32K144",
+  "reference": "U",
+  "footprint": "Package_QFP:LQFP-64_10x10mm_P0.5mm",
+  "datasheet": "docs/datasheets/S32K1xx.pdf",
+  "description": "NXP S32K144 Arm Cortex-M4F MCU with on-chip CSEc (Cryptographic Services Engine, SHE-compliant) security module, 64-pin LQFP -- project MCU per README.md. Replaces the MSPM0G3507 (REFERENCES.md [1], superseded); the SLB9672 external TPM (REFERENCES.md [2], dropped) is no longer part of this design -- CSEc provides on-chip message authentication instead, see this file's verification field and README.md.",
+  "citation": "[31]",
+  "verification": "MIXED -- feature-level facts VERIFIED, physical pin NUMBERS are an UNVERIFIED PLACEHOLDER PIN MAP, per AGENTS.md SS1.3/SS3. VERIFIED against the local copy of [31] (S32K1xx Data Sheet Rev. 15, 5 March 2026): Arm Cortex-M4F core, 80 MHz (RUN) / 112 MHz (HSRUN) (p.6, Fig.3); on-chip CSEc implementing the SHE (Secure Hardware Extension) Functional Specification's cryptographic function set (p.3 SS1.1); 512 KB flash / 64 KB RAM (p.6, Fig.3); 64-pin LQFP is one of four packages this device ships in (48-LQFP, 64-LQFP, 100-LQFP, 100-MAPBGA -- p.6, Fig.3), document number SOT1699-1 (p.89); real power/analog-reference pin NAMES VDD, VSS, VDDA, VREFH, and a combined VREFL/VSSA/VSS pin (p.13 SS5.4, p.14 short note); real reset pin name RESET_B (p.26); real SWD pin names SWD_CLK/SWD_DIO (p.3, p.77). UNVERIFIED / PLACEHOLDER: the local data sheet explicitly states (p.89 SS10.1) that package pinouts and signal descriptions are in the S32K1xx Series Reference Manual, NOT this document -- that Reference Manual was not obtained this session (nxp.com fetch returned HTTP 403, matching this repo's established pattern for this vendor). Every pin 'num' below is therefore a sequential PLACEHOLDER (1..27 in the order pins are listed here) and does NOT represent a real, datasheet-confirmed physical package pin location -- do not send to fab. This build's own signal-role names (CAN_TX, RS485_TXD, GD_SPI_*, ADC_*, PWM_*, etc., mirroring the naming convention already used in the now-superseded symbols/specs/MSPM0G3507.json) are this build's functional labels, not literal NXP silicon pad names, same convention as before. No TPM_SPI_*/TPM_PIRQ#/TPM_RST# pins are included -- CSEc is an internal peripheral with no dedicated external pins (it is driven by firmware over an internal command interface, not an external bus), so dropping the SLB9672 also frees the LPSPI channel that build previously reserved for it; see TODO.md for what would upgrade this from PLACEHOLDER to VERIFIED (S32K1xx Reference Manual pinout chapter, or NXP's IO Signal Description / Signal Multiplexing spreadsheet attachment).",
+  "pins": [
+    {"num": "1",  "name": "VDD",              "etype": "power_in",       "side": "top"},
+    {"num": "2",  "name": "VSS",               "etype": "power_in",       "side": "top"},
+    {"num": "3",  "name": "VDDA",              "etype": "power_in",       "side": "top"},
+    {"num": "4",  "name": "VREFH",             "etype": "power_in",       "side": "top"},
+    {"num": "5",  "name": "VREFL_VSSA_VSS",    "etype": "power_in",       "side": "top"},
+
+    {"num": "6",  "name": "RESET_B",           "etype": "bidirectional",  "side": "top"},
+
+    {"num": "7",  "name": "SWD_CLK",           "etype": "input",          "side": "left"},
+    {"num": "8",  "name": "SWD_DIO",           "etype": "bidirectional",  "side": "left"},
+
+    {"num": "9",  "name": "CAN_TX",            "etype": "output",         "side": "left"},
+    {"num": "10", "name": "CAN_RX",             "etype": "input",          "side": "left"},
+
+    {"num": "11", "name": "RS485_TXD",          "etype": "output",         "side": "left"},
+    {"num": "12", "name": "RS485_RXD",          "etype": "input",          "side": "left"},
+    {"num": "13", "name": "RS485_DE_RE",        "etype": "output",         "side": "left"},
+
+    {"num": "14", "name": "GD_SPI_CS",          "etype": "output",         "side": "right"},
+    {"num": "15", "name": "GD_SPI_MISO",        "etype": "input",          "side": "right"},
+    {"num": "16", "name": "GD_SPI_MOSI",        "etype": "output",         "side": "right"},
+    {"num": "17", "name": "GD_SPI_SCK",         "etype": "output",         "side": "right"},
+
+    {"num": "18", "name": "ADC_IU",             "etype": "input",          "side": "bottom"},
+    {"num": "19", "name": "ADC_IV",             "etype": "input",          "side": "bottom"},
+    {"num": "20", "name": "ADC_IW",             "etype": "input",          "side": "bottom"},
+    {"num": "21", "name": "ADC_VBUS",           "etype": "input",          "side": "bottom"},
+
+    {"num": "22", "name": "PWM_AH",             "etype": "output",         "side": "bottom"},
+    {"num": "23", "name": "PWM_AL",             "etype": "output",         "side": "bottom"},
+    {"num": "24", "name": "PWM_BH",             "etype": "output",         "side": "bottom"},
+    {"num": "25", "name": "PWM_BL",             "etype": "output",         "side": "bottom"},
+    {"num": "26", "name": "PWM_CH",             "etype": "output",         "side": "bottom"},
+    {"num": "27", "name": "PWM_CL",             "etype": "output",         "side": "bottom"}
+  ]
+}
