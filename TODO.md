@@ -35,26 +35,35 @@ detail belongs in design docs, not here.
       RSA/ECC/certificate commands anywhere in Ch. 36) — used in the new
       security-module comparison doc, see 1.12 below.
 - [x] 1.12 `docs/security-mcu-comparison.md` — NXP S32K144 CSEc vs.
-      Infineon SLB9672 TPM 2.0 comparison (authentication/message-signing,
-      PKI capability, footprint, EMI/ESD/EMC, indicative pricing), plus a
-      survey of three other 5V-class automotive MCU security options
-      (Infineon TLE987x/TLE9879 — no on-chip crypto engine found in its
-      official CMSIS DFP, [32], `UNVERIFIED` beyond that; Microchip
-      dsPIC33CK512MPT608 "Secure" DSC family, [33] — **VERIFIED
-      2026-08-03** once its datasheet was added locally (manual download,
-      same workaround as 1.10/1.6): full on-die PKI (ECDSA
-      P224/P256/P384/Brainpool/secp256k1, RSA 2048 sign/3072 verify,
-      X.509 cert storage/parsing/validation/revocation), AEC-Q100 Grade 1,
-      100-TQFP — but turned out to be a 3.0–3.6V part, **not** natively
-      5V (corrects the `UNVERIFIED` search-snippet claim first logged
-      under [33]); Renesas RH850/U2A16 EVITA-Full HSM, [34]
-      `UNVERIFIED`). Supports 4.2. Every external vendor/distributor
-      fetch attempted for the survey (§8/§9 of that doc) returned HTTP 403
-      this session except one Infineon-hosted GitHub file [32]; §8.1
-      (TLE987x/TLE9879) and §8.3 (RH850/U2A16) remain explicitly marked
-      `UNVERIFIED — needs primary source` pending a session where
-      infineon.com/renesas.com/digikey.com/mouser.com are reachable, or a
-      manual PDF download (same workaround that resolved [33]).
+      Infineon SLB9672 TPM 2.0 comparison (authentication/message-signing
+      latency, PKI capability, footprint, EMI/ESD/EMC, pricing), expanded
+      2026-08-03 into a full 8-candidate survey as more datasheets were
+      added to the repo: Infineon TLE987x/TLE9879 (§9.1, no crypto engine,
+      [32] `UNVERIFIED` beyond the CMSIS pack); Microchip dsPIC33CK512MPT608
+      (§9.2, [33], VERIFIED — full on-die PKI/X.509, AEC-Q100 Grade 1,
+      100-TQFP, 3.0–3.6V not 5V, availability unclear); Renesas RH850/U2A16
+      (§9.3, [34], `UNVERIFIED`); STM32G431K + SLB9672 combo (§9.4, [35]
+      restored from git history + [2], VERIFIED — weakest option: no
+      AEC-Q100, worst ESD, no on-die crypto fallback); Microchip SAM E51G19
+      (§9.5, [36], VERIFIED — AES/TRNG/PUKCC math accelerator + ICM hash
+      engine with real cycle counts, AEC-Q100 Grade 1, 25 mm²); TI
+      TMS320F280025(-Q1) (§9.6, [37], VERIFIED — **excluded**, no crypto
+      module, only DCSM code-protection); TI MSPM0G3107 (§9.7, [38]-[42],
+      VERIFIED — AES/CRC/TRNG + platform secure-boot/Keystore/software-ECDSA
+      per the cybersecurity app note [40], real AES cycle-count latency
+      data from the TRM [39], Cortex-M0+ core is the one weak point); TI
+      MSPM0G350x-Q1 (§9.8, [43], VERIFIED — same security model as 9.7 plus
+      ISO 26262 ASIL B TÜV certification and AEC-Q100 Grade 1 stated
+      directly, smallest footprint (~21 mm²) in the whole survey). New §8
+      resolves the standing "can the bus/crypto keep up" question with the
+      MSPM0/SAM cycle-count data: symmetric MAC is always fast enough
+      (microseconds); only asymmetric/PKI primitives are architecturally
+      unsuited to per-frame authentication, regardless of chip. §6.1 records
+      the 5V-vs-3.3V EMI/SNR design-rationale discussion (repo owner
+      confirmed most of the rest of this project is 3.3V-class). Supports
+      4.2. Repo owner separately confirmed CSC-vs-BIM secure-boot choice is
+      a firmware/SDK decision usable on either MSPM0 part, not gated by
+      silicon variant (noted in [40]'s entry and §9.7/§9.8).
 - [ ] 1.6 Verify [3]-[7] section/page pins once standards obtained (paywalled)
 - [ ] 1.7 Confirm MIL-STD-1553B vs -1553C target revision, update [7]
 - [~] 1.8 Source authoritative refs: SBus, DBus, PWM-interface, UART/TTL/SPI, EMI tiers

@@ -1114,6 +1114,304 @@ Date accessed (search only, not page fetch): 2026-08-03.
 
 ---
 
+**[35]** STMicroelectronics, *STM32G431x6 STM32G431x8 STM32G431xB — Arm®
+Cortex®-M4 32-bit MCU*, datasheet, DS12589, Rev. 6, STMicroelectronics,
+Geneva, Switzerland, 2019-05 (revised 2021-10). [Online]. Available:
+https://www.st.com/resource/en/datasheet/stm32g431c6.pdf (live fetch not
+reattempted this session — see TODO.md 1.10 for this repo's established
+403 pattern on st.com).
+Local copy: `docs/datasheets/stm32g431c6.pdf` (198 pp.) — `VERIFIED`. This
+file was removed from the repo 2026-08-02 when the project MCU changed from
+STM32G431C6 to the MSPM0G3507 (superseded [1]) and was not previously
+cited in this file under any tag; it has been restored to the repo from
+git history (commit `33530d4`) 2026-08-03 specifically to support the
+STM32G431K + SLB9672 combo comparison in `docs/security-mcu-comparison.md`
+§8.4, and is cited under this new tag rather than reusing [1] (a different
+document, the MSPM0G3507 datasheet) per `AGENTS.md` §2.5.
+Section/page: p.1, "Features" — operating voltage VDD/VDDA 1.71 V to
+3.6 V; LQFP32 (7×7 mm) and UFQFPN32 (5×5 mm) package options shown on the
+cover package-list figure. p.2, Table 1 "Device summary" — STM32G431x6/
+x8/xB subfamily includes ordering codes with pin-count letter K = 32 pins
+(also C=48/49, R=64, M=80, V=100). p.15 (§3.11.1 "Power supply schemes")
+and p.1 restate VDD = 1.71–3.6 V as the single external supply voltage.
+p.109, Table 48 "EMS characteristics" — voltage limits to induce a
+functional disturbance, tested per IEC 61000-4-2 (ESD immunity during
+operation); "EMI Level 4" radiated-emissions class table (bands 130 MHz–
+1 GHz: 25 dBµV/m equivalent; 1 GHz–2 GHz: 18) per IEC 61967-2. p.109,
+Table 50 "ESD absolute maximum ratings" — HBM ±2000 V per ANSI/ESDA/JEDEC
+JS-001 Class 2; CDM ±250 V per ANSI/ESDA/JEDEC JS-002 Class C1. p.110,
+Table 51 "Electrical sensitivities" — static latch-up Class II Level A at
+125 °C per JESD78E. p.194, Table 101 "Ordering information scheme" —
+Temperature-range codes "6" and "3" are both labeled "Industrial
+temperature range" (-40 °C to 85/125 °C); mission-profile compliance is
+stated (p.~65 area) against JEDEC JESD47, not AEC-Q100. The string
+"AEC-Q100" does not appear anywhere in this 198-page document (confirmed
+by full-text search) — this part is **not** shown to be AEC-Q100 qualified
+by its own datasheet, in contrast to [31] and [33].
+Cited in: `docs/security-mcu-comparison.md` §8.4.
+Date accessed: 2026-08-03.
+
+---
+
+**[36]** Microchip Technology Inc., *SAM D5x/E5x Family Data Sheet*,
+DS60001507, Rev. G, Microchip Technology Inc., Chandler, AZ, USA, 2021.
+[Online]. Available:
+https://www.microchip.com/en-us/product/atsame51g19a (product page;
+live fetch blocked: HTTP 403, 2026-08-03).
+Local copy: `docs/datasheets/SAM_D5x_E5x_Family_Data_Sheet_DS60001507G.pdf`
+(1934 pp., password-empty-encrypted) — `VERIFIED`.
+Section/page: p.1, "Features" — operating conditions 1.71 V to 3.63 V;
+"One Advanced Encryption System (AES) with 256-bit key length and up to
+2 MB/s data rate"; "True Random Number Generator (TRNG)"; "Public Key
+Cryptography Controller (PUKCC) and associated Classical Public Key
+Cryptography Library." p.3, package/qualification bullets — package
+options VQFN/TQFP/TFBGA/WLCSP; "AEC-Q100 Grade 1 (-40°C to 125°C)."
+p.4/p.19, ordering/package tables — 48-pin VQFN (5×5×0.9 mm), 64-pin
+TQFP/VQFN/WLCSP, 100-pin TQFP, 120-ball TFBGA, 128-pin TQFP; "the AEC-Q100
+Grade 1 qualified version is only offered in the TQFP, VQFN and BGA
+packages" (WLCSP excluded). p.1307–1308, Ch. 43 "Public Key Cryptography
+Controller (PUKCC)" — "processes public key cryptography algorithm
+calculus in both GF(p) and GF(2n) fields"; library (PUKCL, ROM-resident)
+implements RSA/DSA modular exponentiation up to 7168-bit (with CRT) or
+5376-bit (without), ECDSA over GF(p) up to 521-bit and GF(2n) up to
+571-bit for common curves; described as "a peripheral that can be used to
+accelerate public key cryptography" accessed via a software API — no
+isolated/protected key storage, certificate handling, or FIPS/CC
+certification is claimed for this peripheral anywhere in this chapter (a
+math accelerator, not a self-contained secure element, in contrast to
+[2] and [33]). p.626, Ch. 26 "ICM - Integrity Check Monitor" — DMA-driven
+SHA1/SHA224/SHA256 hashing (FIPS PUB 180-2 compliant) over up to four
+memory regions, with published run-time periods of 85 or 209 clock cycles
+(SHA1) and 72 or 194 clock cycles (SHA224/SHA256) — the only cycle-count
+hashing-latency figures found anywhere in this whole comparison's source
+set. p.1787, Table 54-1 "Absolute Maximum Ratings" — HBM 2000 V per
+JESD22-A114; CDM 750 V (mid and corner) per AEC Q100-011.
+Cited in: `docs/security-mcu-comparison.md` §8.5.
+Date accessed: 2026-08-03.
+
+---
+
+**[37]** Texas Instruments Incorporated, *TMS320F28002x Real-Time
+Microcontrollers*, datasheet, SPRSP45C, Texas Instruments Incorporated,
+Dallas, TX, USA, 2020-03 (revised 2024-04). [Online]. Available:
+https://www.ti.com/lit/ds/symlink/tms320f280025.pdf (live fetch blocked:
+HTTP 403, 2026-08-03, same pattern as [1]).
+Local copy: `docs/datasheets/tms320f280025.pdf` (243 pp.) — `VERIFIED`.
+Section/page: p.1, "Features" — "Dual-zone security" under On-chip
+memory; "Single 3.3V supply." p.3, "Package options" — 80-pin LQFP [PN],
+64-pin LQFP [PM], 48-pin LQFP [PT]. p.188, §7.11 "Dual Code Security
+Module" — DCSM prevents access to on-chip secure memories via a 128-bit
+zone password; the datasheet's own Code Security Module Disclaimer states
+TI "does not... warrant or represent that the CSM cannot be compromised or
+breached." No AES, RSA, ECC, SHA, or other cryptographic-authentication
+peripheral is named anywhere in this device's own feature list, memory
+map, or register summary (confirmed by full-text search for "AES" — the
+only 3 occurrences in the whole document are inside an unrelated
+"Merchant Telecom Rectifier" application-circuit block diagram (p.203–
+205), not this device's own peripheral list, and could not be confirmed
+to describe an on-chip AES engine on this specific part rather than a
+broader reference-design security goal). p.48–49, §6.2–6.3 "ESD Ratings —
+Commercial" / "ESD Ratings — Automotive" — commercial parts: HBM ±2000 V
+(JS-001), CDM ±500 V all pins/±750 V corner (JS-002); **automotive
+(-Q1) parts have a separate table**: HBM ±2000 V per AEC Q100-002, CDM
+±500 V all pins/±750 V corner per AEC Q100-011. p.204, "Package
+Information" table — TMS320F280025-Q1 exists as a genuine, separately
+AEC-Q100-tested catalog part (PN/PM/PT package bodies 12×12/10×10/7×7 mm).
+No IEC 61000-4-x citation found anywhere in this document (full-text
+search).
+Cited in: `docs/security-mcu-comparison.md` §8.6 (excluded from the
+security-module shortlist — see that section's Assessment).
+Date accessed: 2026-08-03.
+
+---
+
+**[38]** Texas Instruments Incorporated, *MSPM0G310x Mixed-Signal
+Microcontrollers With CAN-FD Interface*, datasheet, SLASF12D, Texas
+Instruments Incorporated, Dallas, TX, USA, 2023-02 (revised 2025-10).
+[Online]. Available: https://www.ti.com/lit/ds/symlink/mspm0g3107.pdf
+(live fetch blocked: HTTP 403, 2026-08-03, same pattern as [1]).
+Local copy: `docs/datasheets/mspm0g3107.pdf` (98 pp.) — `VERIFIED`.
+Section/page: p.1, "Features" — Arm Cortex-M0+ up to 80 MHz; "Wide supply
+voltage range: 1.62V to 3.6V"; "Data integrity and encryption: Cyclic
+redundancy checker (CRC-16, CRC-32); True random number generator (TRNG);
+AES encryption with 128-bit or 256-bit key" — no RSA/ECC/certificate
+capability listed. Package options: 32-pin VQFN (RHB, 0.5 mm pitch),
+28-pin VSSOP (28DGS), 20-pin VSSOP (20DGS); family members MSPM0G3105
+(32 KB flash/16 KB RAM), MSPM0G3106 (64 KB/32 KB), MSPM0G3107 (128 KB/
+32 KB). p.2, Table 3-1 "Device Comparison" — 32 VQFN = 5 mm×5 mm; 28
+VSSOP = 7.1 mm×4.9 mm; 20 VSSOP = 5.1 mm×4.9 mm, for all three flash-size
+variants. p.13, Table 6-3 "Signal Descriptions" — CAN_TX/CAN_RX are
+broken out on all three packages (pin 16/17 on the 32-VQFN; present down
+to the 20-pin VSSOP), confirming CAN-FD is available even on the smallest
+package. p.39, §7.2 "ESD Ratings" — HBM ±2000 V per ANSI/ESDA/JEDEC
+JS-001; CDM ±500 V per JEDEC JESD22-C101 — this is the base/commercial
+part's rating; no separate automotive ESD table is present in this
+document. p.53, §8.17 "AES" — "DMA support for ECB, CBC, OFB, and CFB
+cipher modes," identifying this as the basic AES module (TRM [39] Ch. 12),
+not the more capable AESADV module (TRM [39] Ch. 13, which adds native
+CMAC/GCM/CCM) — this part does not have hardware-native CMAC. Ordering
+addendum (p.~24-Jun-2026 revision date shown in-document) lists
+"Automotive: MSPM0G3105-Q1, MSPM0G3106-Q1, MSPM0G3107-Q1," described as
+"Q100 devices qualified for high-reliability automotive applications
+targeting zero defects" — the automotive variant's own dedicated
+datasheet (distinct from this document) was not obtained this session; do
+not treat this base part's ESD/electrical figures as applying to the -Q1
+variant. No IEC 61000-4-x citation found in this document.
+Cited in: `docs/security-mcu-comparison.md` §8.7.
+Date accessed: 2026-08-03.
+
+---
+
+**[39]** Texas Instruments Incorporated, *MSPM0 G-Series 80MHz
+Microcontrollers Technical Reference Manual*, SLAU846E, Texas Instruments
+Incorporated, Dallas, TX, USA, 2023-06 (revised 2026-07). [Online].
+Available: https://www.ti.com/lit/ug/slau846e/slau846e.pdf (live fetch
+blocked: HTTP 403, 2026-08-03, same pattern as [1]).
+Local copy: `docs/datasheets/slau846e.pdf` (2521 pp.) — `VERIFIED`.
+Section/page: p.767–768, Ch. 12 "AES," §12.1.1 "AES Performance," Table
+12-1 "AES Hardware Accelerator Key Performance Metrics" — the only
+block-cipher execution-time table found anywhere in this comparison's
+entire source set: AES-128 encrypt 168 cycles (2.10 µs @ 80 MHz, 5.25 µs
+@ 32 MHz); AES-256 encrypt 234 cycles (2.93 µs / 7.31 µs); decrypt with
+pregenerated key same cycle counts as encrypt; Table 12-2 additionally
+gives raw (non-pregenerated-key) decryption at 215 cycles (AES-128) / 292
+cycles (AES-256), and key-schedule generation at 53/68 cycles. This is
+the basic "AES" module — confirmed present on the MSPM0G3107 [38] via its
+own §8.17. p.830–831, Ch. 13 "AESADV" — a separate, more capable AES
+peripheral supporting native hardware CMAC, GCM, and CCM authentication
+modes in addition to ECB/CBC/CFB/OFB/CTR — present on some other MSPM0
+G-series devices, not confirmed present on the MSPM0G3107 specifically
+(see [38]'s note).
+Cited in: `docs/security-mcu-comparison.md` §8.7, §9 (message-signing
+latency section).
+Date accessed: 2026-08-03.
+
+---
+
+**[40]** Texas Instruments Incorporated, *Cybersecurity Enablers in
+MSPM0 MCUs*, application note, SLAAE29A, Texas Instruments Incorporated,
+Dallas, TX, USA, 2023-01 (revised 2025-12). [Online]. Available:
+https://www.ti.com/lit/an/slaae29a/slaae29a.pdf (live fetch blocked:
+HTTP 403, 2026-08-03, same pattern as [1]).
+Local copy: `docs/datasheets/slaae29a.pdf` (44 pp.) — `VERIFIED`.
+Section/page: p.2, Table 1-1 "Key Concepts" — defines Secure Boot,
+Customer Secure Code (CSC, a secure-boot solution for devices with the
+INITDONE hardware-isolation mechanism), Boot Image Manager (BIM, the
+equivalent solution for devices without INITDONE), Root of Trust (ROM
+boot code plus statically write-protected CSC), Keystore ("secure storage
+for AES key. Only CSC can configure keys into Keystore and the main
+application can configure the crypto engine (AES) to use one of the
+stored keys but can never access any stored keys"), Firewall (dynamic
+flash write/read-execute/IP protection). Also in this table: "SHA2-256...
+Only supported via software in MSPM0 devices" and "ECDSA P256, an
+asymmetric algorithm to verify message authenticity... Only supported via
+software in MSPM0 devices" — i.e. no hardware acceleration for either
+primitive, but the capability exists as an SDK-provided software library,
+which is more than CSEc [31] offers (CSEc has no asymmetric-crypto path
+at all, hardware or software, per its command set). p.17, Table
+"Secure Boot Solution: Boot Image Manager (BIM) | Customer Secure Code
+(CSC)" — "Keystore: No | Yes," showing Keystore is only available via the
+CSC (INITDONE-based) secure-boot path, not the BIM one. **2026-08-03
+update:** the repo owner's own direct investigation found that the choice
+between CSC and BIM is a firmware/SDK-level implementation decision, not a
+hardware capability gated to a specific MSPM0 sub-family/part — this is
+attributed to that investigation rather than re-derived from a specific
+page of this document in this session (see
+`docs/security-mcu-comparison.md` §9.7/§9.8 for where it's used; a precise
+section/page citation for the INITDONE-availability claim itself would
+upgrade this from attributed-finding to independently `VERIFIED`).
+p.37, §4.7 "Hardware Monotonic Counter" — anti-rollback protection
+mechanism for firmware updates.
+Cited in: `docs/security-mcu-comparison.md` §8.7 and §9.
+Date accessed: 2026-08-03.
+
+---
+
+**[41]** Texas Instruments Incorporated, *EMC Improvement Guide for
+MSPM0*, application note, SLAAET8A, Texas Instruments Incorporated,
+Dallas, TX, USA, 2025-04 (revised 2025-12). [Online]. Available:
+https://www.ti.com/lit/an/slaaet8a/slaaet8a.pdf (live fetch blocked:
+HTTP 403, 2026-08-03, same pattern as [1]).
+Local copy: `docs/datasheets/slaaet8a.pdf` (27 pp.) — `VERIFIED`.
+Section/page: p.3–4, §2.2 "EMC Standards" — names IEC 61000-4-2 (ESD
+immunity), -4-3 (radiated immunity), -4-4 (fast transient/burst), -4-5
+(surge), -4-6 (conducted immunity) as the IEC 61000 series EMS test
+standards, and CISPR 25 / CISPR 22/32 as the radiated/conducted emissions
+standards, that this design-guidance document is written against. This
+document is explicitly a checklist/design guide ("Most of the content is
+provided in the checklist format," p.2) — it does **not** publish a
+device-specific numeric pass/fail EMC test result (dB µV/m or similar)
+for any MSPM0 part; it documents mitigation techniques and a root-cause
+debug flow for EMC test failures. p.10, §4.1 "Susceptibility Protection
+Features" — on-chip EMS features: 4-level programmable brown-out reset
+(BOR0–BOR3, the highest levels raising an interrupt rather than
+immediately resetting), power-on reset (POR), and dedicated NMI sources
+for BOR/watchdog violations (Table 4-2).
+Cited in: `docs/security-mcu-comparison.md` §6, §8.7.
+Date accessed: 2026-08-03.
+
+---
+
+**[42]** Texas Instruments Incorporated, *MSPM0G3x0x, MSPM0G1x0x,
+MSPM0G3x0x-Q1 Microcontrollers Errata*, SLAZ742G, Texas Instruments
+Incorporated, Dallas, TX, USA, 2023-07 (revised 2026-07). [Online].
+Available: https://www.ti.com/lit/er/slaz742g/slaz742g.pdf (live fetch
+blocked: HTTP 403, 2026-08-03, same pattern as [1]).
+Local copy: `docs/datasheets/slaz742g.pdf` (38 pp.) — `VERIFIED`.
+Section/page: p.1, Table 1-1 "Functional Advisories" — covers silicon
+revisions B, C, and D of the MSPM0G3x0x/G1x0x/G3x0x-Q1 device group (which
+includes the MSPM0G3107 [38]). No `AES_ERR_*` or `TRNG_ERR_*` advisory
+entries appear anywhere in the errata number list (confirmed by targeted
+search) — no known silicon errata affecting the AES or TRNG peripherals
+in any of the three listed revisions. A `CRC/CRCP_ERR_01` advisory is
+listed as present in all three revisions (p.1); its full description
+text (in the document's §6 "Advisory Descriptions") was not extracted
+this session.
+Cited in: `docs/security-mcu-comparison.md` §8.7.
+Date accessed: 2026-08-03.
+
+---
+
+**[43]** Texas Instruments Incorporated, *MSPM0G350x-Q1 Automotive
+Mixed-Signal Microcontrollers With CAN-FD Interface*, datasheet, Texas
+Instruments Incorporated, Dallas, TX, USA. [Online]. Available:
+https://www.ti.com/lit/ds/symlink/mspm0g3507-q1.pdf (guessed-at-standard
+TI doc-ID URL pattern, not independently confirmed to resolve; live fetch
+not attempted — see TODO.md 1.10 pattern). Document number/revision not
+independently read off a title page in this extraction pass — flagged
+`section/page: doc number/revision not confirmed` for that one field only;
+every other field below is read directly from the local copy.
+Local copy: `docs/datasheets/mspm0g3507-q1.pdf` (126 pp.) — `VERIFIED`.
+**Not the same document as [1]** (the MSPM0G3507 datasheet, superseded) —
+this covers the related but distinct MSPM0G350x-**Q1** automotive family
+(MSPM0G3505/3506/3507-Q1); per `AGENTS.md` §2.5 a new tag is used rather
+than reusing or repurposing [1].
+Section/page: p.1, "Features" — Arm Cortex-M0+ up to 80 MHz; "Functional
+Safety-Compliant... Documentation available to aid ISO 26262 system
+design... Systematic capability up to ASIL B... Hardware integrity up to
+ASIL B"; "Safety-related certification: ISO 26262 certified up to ASIL B
+by TÜV"; extended temperature -40°C to 125°C; VDD 1.62V to 3.6V; "Data
+integrity and encryption: CRC-16/CRC-32, TRNG, AES 128/256-bit" (p.1,
+same peripheral set as [38]); math accelerator (DIV/SQRT/MAC/TRIG); two
+zero-drift chopper op-amps, three high-speed comparators. p.1, "Package
+options" — 64-pin LQFP (PM), 48-pin LQFP (PT), 48-pin VQFN (RGZ), 32-pin
+VQFN (RHB), 32-pin VSSOP (32DGS), 28-pin VSSOP (28DGS). p.1, Qualification
+bullet — "AEC-Q100 Grade 1," stated directly in this datasheet's own
+feature list (unlike [38], which only references "-Q1" variants existing
+without restating their qualification grade). p.2–3, package-size table —
+64 LQFP 12×12 mm; 48 LQFP 9×9 mm; 48 VQFN 7×7 mm; 32 VQFN 5×5 mm; 32
+VSSOP 8.1×4.9 mm; 28 VSSOP 7.1×3 mm (the smallest package footprint found
+anywhere in this comparison's source set, ≈21 mm²). p.27, §7.2 "ESD
+Ratings" — HBM ±2000 V per AEC-Q100-002; CDM ±500 V all pins / ±750 V
+corner pins per AEC-Q100-011 — a genuine automotive-specific ESD table
+(cf. [37]'s TMS320F280025-Q1, which is the only other part in this
+comparison with a separately published automotive ESD table distinct from
+its commercial-grade one).
+Cited in: `docs/security-mcu-comparison.md` §8.8.
+Date accessed: 2026-08-03.
+
+---
+
 ## Pending Verification — Not Yet Cited
 
 The following items are named in `README.md` but currently have **no**
