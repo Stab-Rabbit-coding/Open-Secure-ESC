@@ -32,16 +32,23 @@ Primary sources used:
   addressed by this document; it remains open.
 - [2] Infineon *OPTIGA™ TPM SLB9672 TPM 2.0 FW16.xx Datasheet*, Rev. 1.3
   (local copy `docs/datasheets/infineon-slb9672-tpm20-spi-fw16.xx-datasheet-rev1.3.pdf`)
+- [33] Microchip *dsPIC33CK512MPT608 Family Data Sheet*, DS70005501B
+  (local copy `docs/datasheets/dsPIC33CK512MPT608-Family-Data-Sheet-DS70005501.pdf`,
+  999 pp.) — added to the repo 2026-08-03 (after this document's first
+  draft); §8.2 below has been rewritten against this primary source and its
+  `UNVERIFIED` marking removed.
 
 For the "other 5V automotive MCUs" survey (§8), NXP/Infineon/DigiKey/Mouser
 direct fetches were blocked with HTTP 403 for every domain tried this
 session — the same pattern already documented in TODO.md 1.10/1.11 for this
-repo's live-fetch tooling. That section's claims are therefore sourced from
+repo's live-fetch tooling. §8.1 and §8.3's claims are therefore sourced from
 search-result snippets of vendor product pages (and, where noted, one
 official Infineon GitHub CMSIS device-family-pack file that *did* fetch
 successfully) and are marked `UNVERIFIED — needs primary source` throughout.
-Pricing for every part in this document (§9) is a distributor listing
-snapshot, not a negotiated or contract price, and is marked accordingly.
+§8.2 (Microchip dsPIC33CK512MPT608) was upgraded to fully verified once its
+datasheet was added locally — see below. Pricing for every part in this
+document (§9) is a distributor listing snapshot, not a negotiated or
+contract price, and is marked accordingly.
 
 ## 2. Executive summary
 
@@ -222,11 +229,18 @@ pinout chapter and is intentionally **not** attempted here; it remains open.
 
 Requested per the task: "research the security features of other 5V
 automotive class MCUs." The three below were chosen because each is
-marketed for automotive (motor-control or zone/domain) use and each has some
-5V-related claim; none of their primary datasheets could be fetched live
-this session (HTTP 403 on nxp.com/infineon.com/microchip.com/renesas.com,
-matching this repo's established pattern per TODO.md 1.10/1.11). Every
-line below is `UNVERIFIED — needs primary source` unless otherwise noted.
+marketed for automotive (motor-control or zone/domain) use and each had some
+5V-related claim surfaced in initial research. §8.1 and §8.3's primary
+datasheets could not be fetched live this session (HTTP 403 on
+infineon.com/renesas.com, matching this repo's established pattern per
+TODO.md 1.10/1.11), so those two are `UNVERIFIED — needs primary source`
+except where a GitHub-hosted primary file is cited directly. §8.2's part
+(Microchip dsPIC33CK512MPT608) had its datasheet added to the repo directly
+by the repo owner after this document's first draft and has since been
+rewritten as fully verified — see that subsection; note it turned out
+**not** to be a native-5V part despite the initial unverified snippet
+suggesting otherwise, and is kept in this survey anyway for its PKI
+capability (see its "Assessment" paragraph).
 
 ### 8.1 Infineon TLE987x / TLE9879 (MOTIX™ motor-control SoC family)
 
@@ -262,27 +276,83 @@ alternative to the S32K144 — it appears to ship with no on-chip
 cryptographic/authentication engine at all, i.e., strictly less capable
 than CSEc for this project's message-authentication requirement.
 
-### 8.2 Microchip dsPIC33C "MPT" Secure DSC family
+### 8.2 Microchip dsPIC33CK512MPT608 family ("Secure" DSC)
 
-[search: microchip.com "dsPIC33C MPT Secure Digital Signal Controllers"
-product page, section/page not verified — live fetch blocked HTTP 403]
+**Update 2026-08-03: this section was rewritten against a primary source.**
+The repo owner added `docs/datasheets/dsPIC33CK512MPT608-Family-Data-Sheet-DS70005501.pdf`
+(Microchip, *dsPIC33CK512MPT608 Family Data Sheet*, DS70005501B, © 2022,
+999 pp., password-empty-encrypted PDF) locally after this document's first
+draft speculated (as `UNVERIFIED`) about a "dsPIC33C MPT Secure" family.
+This part is that family, and its datasheet is now read directly — every
+claim below is `VERIFIED` against it unless noted.
 
-- Marketed features: "CodeGuard" security, hardware cryptographic
-  accelerators (reducing crypto execution time vs. software), anti-tamper
-  and side-channel protections, AEC-Q100 Grade 0/1 qualification, ISO 26262
-  process compliance.
-- The product line's non-secure sibling (dsPIC33CK256MP508) is documented
-  by a distributor listing as an 80-pin TQFP (12×12 mm), 3–3.6 V supply
-  [search: Newark listing, not independently verified]; a distinct "100-pin
-  Secure DSC" variant (e.g. dsPIC33CK...MPT608) was referenced in search
-  results but its package/voltage/security-command-set detail could not be
-  confirmed against a primary datasheet this session.
-- **This entire line item, including whether its hardware crypto engine
-  supports asymmetric (RSA/ECC/PKI) operations or is symmetric-only like
-  CSEc, is `UNVERIFIED — needs primary source`.** Microchip's own marketing
-  copy uses the word "cryptographic accelerators" without specifying the
-  algorithm set in the search snippets retrieved.
-- Pricing: not obtained for the Secure ("MPT") variant specifically.
+- **Security engine: full PKI, on-die, architecturally similar to a TPM
+  bolted onto the same silicon.** The device has a "Secure Subsystem"
+  (Ch. 6) built from two blocks: a command processor implementing an
+  "Advanced Crypto Engine" (ACE, "can implement all symmetric and
+  asymmetric crypto functions") and a parallel "Fast Crypto Engine" for
+  AES/SHA. The two talk to the main CPU core over an **internal** 16 MHz
+  SPI link (p.116–118, §6.1–6.3) — no external pins, same "on-die, not a
+  discrete chip" property as CSEc, but with SLB9672-class PKI capability:
+  - Sign/verify: ECDSA (P224, P256, P384, 256-bit Brainpool, and
+    SECP256K1); RSA 2048-bit sign+verify; RSA 3072-bit verify-only.
+  - Key agreement: ECDH/ECDHE (P224/P256/P384/Brainpool) and ECBD (P224).
+  - Key generation: EC (P224/P256/P384/Brainpool) and RSA 2048-bit, plus
+    AES 16-byte symmetric keys.
+  - Encrypt/decrypt: AES ECB/GCM; RSA 1024/2048-bit OAEP/MGF.
+  - MAC/digest: AES-CMAC, SHA-256, SHA-HMAC.
+  - **X.509 certificate storage, parsing, validation, and revocation,
+    for both ECC and RSA** (p.116, §6.1) — i.e. this part, unlike CSEc,
+    natively supports a certificate-chain-based authentication scheme, the
+    same category of capability the SLB9672 offers via its EK certificates.
+  - NIST SP800-90 A/B/C RNG; physical tamper protection (voltage/
+    temperature tampers, active shield circuitry) against invasive and
+    non-invasive attacks; ACE algorithms hold a JIL HIGH rating and FIPS
+    CAVP certification; the Secure Subsystem itself has FIPS 140-2 Level 2
+    with Physical Security Level 3 "in progress" per this Rev. B datasheet
+    (p.1–2, §6.2).
+- **Supply voltage: 3.0–3.6 V core — NOT natively 5V.** (This corrects the
+  first draft of this section, which had relayed an unverified search
+  snippet claiming "5V configurations.") Table 33-5 "Operating Voltage
+  Specifications": VDD = 3.0–3.6 V typ.; absolute maximum VDD is 4.0 V
+  (Table 33-1). Some I/O pins are 5V-tolerant (up to +5.5 V when
+  VDD ≥ 3.0 V, p.942–943, Table 33-1 notes) but the device itself is a
+  3.3V-class part, not a single-rail-5V part like the S32K144. It therefore
+  does **not** meet the "5V automotive class" criterion this survey was
+  scoped around — it is included anyway because it is, by a wide margin,
+  the most PKI-capable on-chip security engine found in this survey.
+- Automotive qualification: **AEC-Q100 REV-H, Grade 1 (-40°C to +125°C)
+  compliant** (p.1, "Qualification Support"), stronger automotive backing
+  than the SLB9672's JEDEC-only qualification, though one grade below the
+  S32K144's typical Grade 0 automotive positioning (not itself restated in
+  this MCU's own datasheet, which only claims Grade 1).
+- Package: **100-Lead TQFP, 12×12×1 mm** — the only package this family
+  ships in (p.7 "Pin Diagram," p.996 "Product Identification System";
+  order codes `dsPIC33CK512MPT608-I/PT` industrial -40°C..+85°C or
+  `-E/PT` extended -40°C..+125°C).
+- **Latency:** same gap as the other two parts — this datasheet's
+  Electrical Characteristics chapter (Ch. 33) explicitly states
+  "Additional information will be provided in future revisions of this
+  document as it becomes available" (p.942) and publishes no
+  ACE/sign/verify command execution-time table. Per-command PKI-operation
+  latency (RSA-2048 sign, ECDSA-P256 sign, etc.) is
+  `UNVERIFIED — needs primary source` for this part too.
+- **EMI/ESD:** this datasheet does not publish an HBM/CDM ESD-kV table or
+  a radiated-emissions figure at all (same Ch. 33 "future revisions" caveat
+  covers this) — `UNVERIFIED — needs primary source`, same gap as both
+  other parts in this document.
+- Pricing: not obtained for this specific part number this session.
+
+**Assessment:** of the three parts surveyed in §8, this is the only one
+that comes close to matching the SLB9672's PKI capability (arguably
+exceeding it on elliptic-curve variety — it adds Brainpool and secp256k1
+support the SLB9672 datasheet does not list) while keeping the "no discrete
+chip, no external bus" property CSEc has. It is not 5V and is a different
+device class (a DSC, not a general-purpose MCU), so it is not a drop-in
+replacement candidate for either the S32K144 or an SLB9672-equipped design
+in this project as currently scoped — but if a future build variant needs
+on-die PKI without a companion TPM, this is the strongest candidate found
+here.
 
 ### 8.3 Renesas RH850/U2A (Zone/Domain automotive MCU series)
 
@@ -318,7 +388,7 @@ live fetch blocked HTTP 403]
 | S32K144 (FS32K144HFT0MLHT, 64-LQFP, qty 100) | ~US$3.75 | Digi-Key search snippet |
 | SLB9672AU20FW1613XTMA1 | ~US$5.21–6.69 (qty-dependent) | Digi-Key search snippet |
 | TLE9879-2QXA40 | ~US$10.24 | LCSC search snippet |
-| dsPIC33CK256MP508 (non-Secure sibling) | not captured this session | — |
+| dsPIC33CK512MPT608-E/PT | not captured this session | — |
 | RH850/U2A16 | not captured this session | — |
 
 Every WebFetch attempt against digikey.com, mouser.com, nxp.com,
@@ -338,13 +408,20 @@ by quantity break, so even a live-fetched price would only be a snapshot.
 - SLB9672 per-command (HMAC/RSA-sign/ECDSA-sign) execution latency — not
   published in the local datasheet; would need a TPM performance
   application note or bench measurement.
-- Both parts' radiated-emissions (dB µV/m) and conducted-immunity figures
-  against a named EMC standard — neither datasheet publishes one; NXP's
-  datasheet explicitly defers this to data "available from NXP on request."
-- TLE987x/TLE9879, dsPIC33C MPT Secure, and RH850/U2A16 all need their
-  actual manufacturer datasheets (not search snippets) fetched and read
-  before any claim in §8 can be upgraded from `UNVERIFIED` to `VERIFIED`
-  per `AGENTS.md` §3 — flagged in TODO.md.
+- All three parts' radiated-emissions (dB µV/m) and conducted-immunity
+  figures against a named EMC standard — none of the three datasheets
+  publishes one; NXP's datasheet explicitly defers this to data "available
+  from NXP on request," and the dsPIC33CK512MPT608 datasheet's Electrical
+  Characteristics chapter is itself marked incomplete ("Additional
+  information will be provided in future revisions").
+- dsPIC33CK512MPT608 ACE command (RSA-sign/ECDSA-sign/etc.) execution
+  latency — not published in the local datasheet (Ch. 33 is incomplete);
+  would need a Microchip application note or bench measurement.
+- TLE987x/TLE9879 and RH850/U2A16 still need their actual manufacturer
+  datasheets (not search snippets) fetched and read before any claim in
+  §8.1/§8.3 can be upgraded from `UNVERIFIED` to `VERIFIED` per
+  `AGENTS.md` §3 — flagged in TODO.md. (§8.2's dsPIC33CK512MPT608 was
+  resolved this way 2026-08-03, once its datasheet was added locally.)
 - S32K144 physical 64-pin LQFP pin-**number** map (TODO.md 1.11(a)) — now
   unblocked in principle since `docs/datasheets/S32K-RM.pdf` is locally
   available, but not attempted in this document; tracked separately.

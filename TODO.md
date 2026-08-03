@@ -39,15 +39,22 @@ detail belongs in design docs, not here.
       PKI capability, footprint, EMI/ESD/EMC, indicative pricing), plus a
       survey of three other 5V-class automotive MCU security options
       (Infineon TLE987x/TLE9879 — no on-chip crypto engine found in its
-      official CMSIS DFP, [32]; Microchip dsPIC33C MPT Secure DSC family,
-      [33] `UNVERIFIED`; Renesas RH850/U2A16 EVITA-Full HSM, [34]
+      official CMSIS DFP, [32], `UNVERIFIED` beyond that; Microchip
+      dsPIC33CK512MPT608 "Secure" DSC family, [33] — **VERIFIED
+      2026-08-03** once its datasheet was added locally (manual download,
+      same workaround as 1.10/1.6): full on-die PKI (ECDSA
+      P224/P256/P384/Brainpool/secp256k1, RSA 2048 sign/3072 verify,
+      X.509 cert storage/parsing/validation/revocation), AEC-Q100 Grade 1,
+      100-TQFP — but turned out to be a 3.0–3.6V part, **not** natively
+      5V (corrects the `UNVERIFIED` search-snippet claim first logged
+      under [33]); Renesas RH850/U2A16 EVITA-Full HSM, [34]
       `UNVERIFIED`). Supports 4.2. Every external vendor/distributor
       fetch attempted for the survey (§8/§9 of that doc) returned HTTP 403
-      this session except one Infineon-hosted GitHub file [32]; those
-      sections are explicitly marked `UNVERIFIED — needs primary source`
-      pending a session where nxp.com/infineon.com/microchip.com/
-      renesas.com/digikey.com/mouser.com are reachable, or manual PDF
-      downloads (same workaround as 1.10).
+      this session except one Infineon-hosted GitHub file [32]; §8.1
+      (TLE987x/TLE9879) and §8.3 (RH850/U2A16) remain explicitly marked
+      `UNVERIFIED — needs primary source` pending a session where
+      infineon.com/renesas.com/digikey.com/mouser.com are reachable, or a
+      manual PDF download (same workaround that resolved [33]).
 - [ ] 1.6 Verify [3]-[7] section/page pins once standards obtained (paywalled)
 - [ ] 1.7 Confirm MIL-STD-1553B vs -1553C target revision, update [7]
 - [~] 1.8 Source authoritative refs: SBus, DBus, PWM-interface, UART/TTL/SPI, EMI tiers

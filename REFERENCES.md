@@ -1037,20 +1037,61 @@ Date accessed: 2026-08-03.
 
 ---
 
-**[33]** Microchip Technology Inc., *dsPIC33C MPT Secure Digital Signal
-Controllers (DSCs)*, product page. [Online]. Available:
+**[33]** Microchip Technology Inc., *dsPIC33CK512MPT608 Family Data Sheet*,
+DS70005501B, Microchip Technology Inc., Chandler, AZ, USA, © 2022.
+[Online]. Available:
 https://www.microchip.com/en-us/products/microcontrollers/dspic-dscs/dspic33c/secure-dscs
-(live fetch blocked: HTTP 403, 2026-08-03) — **`UNVERIFIED — needs primary
-source`**, section/page not verified; this repo has only a WebSearch
-result-snippet summary of this page's marketing copy (CodeGuard security,
-hardware cryptographic accelerators, anti-tamper/side-channel protection,
-AEC-Q100 Grade 0/1, ISO 26262 process), not the page or datasheet itself.
-Whether the "hardware cryptographic accelerators" this product page
-describes include asymmetric (RSA/ECC) operations, and this family's
-package/pinout/supply-voltage specifics, are not established by anything
-this repo has independently read.
+(product page; live fetch blocked: HTTP 403, 2026-08-03 — see below for the
+resolved local copy).
+Local copy: `docs/datasheets/dsPIC33CK512MPT608-Family-Data-Sheet-DS70005501.pdf`
+(999 pp., PDF permissions-encrypted with an empty user password — opens/
+extracts cleanly without a password) — `VERIFIED` (added to the repo by the
+repo owner 2026-08-03, after this citation was first logged as
+`UNVERIFIED`; superseding note below).
+Section/page: p.1, "Description"/"Operating Conditions" — "Secure Digital
+Signal Controllers (DSCs) ... intended for automotive, industrial or
+commercial systems," code authentication (secure boot), MAC generation,
+trusted firmware updates, mutual node authentication, TLS and other
+roots-of-trust operations; operating conditions "3V to 3.6V, -40°C to
++125°C: DC to 100 MIPS." p.1–2, "Security Features"/"Qualification
+Support" — "Secure Subsystem with Advanced Crypto Engine (ACE)"; sign/
+verify: ECDSA (P224, P256, P384, 256-bit Brainpool, SECP256K1), RSA
+2048-bit sign+verify, RSA 3072-bit verify-only; ECDH/ECDHE (P224/P256/
+P384/Brainpool) and ECBD (P224) key agreement; internal EC and 2048-bit
+RSA and AES-16-byte key generation; AES ECB/GCM and RSA 1024/2048-bit
+OAEP/MGF encrypt/decrypt; AES-CMAC and SHA-256/SHA-HMAC; NIST SP800-90
+A/B/C RNG; 16 MHz internal SPI link between core and Secure Subsystem;
+JIL HIGH-rated, FIPS CAVP-certified ACE algorithms; Secure Subsystem FIPS
+140-2 Level 2 with Physical Security Level 3 "in progress"; "AEC-Q100
+REV-H (Grade 1: -40°C to +125°C) Compliant." p.116–118, Ch. 6 "Secure
+Subsystem," §6.1–6.3 — architecture (command processor/ACE + parallel Fast
+Crypto Engine), full feature list repeated with **"X.509 Certificate
+Storage, Parsing, Validation and Revocation, Supporting both ECC and
+RSA"** (p.116, §6.1) — the PKI/certificate-handling claim central to
+`docs/security-mcu-comparison.md` §8.2. p.942–944, Ch. 33 "Electrical
+Characteristics," Table 33-1 "Absolute Maximum Ratings" (VDD -0.3V to
++4.0V; 5V-tolerant I/O pins only, up to +5.5V when VDD ≥ 3.0V) and Table
+33-5 "Operating Voltage Specifications" (VDD 3.0–3.6V) — confirms this
+part is a 3.3V-class device, **not** natively 5V (this corrects the
+`UNVERIFIED` note originally logged under this tag, which had relayed an
+unverified search-snippet claim of "5V configurations" for the dsPIC33C
+line in general). Ch. 33's own text states "Additional information will
+be provided in future revisions of this document as it becomes available"
+(p.942) — no ESD (HBM/CDM)-kV table, no radiated-emissions figure, and no
+ACE-command execution-time table are published in this Rev. B document;
+those remain `UNVERIFIED — needs primary source`. p.7 "Pin Diagram," p.996
+"Product Identification System" — single package option, 100-Lead TQFP
+12×12×1 mm; order codes `dsPIC33CK512MPT608-I/PT` (industrial, -40°C to
++85°C) and `-E/PT` (extended, -40°C to +125°C).
 Cited in: `docs/security-mcu-comparison.md` §8.2.
-Date accessed (search only, not page fetch): 2026-08-03.
+Date accessed: 2026-08-03 (product-page search only, blocked); local
+datasheet added and read same day.
+**Superseded note:** this tag was first logged 2026-08-03 as `UNVERIFIED`
+against only a WebSearch snippet of the product page above. Per
+`AGENTS.md` §2.5, the tag is not renumbered — this entry has instead been
+rewritten in place now that a primary source (the local datasheet) is
+available, which `AGENTS.md` §3 permits (the marker is removed once "a real
+citation replaces it").
 
 ---
 
