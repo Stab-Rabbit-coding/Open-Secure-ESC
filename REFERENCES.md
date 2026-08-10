@@ -1423,6 +1423,39 @@ Date accessed: 2026-08-03.
 
 ---
 
+**[44]** Texas Instruments Incorporated, *MSPM0G351x-Q1 Automotive
+Mixed-Signal Microcontrollers With CAN-FD Interface* (covers MSPM0G3519-Q1 and
+MSPM0G3518-Q1), document SLASFA6B, Rev. B, Texas Instruments Incorporated,
+Dallas, TX, USA, November 2024, revised October 2025. [Online]. Available:
+https://www.ti.com/lit/ds/symlink/mspm0g3519-q1.pdf
+**URL follows TI's standard doc-ID pattern and was NOT independently confirmed
+to resolve** — not fetched this session; do not quote it as verified without
+retesting. Marked explicitly per `AGENTS.md` §2.3 rather than asserted.
+Local verified copy: `docs/datasheets/mspm0g3518-q1.pdf` (144 pp.) —
+`VERIFIED`; the document's own title, document number, and revision dates were
+read directly from p. 1 of this local copy. A second local copy of the same
+document family, `docs/datasheets/mspm0g3519-q1.pdf`, is also present.
+Section/page: p. 1 title block — title, doc number SLASFA6B, "NOVEMBER 2024 –
+REVISED OCTOBER 2025." §12 "Mechanical, Packaging, and Orderable Information"
+begins p. 106; the RHB0032T (32-pin VQFN, 5 × 5 mm) package drawing
+**4224744/A, 01/2019** appears on pp. 137–139, across the "PACKAGE OUTLINE",
+"EXAMPLE BOARD LAYOUT" and "EXAMPLE STENCIL DESIGN" sheets — this is the
+drawing every dimension in `symbols/tools/gen_rhb0032t_footprint.py` is taken
+from.
+**Provenance note (2026-08-10):** this tag was in use in the repo by
+`symbols/tools/gen_rhb0032t_footprint.py` but had **no entry in this file** —
+the catalog jumped [43] → [45]. That was a defect against `AGENTS.md` §1.2
+(every in-repo citation must have a matching entry here), found while
+correcting two symbols that were mistakenly citing [44] for the OPTIGA™ Trust M
+(the correct tag for which is [45]). The entry is reconstructed here from the
+local PDF and from the citing script's own recorded section/drawing numbers.
+Per `AGENTS.md` §2.5 the tag was **not** renumbered or reassigned.
+Cited in: `symbols/tools/gen_rhb0032t_footprint.py`;
+`symbols/MSPM0G3518_Q1_RHB.kicad_sym`.
+Date accessed: 2026-08-10.
+
+---
+
 **[45]** Infineon Technologies AG, *OPTIGA™ Trust M — Datasheet*
 (SLS 32AIA010MH/S/K/L/M), document release reference Z8F80311641-D,
 Rev. 3.70, Infineon Technologies AG, Munich, Germany, 2024-10-09.
