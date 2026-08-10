@@ -30,8 +30,10 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-SCH = Path(__file__).resolve().parent.parent / \
-    "open_secure_esc_6s_50a_can485_faraday.kicad_sch"
+SCH = (
+    Path(__file__).resolve().parent.parent
+    / "open_secure_esc_6s_50a_can485_faraday.kicad_sch"
+)
 
 
 def walk(t, i):
@@ -42,7 +44,7 @@ def walk(t, i):
         elif t[q] == ")":
             d -= 1
             if d == 0:
-                return t[i:q + 1], q + 1
+                return t[i : q + 1], q + 1
     raise ValueError("unbalanced")
 
 
@@ -51,7 +53,7 @@ def blocks(t, tag, depth_tabs=None):
     for m in re.finditer(rf"\({tag}\b", t):
         if depth_tabs is not None:
             line0 = t.rfind("\n", 0, m.start()) + 1
-            if t[line0:m.start()] != "\t" * depth_tabs:
+            if t[line0 : m.start()] != "\t" * depth_tabs:
                 continue
         yield m.start(), walk(t, m.start())[0]
 
@@ -71,10 +73,11 @@ def main():
             continue
         pins = []
         for m in re.finditer(
-                r'\(pin \w+ \w+\s*\(at (-?[\d.]+) (-?[\d.]+) \d+\)'
-                r'[\s\S]*?\(name "([^"]*)"[\s\S]*?\(number "([^"]*)"', blk):
-            pins.append((float(m.group(1)), float(m.group(2)),
-                         m.group(3), m.group(4)))
+            r"\(pin \w+ \w+\s*\(at (-?[\d.]+) (-?[\d.]+) \d+\)"
+            r'[\s\S]*?\(name "([^"]*)"[\s\S]*?\(number "([^"]*)"',
+            blk,
+        ):
+            pins.append((float(m.group(1)), float(m.group(2)), m.group(3), m.group(4)))
         libpins[nm] = pins
 
     # --- instances ---------------------------------------------------------
@@ -98,8 +101,7 @@ def main():
                     qy = -qy
             rx = qx * math.cos(th) - qy * math.sin(th)
             ry = qx * math.sin(th) + qy * math.cos(th)
-            pinat[key(ix + rx, iy - ry)].append(
-                f"{val}.{pnum}[{pname}]")
+            pinat[key(ix + rx, iy - ry)].append(f"{val}.{pnum}[{pname}]")
 
     # --- wire graph --------------------------------------------------------
     g = defaultdict(set)

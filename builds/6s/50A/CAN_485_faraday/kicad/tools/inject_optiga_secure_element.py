@@ -44,7 +44,9 @@ def eff(indent: int, hide: bool = False) -> str:
     return out
 
 
-def prop(indent: int, key: str, val: str, x: float, y: float, hide: bool = False) -> str:
+def prop(
+    indent: int, key: str, val: str, x: float, y: float, hide: bool = False
+) -> str:
     i = T * indent
     return (
         f'{i}(property "{key}" "{val}"\n'
@@ -59,7 +61,7 @@ def build_optiga_lib_symbol() -> str:
     src = OPTIGA_LIB.read_text()
     props = dict(re.findall(r'\(property "([^"]+)" "((?:[^"\\]|\\.)*)"', src))
     pins = re.findall(
-        r'\(pin (\w+) line \(at ([-\d.]+) ([-\d.]+) (\d+)\) \(length ([\d.]+)\)\s*'
+        r"\(pin (\w+) line \(at ([-\d.]+) ([-\d.]+) (\d+)\) \(length ([\d.]+)\)\s*"
         r'\(name "([^"]+)"[\s\S]*?\(number "([^"]+)"',
         src,
     )
@@ -72,12 +74,17 @@ def build_optiga_lib_symbol() -> str:
     out += f"{i2}{T}(exclude_from_sim no)\n{i2}{T}(in_bom yes)\n{i2}{T}(on_board yes)\n"
     out += prop(3, "Reference", "U", 0, 15.24)
     out += prop(3, "Value", "OPTIGA_TRUST_M", 0, 12.7)
-    for key, pos in (("Footprint", 0), ("Datasheet", 0), ("Description", 0),
-                     ("Citation", 0), ("Verification", 0)):
+    for key, pos in (
+        ("Footprint", 0),
+        ("Datasheet", 0),
+        ("Description", 0),
+        ("Citation", 0),
+        ("Verification", 0),
+    ):
         out += prop(3, key, props.get(key, ""), pos, pos, hide=True)
     # body outline
     out += (
-        f"{i2}{T}(symbol \"OPTIGA_TRUST_M_0_1\"\n"
+        f'{i2}{T}(symbol "OPTIGA_TRUST_M_0_1"\n'
         f"{i2}{T}{T}(rectangle\n"
         f"{i2}{T}{T}{T}(start -5.08 10.16)\n"
         f"{i2}{T}{T}{T}(end 5.08 -10.16)\n"
@@ -104,8 +111,18 @@ def build_optiga_lib_symbol() -> str:
 # --------------------------------------------------------------------------
 # 2. Placed-instance emitters
 # --------------------------------------------------------------------------
-def instance(lib_id, x, y, ref, value, footprint, props_extra=None, pin_nums=None,
-             ref_dy=-8.89, val_dy=-6.35):
+def instance(
+    lib_id,
+    x,
+    y,
+    ref,
+    value,
+    footprint,
+    props_extra=None,
+    pin_nums=None,
+    ref_dy=-8.89,
+    val_dy=-6.35,
+):
     i1 = T
     out = f"{i1}(symbol\n"
     out += f'{i1}{T}(lib_id "{lib_id}")\n'
@@ -115,8 +132,12 @@ def instance(lib_id, x, y, ref, value, footprint, props_extra=None, pin_nums=Non
     out += prop(2, "Reference", ref, x, round(y + ref_dy, 2))
     out += prop(2, "Value", value, x, round(y + val_dy, 2))
     out += prop(2, "Footprint", footprint, x, y, hide=True)
-    out += prop(2, "Datasheet", (props_extra or {}).get("Datasheet", ""), x, y, hide=True)
-    out += prop(2, "Description", (props_extra or {}).get("Description", ""), x, y, hide=True)
+    out += prop(
+        2, "Datasheet", (props_extra or {}).get("Datasheet", ""), x, y, hide=True
+    )
+    out += prop(
+        2, "Description", (props_extra or {}).get("Description", ""), x, y, hide=True
+    )
     for k, v in (props_extra or {}).items():
         if k in ("Datasheet", "Description"):
             continue
@@ -164,7 +185,7 @@ ROOT_UUID = re.search(r'\n\t\(uuid "([0-9a-f-]+)"\)\n', text).group(1)
 
 # 3a. add the OPTIGA embedded lib_symbol, alphabetically before "S32K144"
 anchor = '\t\t(symbol "S32K144:S32K144"\n'
-if 'OPTIGA_TRUST_M:OPTIGA_TRUST_M' in text:
+if "OPTIGA_TRUST_M:OPTIGA_TRUST_M" in text:
     sys.exit("OPTIGA already present in lib_symbols -- refusing to double-inject")
 text = text.replace(anchor, build_optiga_lib_symbol() + anchor, 1)
 
@@ -185,6 +206,8 @@ for etype, px, py, rot, length, name, num in se_pins:
         f'{i2}{T}{T}{T}(number "{num}"\n' + eff(6) + f"{i2}{T}{T}{T})\n"
         f"{i2}{T}{T})\n"
     )
+
+
 def close_paren(s: str, open_idx: int) -> int:
     """Index of the ')' matching the '(' at open_idx, skipping quoted strings."""
     depth, i, instr, esc = 0, open_idx, False, False
@@ -232,48 +255,79 @@ oprops = dict(re.findall(r'\(property "([^"]+)" "((?:[^"\\]|\\.)*)"', optiga_src
 
 add = ""
 add += instance(
-    "OPTIGA_TRUST_M:OPTIGA_TRUST_M", U2X, U2Y, "U?", "OPTIGA_TRUST_M",
+    "OPTIGA_TRUST_M:OPTIGA_TRUST_M",
+    U2X,
+    U2Y,
+    "U?",
+    "OPTIGA_TRUST_M",
     oprops.get("Footprint", ""),
-    props_extra={"Datasheet": oprops.get("Datasheet", ""),
-                 "Description": oprops.get("Description", ""),
-                 "Citation": oprops.get("Citation", ""),
-                 "Verification": oprops.get("Verification", "")},
-    pin_nums=[str(n) for n in range(1, 11)], ref_dy=-15.24, val_dy=-12.7,
+    props_extra={
+        "Datasheet": oprops.get("Datasheet", ""),
+        "Description": oprops.get("Description", ""),
+        "Citation": oprops.get("Citation", ""),
+        "Verification": oprops.get("Verification", ""),
+    },
+    pin_nums=[str(n) for n in range(1, 11)],
+    ref_dy=-15.24,
+    val_dy=-12.7,
 )
-add += instance("Device:R", RSDA_X, RSDA_Y, "R?", "10k",
-                "Resistor_SMD:R_0805_2012Metric", pin_nums=["1", "2"])
-add += instance("Device:R", RSCL_X, RSCL_Y, "R?", "10k",
-                "Resistor_SMD:R_0805_2012Metric", pin_nums=["1", "2"])
-add += instance("Device:C", CSE_X, CSE_Y, "C?", "100n",
-                "Capacitor_SMD:C_0805_2012Metric", pin_nums=["1", "2"])
+add += instance(
+    "Device:R",
+    RSDA_X,
+    RSDA_Y,
+    "R?",
+    "10k",
+    "Resistor_SMD:R_0805_2012Metric",
+    pin_nums=["1", "2"],
+)
+add += instance(
+    "Device:R",
+    RSCL_X,
+    RSCL_Y,
+    "R?",
+    "10k",
+    "Resistor_SMD:R_0805_2012Metric",
+    pin_nums=["1", "2"],
+)
+add += instance(
+    "Device:C",
+    CSE_X,
+    CSE_Y,
+    "C?",
+    "100n",
+    "Capacitor_SMD:C_0805_2012Metric",
+    pin_nums=["1", "2"],
+)
 
 # 3d. wires + labels ---------------------------------------------------------
 SDA_Y, SCL_Y, RST_Y = 518.16 + DY, 520.7 + DY, 523.24 + DY
 PINX = 652.78
 
-add += wire(PINX, SDA_Y, RSDA_X, SDA_Y)          # SDA pin -> pull-up
-add += wire(PINX, SCL_Y, RSCL_X, SCL_Y)          # SCL pin -> pull-up
-add += wire(PINX, RST_Y, 641.35, RST_Y)          # RST pin -> label
+add += wire(PINX, SDA_Y, RSDA_X, SDA_Y)  # SDA pin -> pull-up
+add += wire(PINX, SCL_Y, RSCL_X, SCL_Y)  # SCL pin -> pull-up
+add += wire(PINX, RST_Y, 641.35, RST_Y)  # RST pin -> label
 add += glabel("SE_I2C_SDA", 641.35, SDA_Y, 180)
 add += glabel("SE_I2C_SCL", 641.35, SCL_Y, 180)
 add += glabel("SE_RST", 641.35, RST_Y, 180)
 
-add += wire(RSDA_X, 505.46 + DY, RSDA_X, V3)          # pull-up tops -> 3V3
+add += wire(RSDA_X, 505.46 + DY, RSDA_X, V3)  # pull-up tops -> 3V3
 add += glabel("3V3", RSDA_X, V3, 90)
 add += wire(RSCL_X, 508.0 + DY, RSCL_X, V3)
 add += glabel("3V3", RSCL_X, V3, 90)
 
-add += wire(U2X, 508.0 + DY, U2X, V3)                 # VCC -> 3V3
+add += wire(U2X, 508.0 + DY, U2X, V3)  # VCC -> 3V3
 add += glabel("3V3", U2X, V3, 90)
-add += wire(U2X, 533.4 + DY, U2X, GNDY)               # GND
+add += wire(U2X, 533.4 + DY, U2X, GNDY)  # GND
 add += glabel("GND", U2X, GNDY, 270)
 
-add += wire(CSE_X, 508.0 + DY, CSE_X, V3)             # decoupling cap
+add += wire(CSE_X, 508.0 + DY, CSE_X, V3)  # decoupling cap
 add += glabel("3V3", CSE_X, V3, 90)
 add += wire(CSE_X, 520.7 + DY, CSE_X, 527.05 + DY)
 add += glabel("GND", CSE_X, 527.05 + DY, 270)
 
-for ny in (n + DY for n in (515.62, 518.16, 520.7, 523.24, 525.78)):   # NC pins 2,4,5,6,7
+for ny in (
+    n + DY for n in (515.62, 518.16, 520.7, 523.24, 525.78)
+):  # NC pins 2,4,5,6,7
     add += noconn(668.02, ny)
 
 # 3e. splice in before the closing paren of the sheet ------------------------

@@ -51,14 +51,14 @@ import FreeCAD as App
 import Part
 
 # --- [45] p.15 Figure 6 -----------------------------------------------------
-BODY = 3.00           # "3" x "3" body, square
-BODY_H = 0.60         # "0.6 Max." overall height
-STANDOFF = 0.05       # "0.05 Max. Standoff" -> terminal/EP metal thickness
-PITCH = 0.50          # "0.5" basic
-TERM_WID = 0.25       # "0.25 +/-0.05" tangential
-TERM_LEN = 0.40       # "0.4 +/-0.05" radial, flush to the body edge
-EP_X = 1.70           # "1.7 +/-0.1" across the rows
-EP_Y = 2.50           # "2.5 +/-0.1" along the rows
+BODY = 3.00  # "3" x "3" body, square
+BODY_H = 0.60  # "0.6 Max." overall height
+STANDOFF = 0.05  # "0.05 Max. Standoff" -> terminal/EP metal thickness
+PITCH = 0.50  # "0.5" basic
+TERM_WID = 0.25  # "0.25 +/-0.05" tangential
+TERM_LEN = 0.40  # "0.4 +/-0.05" radial, flush to the body edge
+EP_X = 1.70  # "1.7 +/-0.1" across the rows
+EP_Y = 2.50  # "2.5 +/-0.1" along the rows
 PINS_PER_SIDE = 5
 
 # Cosmetic only (not datasheet values): pin-1 dimple and top-edge break.
@@ -84,9 +84,12 @@ def build():
     try:
         body = body.makeChamfer(
             EDGE_CHAMFER,
-            [e for e in body.Edges
-             if abs(e.BoundBox.ZMin - BODY_H) < 1e-6
-             and abs(e.BoundBox.ZMax - BODY_H) < 1e-6],
+            [
+                e
+                for e in body.Edges
+                if abs(e.BoundBox.ZMin - BODY_H) < 1e-6
+                and abs(e.BoundBox.ZMax - BODY_H) < 1e-6
+            ],
         )
     except Exception as exc:  # noqa: BLE001 - chamfering is cosmetic; never fail the build
         print(f"  note: top-edge chamfer skipped ({exc})")
@@ -95,7 +98,8 @@ def build():
     # so in model space (+Y up) it belongs in the (-X, +Y) quadrant.
     d_off = BODY / 2.0 - 0.45
     dimple = Part.makeCylinder(
-        DIMPLE_R, DIMPLE_DEPTH + 0.01,
+        DIMPLE_R,
+        DIMPLE_DEPTH + 0.01,
         App.Vector(-d_off, d_off, BODY_H - DIMPLE_DEPTH),
     )
     body = body.cut(dimple)
@@ -109,8 +113,7 @@ def build():
     for i in range(PINS_PER_SIDE):
         ty = t0 + i * PITCH
         for sx in (-1, 1):
-            solids.append(
-                _box(TERM_LEN, TERM_WID, STANDOFF, sx * cx, ty, 0.0))
+            solids.append(_box(TERM_LEN, TERM_WID, STANDOFF, sx * cx, ty, 0.0))
 
     # --- Exposed thermal pad --------------------------------------------
     solids.append(_box(EP_X, EP_Y, STANDOFF, 0, 0, 0.0))
@@ -120,8 +123,7 @@ def build():
 
 def main(argv):
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("-o", "--outdir", default=".",
-                    help="Output .3dshapes directory")
+    ap.add_argument("-o", "--outdir", default=".", help="Output .3dshapes directory")
     args = ap.parse_args(argv)
 
     outdir = Path(args.outdir)
@@ -129,8 +131,10 @@ def main(argv):
 
     shape = build()
     bb = shape.BoundBox
-    print(f"  bounding box: X {bb.XMin:.3f}..{bb.XMax:.3f}  "
-          f"Y {bb.YMin:.3f}..{bb.YMax:.3f}  Z {bb.ZMin:.3f}..{bb.ZMax:.3f} mm")
+    print(
+        f"  bounding box: X {bb.XMin:.3f}..{bb.XMax:.3f}  "
+        f"Y {bb.YMin:.3f}..{bb.YMax:.3f}  Z {bb.ZMin:.3f}..{bb.ZMax:.3f} mm"
+    )
     assert abs(bb.XLength - BODY) < 1e-6, "body X must be 3.0 mm"
     assert abs(bb.YLength - BODY) < 1e-6, "body Y must be 3.0 mm"
     assert abs(bb.ZMax - BODY_H) < 1e-6, "overall height must be 0.6 mm"
@@ -148,10 +152,16 @@ def main(argv):
 # invocation still writes to the right place.
 _argv = sys.argv[1:]
 if "--" in _argv:
-    _argv = _argv[_argv.index("--") + 1:]
+    _argv = _argv[_argv.index("--") + 1 :]
 else:
     _argv = [a for a in _argv if not a.endswith(".py")]
 if not _argv:
-    _argv = ["-o", str(Path(__file__).resolve().parent.parent
-                       / "footprints" / "Open_Secure_ESC.3dshapes")]
+    _argv = [
+        "-o",
+        str(
+            Path(__file__).resolve().parent.parent
+            / "footprints"
+            / "Open_Secure_ESC.3dshapes"
+        ),
+    ]
 main(_argv)

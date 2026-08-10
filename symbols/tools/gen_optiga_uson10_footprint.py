@@ -92,24 +92,24 @@ from kiutils.items.fpitems import FpLine, FpText
 # ---------------------------------------------------------------------------
 # PACKAGE -- [45] p.15 Figure 6 / p.16 Figure 7 (see module docstring).
 # ---------------------------------------------------------------------------
-BODY = 3.00           # "3" x "3", square
-BODY_H = 0.60         # "0.6 Max." overall height
-PITCH = 0.50          # "0.5" basic
-TERM_WID = 0.25       # "0.25 +/-0.05", tangential
-TERM_LEN = 0.40       # "0.4 +/-0.05", radial (flush to the body edge)
-EP_X = 1.70           # "1.7 +/-0.1"  (across the rows)
-EP_Y = 2.50           # "2.5 +/-0.1"  (along the rows)
+BODY = 3.00  # "3" x "3", square
+BODY_H = 0.60  # "0.6 Max." overall height
+PITCH = 0.50  # "0.5" basic
+TERM_WID = 0.25  # "0.25 +/-0.05", tangential
+TERM_LEN = 0.40  # "0.4 +/-0.05", radial (flush to the body edge)
+EP_X = 1.70  # "1.7 +/-0.1"  (across the rows)
+EP_Y = 2.50  # "2.5 +/-0.1"  (along the rows)
 PINS_PER_SIDE = 5
 
 # ---------------------------------------------------------------------------
 # LAND -- IPC-7351-style derivation, values from KiCad 9.0's
 # Package_DFN_QFN:DFN-10-1EP_3x3mm_P0.5mm_EP1.7x2.5mm (see module docstring).
 # ---------------------------------------------------------------------------
-PAD_LEN = 0.825       # radial; = 0.05 heel (inward) + 0.40 terminal + 0.375 toe
-PAD_WID = 0.25        # tangential; equals the terminal width (no side fillet,
+PAD_LEN = 0.825  # radial; = 0.05 heel (inward) + 0.40 terminal + 0.375 toe
+PAD_WID = 0.25  # tangential; equals the terminal width (no side fillet,
 #                       the IPC no-lead convention -- leaves a 0.25 mm gap at
 #                       0.5 mm pitch)
-PAD_CX = 1.4625       # pad centre, radial
+PAD_CX = 1.4625  # pad centre, radial
 
 # EP paste is split into 4 apertures rather than one big opening, so the part
 # cannot float or tombstone on a single large solder volume.
@@ -127,8 +127,7 @@ LINE_CRTYD = 0.05
 
 NAME = "Infineon_PG-USON-10-2-4_3x3mm_P0.5mm_EP1.7x2.5mm"
 MODEL_3D = (
-    "${KIPRJMOD}/../../symbols/footprints/Open_Secure_ESC.3dshapes/"
-    f"{NAME}.step"
+    f"${{KIPRJMOD}}/../../symbols/footprints/Open_Secure_ESC.3dshapes/{NAME}.step"
 )
 
 
@@ -164,12 +163,17 @@ def build() -> Footprint:
     )
 
     text_y = BODY / 2 + 1.0
-    fp.graphicItems.append(FpText(
-        type="reference", text="REF**",
-        position=Position(0, -text_y, 0), layer="F.SilkS"))
-    fp.graphicItems.append(FpText(
-        type="value", text=NAME,
-        position=Position(0, text_y, 0), layer="F.Fab"))
+    fp.graphicItems.append(
+        FpText(
+            type="reference",
+            text="REF**",
+            position=Position(0, -text_y, 0),
+            layer="F.SilkS",
+        )
+    )
+    fp.graphicItems.append(
+        FpText(type="value", text=NAME, position=Position(0, text_y, 0), layer="F.Fab")
+    )
 
     # --- Signal pads -------------------------------------------------------
     # Numbering per [45] p.16 Figure 7 (the datasheet's own top view): pin 1
@@ -179,39 +183,54 @@ def build() -> Footprint:
     for i in range(PINS_PER_SIDE):
         t = t0 + i * PITCH
         for number, x in ((1 + i, -PAD_CX), (2 * PINS_PER_SIDE - i, PAD_CX)):
-            fp.pads.append(Pad(
-                number=str(number),
-                type="smd",
-                shape="roundrect",
-                roundrectRatio=0.25,
-                position=Position(round(x, 4), round(t, 4)),
-                size=Position(PAD_LEN, PAD_WID),
-                layers=["F.Cu", "F.Mask", "F.Paste"],
-            ))
+            fp.pads.append(
+                Pad(
+                    number=str(number),
+                    type="smd",
+                    shape="roundrect",
+                    roundrectRatio=0.25,
+                    position=Position(round(x, 4), round(t, 4)),
+                    size=Position(PAD_LEN, PAD_WID),
+                    layers=["F.Cu", "F.Mask", "F.Paste"],
+                )
+            )
 
     # --- Exposed thermal pad (unnumbered -- see module docstring) ----------
-    fp.pads.append(Pad(
-        number="", type="smd", shape="rect",
-        position=Position(0, 0),
-        size=Position(EP_X, EP_Y),
-        layers=["F.Cu", "F.Mask"],
-    ))
+    fp.pads.append(
+        Pad(
+            number="",
+            type="smd",
+            shape="rect",
+            position=Position(0, 0),
+            size=Position(EP_X, EP_Y),
+            layers=["F.Cu", "F.Mask"],
+        )
+    )
     for sx in (-1, 1):
         for sy in (-1, 1):
-            fp.pads.append(Pad(
-                number="", type="smd", shape="rect",
-                position=Position(round(sx * EP_PASTE_OFF_X, 4),
-                                  round(sy * EP_PASTE_OFF_Y, 4)),
-                size=Position(EP_PASTE_X, EP_PASTE_Y),
-                layers=["F.Paste"],
-            ))
+            fp.pads.append(
+                Pad(
+                    number="",
+                    type="smd",
+                    shape="rect",
+                    position=Position(
+                        round(sx * EP_PASTE_OFF_X, 4), round(sy * EP_PASTE_OFF_Y, 4)
+                    ),
+                    size=Position(EP_PASTE_X, EP_PASTE_Y),
+                    layers=["F.Paste"],
+                )
+            )
 
     # --- F.Fab: body outline with a pin-1 chamfer --------------------------
     h = BODY / 2
     ch = 0.5
-    for s, e in (((-h + ch, -h), (h, -h)), ((h, -h), (h, h)),
-                 ((h, h), (-h, h)), ((-h, h), (-h, -h + ch)),
-                 ((-h, -h + ch), (-h + ch, -h))):
+    for s, e in (
+        ((-h + ch, -h), (h, -h)),
+        ((h, -h), (h, h)),
+        ((h, h), (-h, h)),
+        ((-h, h), (-h, -h + ch)),
+        ((-h, -h + ch), (-h + ch, -h)),
+    ):
         fp.graphicItems.append(_line(s, e, "F.Fab", LINE_FAB))
 
     # --- F.SilkS: top/bottom edges only ------------------------------------
@@ -221,17 +240,24 @@ def build() -> Footprint:
     # the top and bottom edges stay clear.
     silk_x = h + LINE_SILK / 2
     for sy in (-1, 1):
-        fp.graphicItems.append(_line(
-            (-silk_x, sy * (h + LINE_SILK)), (silk_x, sy * (h + LINE_SILK)),
-            "F.SilkS", LINE_SILK))
+        fp.graphicItems.append(
+            _line(
+                (-silk_x, sy * (h + LINE_SILK)),
+                (silk_x, sy * (h + LINE_SILK)),
+                "F.SilkS",
+                LINE_SILK,
+            )
+        )
 
     # --- F.SilkS: pin-1 dot, outboard of pin 1's land ----------------------
     p1x = PAD_CX + PAD_LEN / 2 + 0.25
     p1y = t0
-    fp.graphicItems.append(_line((-p1x, p1y - 0.15), (-p1x, p1y + 0.15),
-                                 "F.SilkS", LINE_SILK))
-    fp.graphicItems.append(_line((-p1x - 0.15, p1y), (-p1x + 0.15, p1y),
-                                 "F.SilkS", LINE_SILK))
+    fp.graphicItems.append(
+        _line((-p1x, p1y - 0.15), (-p1x, p1y + 0.15), "F.SilkS", LINE_SILK)
+    )
+    fp.graphicItems.append(
+        _line((-p1x - 0.15, p1y), (-p1x + 0.15, p1y), "F.SilkS", LINE_SILK)
+    )
 
     # --- F.CrtYd -----------------------------------------------------------
     cx = PAD_CX + PAD_LEN / 2 + CRTYD_CLEARANCE
@@ -239,23 +265,25 @@ def build() -> Footprint:
     corners = [(-cx, -cy), (cx, -cy), (cx, cy), (-cx, cy)]
     for i in range(4):
         fp.graphicItems.append(
-            _line(corners[i], corners[(i + 1) % 4], "F.CrtYd", LINE_CRTYD))
+            _line(corners[i], corners[(i + 1) % 4], "F.CrtYd", LINE_CRTYD)
+        )
 
     # --- 3D model ----------------------------------------------------------
-    fp.models.append(Model(
-        path=MODEL_3D,
-        pos=Coordinate(0, 0, 0),
-        scale=Coordinate(1, 1, 1),
-        rotate=Coordinate(0, 0, 0),
-    ))
+    fp.models.append(
+        Model(
+            path=MODEL_3D,
+            pos=Coordinate(0, 0, 0),
+            scale=Coordinate(1, 1, 1),
+            rotate=Coordinate(0, 0, 0),
+        )
+    )
 
     return fp
 
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("-o", "--outdir", default=".",
-                    help="Output .pretty directory")
+    ap.add_argument("-o", "--outdir", default=".", help="Output .pretty directory")
     args = ap.parse_args(argv)
 
     outdir = Path(args.outdir)
