@@ -2979,6 +2979,270 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "OPTIGA_TRUST_M:OPTIGA_TRUST_M"
+			(pin_names
+				(offset 1.016)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "U"
+				(at 0 15.24 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "OPTIGA_TRUST_M"
+				(at 0 12.7 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "Open_Secure_ESC:Infineon_PG-USON-10-2-4_3x3mm_P0.5mm_EP1.7x2.5mm"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "docs/datasheets/infineon-optiga-trust-m-datasheet-en.pdf"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Infineon OPTIGA(TM) Trust M V3 secure element (sales code SLS 32AIA010ML, Extended Temperature Range -40C..+105C), PG-USON-10-2,-4 (3x3mm), I2C. Hardware root of trust for the ESC: asymmetric PKI device authentication (ECDSA over a fab-provisioned private key + X.509 certificate) and ephemeral session-key agreement (ECDHE + key derivation). It does NOT perform per-frame message authentication -- that stays on the S32K144's on-chip CSEc (REFERENCES.md [31]) using the session key this device agrees, because [45] p.28 SS7.2 permits only one protected operation per 5s t_max period. See docs/secure-element-architecture.md for the full split and the security-monitor budget. Occupies the schematic designator (U2) vacated by the dropped SLB9672 TPM 2.0 (REFERENCES.md [2]) but is a different device class and is not a reinstatement of it."
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Citation" "[45]"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Verification" "VERIFIED -- full 10-pin map read directly from the local copy of [45] (OPTIGA(TM) Trust M Datasheet, document release reference Z8F80311641-D, Rev. 3.70, 2024-10-09), p.17 Table 6 'Contact definitions and functions of PG-USON-10-2,-4 packages', corroborated against p.16 Figure 7 'PG-USON-10-2,-4 top view' (same pin arrangement drawn graphically) and p.12 Figure 2 'System integration schematic diagram' (which independently shows SCL on pin 8, SDA on pin 3, VCC on pin 10, GND on pin 1) and p.12 Figure 3 (RST on pin 9). Pin electrical types follow Table 6's own Type column: GND/VCC 'PWR' -> power_in; SDA/SCL 'I/O' -> bidirectional (SCL is modeled bidirectional rather than input because the device supports clock stretching, p.32 Table 23 CLK_STRETCHING, and Table 6 itself types it I/O); RST 'IN' -> input. The five NC contacts (02, 04, 05, 06, 07) are typed no_connect because Table 6 states 'Not connected/Do not connect externally. Shall be left floating' -- this is a datasheet requirement, not a layout preference, so they must NOT be tied to a rail. Device/feature facts also VERIFIED from the same local copy: variant selection SLS 32AIA010ML = V3 silicon, ETR -40C..+105C, PG-USON-10-2,-4 (p.8 Table 2); V3 crypto set ECC NIST P-256/384/521 + Brainpool P256/384/512 r1, RSA 1024/2048, AES 128/192/256, HMAC SHA-256/384/512, HKDF SHA-256/384/512, TLS v1.2 PRF, SHA-256, TRNG/DRNG (pp.8-9 Table 4); on-chip slots 4x ECC key, 2x RSA key, 1x AES key, 4x X.509 cert, 3x trust anchor, 4x monotonic counter, 1x platform binding secret, ~4.5kB arbitrary data (p.10 Figure 1); VCC 1.62-5.5V, I_CCAVG typ 14.0mA during a typical authentication profile (software-limitable 6-15mA), sleep typ 70uA, hibernate <2.5uA (p.20 Table 11); CC EAL6+ (high) hardware, PSA Level 3, CC certificate BSI-DSZ-CC-0961 / IFX_CCI_00000Bh (p.1, p.7 SS1.5); I2C up to 1MHz FM+ (p.7 SS1.5), default slave address 0x30 (p.34 SS A.2). FOOTPRINT: 'Open_Secure_ESC:Infineon_PG-USON-10-2-4_3x3mm_P0.5mm_EP1.7x2.5mm', authored for this repo by symbols/tools/gen_optiga_uson10_footprint.py with a 3D model from symbols/tools/gen_optiga_uson10_3dmodel.py. Package dimensions are VERIFIED from p.15 Figure 6 and p.16 Figure 7: body 3x3mm, 0.5mm pitch (basic), terminal 0.25mm wide x 0.4mm long, exposed pad 1.7 x 2.5mm, 0.6mm max height, 0.05mm max standoff. Figure 6 is a raster drawing, so each printed callout was additionally cross-checked by measuring the figure's own geometry in pixels against the dimensioned 3mm body (101.67 px/mm); all six features reproduced their callout (see the generator docstring for the table). The pin numbering (1 top-left, 1-5 down the left, 6-10 up the right) is from p.16 Figure 7. SEPARATELY FLAGGED, per AGENTS.md SS4: the LAND PATTERN (toe/heel/side fillets) is an IPC-7351-style engineering derivation, NOT an Infineon recommendation -- [45] publishes no recommended land pattern for this package. Its fillet values are taken from KiCad 9.0's Package_DFN_QFN:DFN-10-1EP_3x3mm_P0.5mm_EP1.7x2.5mm, an IPC-generated footprint for an identically dimensioned DFN-10 whose body, pitch, terminal width, exposed-pad size and pin numbering independently reproduce every dimension measured from Figure 6; the 10 signal lands in this repo's footprint are byte-identical to that KiCad footprint's. That KiCad footprint is NOT used directly because its own descr cites an unrelated Monolithic Power part (untraceable provenance under AGENTS.md SS1.2) and because its 3D model is not installed on this system. The exposed pad is intentionally NOT modeled as a symbol pin, consistent with how this repo models every other QFN/USON/LQFP part, and is correspondingly emitted as an UNNUMBERED land in the footprint so symbol and footprint pin counts cannot disagree; per p.16 Figure 7 it is 'n.c.' internally and exists to 'improve thermal dissipation', so it carries no net of its own -- connect it to a copper pour at layout time if desired. No thermal vias are emitted: at I_CCAVG 14mA the device dissipates on the order of 50mW."
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "OPTIGA_TRUST_M_0_1"
+				(rectangle
+					(start -5.08 10.16)
+					(end 5.08 -10.16)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "OPTIGA_TRUST_M_1_1"
+				(pin bidirectional line
+					(at -7.62 2.54 0)
+					(length 2.54)
+					(name "SDA"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at -7.62 0.0 0)
+					(length 2.54)
+					(name "SCL"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "8"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -7.62 -2.54 0)
+					(length 2.54)
+					(name "RST"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "9"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin no_connect line
+					(at 7.62 5.08 180)
+					(length 2.54)
+					(name "NC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin no_connect line
+					(at 7.62 2.54 180)
+					(length 2.54)
+					(name "NC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin no_connect line
+					(at 7.62 0.0 180)
+					(length 2.54)
+					(name "NC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin no_connect line
+					(at 7.62 -2.54 180)
+					(length 2.54)
+					(name "NC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin no_connect line
+					(at 7.62 -5.08 180)
+					(length 2.54)
+					(name "NC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0.0 12.7 270)
+					(length 2.54)
+					(name "VCC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "10"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0.0 -12.7 90)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 		(symbol "S32K144:S32K144"
 			(pin_names
 				(offset 1.016)
@@ -3540,6 +3804,60 @@
 						)
 					)
 					(number "17"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at 25.4 -5.08 180)
+					(length 2.54)
+					(name "SE_I2C_SCL"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "28"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at 25.4 -7.62 180)
+					(length 2.54)
+					(name "SE_I2C_SDA"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "29"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 25.4 -10.16 180)
+					(length 2.54)
+					(name "SE_RST"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "30"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -13427,4 +13745,682 @@
 		)
 	)
 	(embedded_fonts no)
+	(symbol
+		(lib_id "OPTIGA_TRUST_M:OPTIGA_TRUST_M")
+		(at 660.4 543.5600000000001 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "8da1741f-a373-44d9-92b7-272ee3226a1c")
+		(property "Reference" "U?"
+			(at 660.4 528.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "OPTIGA_TRUST_M"
+			(at 660.4 530.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Open_Secure_ESC:Infineon_PG-USON-10-2-4_3x3mm_P0.5mm_EP1.7x2.5mm"
+			(at 660.4 543.5600000000001 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "docs/datasheets/infineon-optiga-trust-m-datasheet-en.pdf"
+			(at 660.4 543.5600000000001 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Infineon OPTIGA(TM) Trust M V3 secure element (sales code SLS 32AIA010ML, Extended Temperature Range -40C..+105C), PG-USON-10-2,-4 (3x3mm), I2C. Hardware root of trust for the ESC: asymmetric PKI device authentication (ECDSA over a fab-provisioned private key + X.509 certificate) and ephemeral session-key agreement (ECDHE + key derivation). It does NOT perform per-frame message authentication -- that stays on the S32K144's on-chip CSEc (REFERENCES.md [31]) using the session key this device agrees, because [45] p.28 SS7.2 permits only one protected operation per 5s t_max period. See docs/secure-element-architecture.md for the full split and the security-monitor budget. Occupies the schematic designator (U2) vacated by the dropped SLB9672 TPM 2.0 (REFERENCES.md [2]) but is a different device class and is not a reinstatement of it."
+			(at 660.4 543.5600000000001 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Citation" "[45]"
+			(at 660.4 543.5600000000001 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Verification" "VERIFIED -- full 10-pin map read directly from the local copy of [45] (OPTIGA(TM) Trust M Datasheet, document release reference Z8F80311641-D, Rev. 3.70, 2024-10-09), p.17 Table 6 'Contact definitions and functions of PG-USON-10-2,-4 packages', corroborated against p.16 Figure 7 'PG-USON-10-2,-4 top view' (same pin arrangement drawn graphically) and p.12 Figure 2 'System integration schematic diagram' (which independently shows SCL on pin 8, SDA on pin 3, VCC on pin 10, GND on pin 1) and p.12 Figure 3 (RST on pin 9). Pin electrical types follow Table 6's own Type column: GND/VCC 'PWR' -> power_in; SDA/SCL 'I/O' -> bidirectional (SCL is modeled bidirectional rather than input because the device supports clock stretching, p.32 Table 23 CLK_STRETCHING, and Table 6 itself types it I/O); RST 'IN' -> input. The five NC contacts (02, 04, 05, 06, 07) are typed no_connect because Table 6 states 'Not connected/Do not connect externally. Shall be left floating' -- this is a datasheet requirement, not a layout preference, so they must NOT be tied to a rail. Device/feature facts also VERIFIED from the same local copy: variant selection SLS 32AIA010ML = V3 silicon, ETR -40C..+105C, PG-USON-10-2,-4 (p.8 Table 2); V3 crypto set ECC NIST P-256/384/521 + Brainpool P256/384/512 r1, RSA 1024/2048, AES 128/192/256, HMAC SHA-256/384/512, HKDF SHA-256/384/512, TLS v1.2 PRF, SHA-256, TRNG/DRNG (pp.8-9 Table 4); on-chip slots 4x ECC key, 2x RSA key, 1x AES key, 4x X.509 cert, 3x trust anchor, 4x monotonic counter, 1x platform binding secret, ~4.5kB arbitrary data (p.10 Figure 1); VCC 1.62-5.5V, I_CCAVG typ 14.0mA during a typical authentication profile (software-limitable 6-15mA), sleep typ 70uA, hibernate <2.5uA (p.20 Table 11); CC EAL6+ (high) hardware, PSA Level 3, CC certificate BSI-DSZ-CC-0961 / IFX_CCI_00000Bh (p.1, p.7 SS1.5); I2C up to 1MHz FM+ (p.7 SS1.5), default slave address 0x30 (p.34 SS A.2). FOOTPRINT: 'Open_Secure_ESC:Infineon_PG-USON-10-2-4_3x3mm_P0.5mm_EP1.7x2.5mm', authored for this repo by symbols/tools/gen_optiga_uson10_footprint.py with a 3D model from symbols/tools/gen_optiga_uson10_3dmodel.py. Package dimensions are VERIFIED from p.15 Figure 6 and p.16 Figure 7: body 3x3mm, 0.5mm pitch (basic), terminal 0.25mm wide x 0.4mm long, exposed pad 1.7 x 2.5mm, 0.6mm max height, 0.05mm max standoff. Figure 6 is a raster drawing, so each printed callout was additionally cross-checked by measuring the figure's own geometry in pixels against the dimensioned 3mm body (101.67 px/mm); all six features reproduced their callout (see the generator docstring for the table). The pin numbering (1 top-left, 1-5 down the left, 6-10 up the right) is from p.16 Figure 7. SEPARATELY FLAGGED, per AGENTS.md SS4: the LAND PATTERN (toe/heel/side fillets) is an IPC-7351-style engineering derivation, NOT an Infineon recommendation -- [45] publishes no recommended land pattern for this package. Its fillet values are taken from KiCad 9.0's Package_DFN_QFN:DFN-10-1EP_3x3mm_P0.5mm_EP1.7x2.5mm, an IPC-generated footprint for an identically dimensioned DFN-10 whose body, pitch, terminal width, exposed-pad size and pin numbering independently reproduce every dimension measured from Figure 6; the 10 signal lands in this repo's footprint are byte-identical to that KiCad footprint's. That KiCad footprint is NOT used directly because its own descr cites an unrelated Monolithic Power part (untraceable provenance under AGENTS.md SS1.2) and because its 3D model is not installed on this system. The exposed pad is intentionally NOT modeled as a symbol pin, consistent with how this repo models every other QFN/USON/LQFP part, and is correspondingly emitted as an UNNUMBERED land in the footprint so symbol and footprint pin counts cannot disagree; per p.16 Figure 7 it is 'n.c.' internally and exists to 'improve thermal dissipation', so it carries no net of its own -- connect it to a copper pour at layout time if desired. No thermal vias are emitted: at I_CCAVG 14mA the device dissipates on the order of 50mW."
+			(at 660.4 543.5600000000001 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "32e7b5c2-df65-4192-9248-36a3900f8ac5")
+		)
+		(pin "2"
+			(uuid "280d9120-2244-4ae4-a467-deea39d2ee05")
+		)
+		(pin "3"
+			(uuid "688f3a1d-bd00-4178-a1e0-94b84aa378db")
+		)
+		(pin "4"
+			(uuid "a1fd9032-2b8d-4690-9f15-a0ac6deb4bc3")
+		)
+		(pin "5"
+			(uuid "ee90915c-4f2c-452d-9db9-32e537758f2d")
+		)
+		(pin "6"
+			(uuid "f3b51950-b446-49c7-b939-008ff1fd8480")
+		)
+		(pin "7"
+			(uuid "de49bda0-7a5d-486c-9197-6a1f23b4c5c8")
+		)
+		(pin "8"
+			(uuid "12e3fcab-e1f6-4528-8c0a-c7994b65d692")
+		)
+		(pin "9"
+			(uuid "da3b00f1-d37a-4dae-9071-5104eb715706")
+		)
+		(pin "10"
+			(uuid "b9fd89bb-230d-46e4-a506-23fd73bc1cec")
+		)
+		(instances
+			(project "open_secure_esc_6s_50a_can485_faraday"
+				(path "/b6909b5a-de2d-4466-bb5d-8520126b59da"
+					(reference "U?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 627.38 534.67 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "5ee33ec3-9702-4669-98c9-7789bf5b390d")
+		(property "Reference" "R?"
+			(at 627.38 525.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10k"
+			(at 627.38 528.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 627.38 534.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 627.38 534.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 627.38 534.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c0b9f481-1e99-4d56-bab3-d5ca0d94abef")
+		)
+		(pin "2"
+			(uuid "907eb553-2118-4f9b-b0cc-065f7b4f4e84")
+		)
+		(instances
+			(project "open_secure_esc_6s_50a_can485_faraday"
+				(path "/b6909b5a-de2d-4466-bb5d-8520126b59da"
+					(reference "R?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 615.95 537.21 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "e0b681a0-ca84-4043-9eb3-b75a0480326f")
+		(property "Reference" "R?"
+			(at 615.95 528.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10k"
+			(at 615.95 530.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 615.95 537.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 615.95 537.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 615.95 537.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "269478f1-b170-49d0-bdd2-73fe4c05ef5e")
+		)
+		(pin "2"
+			(uuid "576d0c44-5bf3-42eb-81fe-9e53c7afcb4d")
+		)
+		(instances
+			(project "open_secure_esc_6s_50a_can485_faraday"
+				(path "/b6909b5a-de2d-4466-bb5d-8520126b59da"
+					(reference "R?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 679.45 537.21 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "5d5de1aa-a6da-4df4-9b36-84ba63b65c8c")
+		(property "Reference" "C?"
+			(at 679.45 528.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100n"
+			(at 679.45 530.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+			(at 679.45 537.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 679.45 537.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 679.45 537.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "60a8ede6-7c01-44a2-a41d-7f414c4158da")
+		)
+		(pin "2"
+			(uuid "1d05a34a-a06a-418d-a38d-3a2b4327ca31")
+		)
+		(instances
+			(project "open_secure_esc_6s_50a_can485_faraday"
+				(path "/b6909b5a-de2d-4466-bb5d-8520126b59da"
+					(reference "C?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 652.78 541.02) (xy 627.38 541.02)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fa41f916-1fd6-46c0-8eaf-8d39ef635e26")
+	)
+	(wire
+		(pts
+			(xy 652.78 543.5600000000001) (xy 615.95 543.5600000000001)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4396fe25-3548-4bd0-a4a4-3d9c78cbc4e9")
+	)
+	(wire
+		(pts
+			(xy 652.78 546.1) (xy 641.35 546.1)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c8ff8fe4-080d-4447-a938-d58c4213c647")
+	)
+	(global_label "SE_I2C_SDA"
+		(shape passive)
+		(at 641.35 541.02 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "b40678e7-0836-42a3-aa6c-bbb70e40322b")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 641.35 541.02 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "SE_I2C_SCL"
+		(shape passive)
+		(at 641.35 543.5600000000001 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "831da1a6-7cdd-4d23-9a16-fbcafe731aa2")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 641.35 543.5600000000001 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "SE_RST"
+		(shape passive)
+		(at 641.35 546.1 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "a91b3287-aae3-4f92-a7ff-579befb1506f")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 641.35 546.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 627.38 528.3199999999999) (xy 627.38 525.78)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cce34135-dbd3-49e7-936c-9a4b48387701")
+	)
+	(global_label "3V3"
+		(shape passive)
+		(at 627.38 525.78 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "d70cc706-5cbb-4a72-93c7-808d6107ef83")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 627.38 525.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 615.95 530.86) (xy 615.95 525.78)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "abef8934-aed5-4326-aa43-868baf89be7f")
+	)
+	(global_label "3V3"
+		(shape passive)
+		(at 615.95 525.78 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "7742a3a4-f158-4f55-940a-5de208382c3a")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 615.95 525.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 660.4 530.86) (xy 660.4 525.78)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "515d4bd4-a17f-4501-8052-c4b6a40bb4f8")
+	)
+	(global_label "3V3"
+		(shape passive)
+		(at 660.4 525.78 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "c1fb93b2-cdc5-44ad-9ae5-46839eb612c9")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 660.4 525.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 660.4 556.26) (xy 660.4 561.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d45b8a65-e1dc-42ea-b4e4-c3478d6f383e")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 660.4 561.34 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "d539ccf3-a582-4cf5-85ca-aed15a0e36ad")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 660.4 561.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 679.45 530.86) (xy 679.45 525.78)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fb57e79a-0bcd-4dd4-afbf-e133cb116a81")
+	)
+	(global_label "3V3"
+		(shape passive)
+		(at 679.45 525.78 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "12ec73c4-10c3-4732-b783-37616ca1eabc")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 679.45 525.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 679.45 543.5600000000001) (xy 679.45 549.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "feaf051d-94f1-41d4-a589-3f005c6170ca")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 679.45 549.91 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "51560774-cbb3-4b83-a327-8a726c574d19")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 679.45 549.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(no_connect
+		(at 668.02 538.48)
+		(uuid "0cebeb6d-3d61-439c-9964-12c661618af2")
+	)
+	(no_connect
+		(at 668.02 541.02)
+		(uuid "8584d623-ccc0-4271-ba2b-4b2f477d7ec6")
+	)
+	(no_connect
+		(at 668.02 543.5600000000001)
+		(uuid "5681deb8-d661-458c-ba7f-7c0b6aa593fe")
+	)
+	(no_connect
+		(at 668.02 546.1)
+		(uuid "3c6142cc-0a39-4e62-9b54-907ca4f54c97")
+	)
+	(no_connect
+		(at 668.02 548.64)
+		(uuid "1f4c7c30-27e3-4f24-8019-a373a586ce11")
+	)
+	(wire
+		(pts
+			(xy 555.25 297.62) (xy 575.25 297.62)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a6b03aab-db2b-41c0-9a74-c60c5ac78d38")
+	)
+	(global_label "SE_I2C_SCL"
+		(shape passive)
+		(at 575.25 297.62 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "1dcfb83a-3b86-4d9c-b71f-fd5e20cfa011")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 575.25 297.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 555.25 300.16) (xy 575.25 300.16)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b994ed69-3258-46bc-94b7-73aceab8718d")
+	)
+	(global_label "SE_I2C_SDA"
+		(shape passive)
+		(at 575.25 300.16 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "39a537f4-83c3-44a5-9c55-2b431e30d295")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 575.25 300.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 555.25 302.7) (xy 575.25 302.7)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ee97327d-9b9a-428d-a2e8-27cb73ec4c51")
+	)
+	(global_label "SE_RST"
+		(shape passive)
+		(at 575.25 302.7 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "32d61532-0be0-4ef4-a91f-0a4237a5089b")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 575.25 302.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
 )
