@@ -88,7 +88,7 @@ def build():
              if abs(e.BoundBox.ZMin - BODY_H) < 1e-6
              and abs(e.BoundBox.ZMax - BODY_H) < 1e-6],
         )
-    except Exception as exc:  # chamfering is cosmetic; never fail the build
+    except Exception as exc:  # noqa: BLE001 - chamfering is cosmetic; never fail the build
         print(f"  note: top-edge chamfer skipped ({exc})")
 
     # Pin-1 index dimple. Footprint pin 1 is at (-1.4625, -1.0) with +Y down,

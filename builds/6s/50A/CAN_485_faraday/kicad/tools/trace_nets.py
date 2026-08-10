@@ -48,7 +48,7 @@ def walk(t, i):
 
 def blocks(t, tag, depth_tabs=None):
     """Yield every top-level-ish block opening with (tag."""
-    for m in re.finditer(r"\(%s\b" % tag, t):
+    for m in re.finditer(rf"\({tag}\b", t):
         if depth_tabs is not None:
             line0 = t.rfind("\n", 0, m.start()) + 1
             if t[line0:m.start()] != "\t" * depth_tabs:
@@ -114,7 +114,7 @@ def main():
     labels = defaultdict(set)
     for tag in ("label", "global_label", "hierarchical_label"):
         for i, blk in blocks(s, tag, depth_tabs=2):
-            nm = re.match(r'\(%s "([^"]+)"' % tag, blk).group(1)
+            nm = re.match(rf'\({tag} "([^"]+)"', blk).group(1)
             m = re.search(r"\(at (-?[\d.]+) (-?[\d.]+)", blk)
             labels[key(float(m.group(1)), float(m.group(2)))].add(nm)
 

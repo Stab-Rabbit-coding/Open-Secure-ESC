@@ -235,7 +235,7 @@ def main():
 
     # --- 1. embedded lib_symbol -------------------------------------------
     i = s.index(f'(symbol "{OLD}:{OLD}"')
-    old_blk, end = walk(s, i)
+    _old_blk, end = walk(s, i)
     s = s[:i] + build_lib_symbol(spec).lstrip("\t") + s[end:]
     changes.append(f"lib_symbol {OLD} -> {NEW} ({len(spec['pins'])} pins)")
 
@@ -248,9 +248,9 @@ def main():
                      ("Description", spec["description"]),
                      ("Citation", spec["citation"]),
                      ("Verification", spec["verification"])):
-        pat = re.compile(r'(\(property "%s" ")(?:[^"\\]|\\.)*(")' % key)
+        pat = re.compile(rf'(\(property "{key}" ")(?:[^"\\]|\\.)*(")')
         if pat.search(new_inst):
-            new_inst = pat.sub(lambda m: m.group(1) + esc(val) + m.group(2),
+            new_inst = pat.sub(lambda m, val=val: m.group(1) + esc(val) + m.group(2),
                                new_inst, count=1)
     s = s[:j] + new_inst + s[iend:]
     changes.append("U1 instance repointed")
@@ -258,7 +258,7 @@ def main():
     # --- 3. drop VREFH / VREFL stubs --------------------------------------
     for a, b, lab in DROP_STUBS:
         for tag in ("wire", "global_label"):
-            for m in list(re.finditer(r"\(%s\b" % tag, s)):
+            for m in list(re.finditer(rf"\({tag}\b", s)):
                 blk, e = walk(s, m.start())
                 hit = (coord_in(blk, *a) and coord_in(blk, *b)) if tag == "wire" \
                     else coord_in(blk, *lab)
@@ -304,16 +304,16 @@ def main():
     add = [gl("NRST", *NRST_STUB, rot=180)]
     for x, lib, ref, val, fp, top, note in [
         (629.85, "Device:C", "C?", "10uF", "Capacitor_SMD:C_0805_2012Metric",
-         "3V3", "C_VDD bulk for U1 (MSPM0G3518-Q1). REQUIRED value: 10uF "
-         "nominal between VDD and VSS per [44] p.51 SS7.3, low-ESR, tolerance "
-         "+/-20% or better, as close to the VDD pin as possible. Added "
-         "2026-08-10 with the S32K144 -> MSPM0G3518-Q1 swap; the sheet "
-         "previously carried only a 100nF MCU VDD decoupling cap."),
+         "3V3", ("C_VDD bulk for U1 (MSPM0G3518-Q1). REQUIRED value: 10uF "
+                 "nominal between VDD and VSS per [44] p.51 SS7.3, low-ESR, tolerance "
+                 "+/-20% or better, as close to the VDD pin as possible. Added "
+                 "2026-08-10 with the S32K144 -> MSPM0G3518-Q1 swap; the sheet "
+                 "previously carried only a 100nF MCU VDD decoupling cap.")),
         (669.85, "Device:R", "R?", "10k", "Resistor_SMD:R_0805_2012Metric",
-         "3V3", "NRST pull-up for U1 (MSPM0G3518-Q1). MANDATORY, not optional: "
-         "[44] Table 6-20 states NRST 'must be pulled high to VCC or the "
-         "device will not start'. Added 2026-08-10 -- the superseded S32K144 "
-         "design had no pull-up on its reset pin."),
+         "3V3", ("NRST pull-up for U1 (MSPM0G3518-Q1). MANDATORY, not optional: "
+                 "[44] Table 6-20 states NRST 'must be pulled high to VCC or the "
+                 "device will not start'. Added 2026-08-10 -- the superseded S32K144 "
+                 "design had no pull-up on its reset pin.")),
     ]:
         bot = "GND" if lib == "Device:C" else "NRST"
         add += [passive(lib, ref, val, fp, note, x, 162.54),
