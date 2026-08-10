@@ -62,6 +62,7 @@ against kiutils 1.4.8).
 | File | Citation | Pin-map status |
 | --- | --- | --- |
 | `S32K144.kicad_sym` | [31] | Feature-level facts VERIFIED; pin **numbers** UNVERIFIED PLACEHOLDER (local datasheet defers physical pinout to the S32K1xx Reference Manual, not obtained — see spec `verification` field, `TODO.md`) |
+| `OPTIGA_TRUST_M.kicad_sym` | [45] | VERIFIED (full 10-pin PG-USON-10-2,-4 map, local datasheet p.17 Table 6). **Footprint deliberately blank** — no KiCad 9 standard footprint matches this 3×3 mm / 0.5 mm-pitch package; size one from p.15 Fig. 6 before layout |
 | `ADM2582E_ADM2587E.kicad_sym` | [4], [9] | VERIFIED (full 20-pin); part selection itself still "Candidate" in `docs/decision-matrix.xlsx` |
 | `ADM3055E_ADM3057E.kicad_sym` | [6], [10] | VERIFIED (full 20-pin); part selection itself still "Candidate" |
 | `DRV8353S.kicad_sym` | [21] | VERIFIED (full 40-pin, RTA/WQFN package; local datasheet) |
@@ -86,6 +87,23 @@ the discrete SLB9672 TPM — see root `README.md` and
 and [2] are retained (never repurposed, per `AGENTS.md` §2.5) and marked
 superseded/dropped there; their local datasheet PDFs under
 `docs/datasheets/` are also kept so those citation records stay resolvable.
+
+**2026-08-09: secure element added (not a TPM reinstatement).**
+`OPTIGA_TRUST_M.kicad_sym`/`specs/OPTIGA_TRUST_M.json` ([45], Infineon
+OPTIGA™ Trust M V3, sales code SLS 32AIA010ML) joins this library. It is an
+**I2C secure element, a different device class from the dropped SLB9672
+TPM 2.0** ([2]) — it is adopted for the asymmetric PKI capability the
+S32K144's symmetric-only CSEc structurally cannot provide, and it runs
+*alongside* CSEc rather than replacing it. The 2026-08-03 decision above
+stands: CSEc still owns per-frame message authentication. See
+`docs/secure-element-architecture.md`.
+
+Housekeeping done in the same pass: `SLB9672_TPM.kicad_sym` was deleted.
+That file was an orphan — the 2026-08-03 note above already declared the
+SLB9672 symbol removed, and no `specs/SLB9672.json` exists, so the file
+could not be regenerated, was referenced by nothing, and contradicted both
+this README and `REFERENCES.md` [2]. Removing it makes the tree match what
+those two documents already said.
 
 ## Using this library from a build
 
