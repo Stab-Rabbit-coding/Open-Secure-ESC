@@ -324,3 +324,47 @@ detail belongs in design docs, not here.
         but it blocks BOM/CPL generation and PCB placement of `U2`.
   - [ ] 12.3.j Place `U2` and its three passives on the PCB
         (`gen_pcb.py` / manual). Schematic-only at present.
+
+## 13. MCU Swap — S32K144 → MSPM0G3518-Q1 (NOT STARTED)
+
+- [ ] 13.1 **Replace the NXP S32K144 with the TI MSPM0G3518-Q1**, package PM
+      (LQFP-64), orderable `M0G3518QPMRQ1` [44]. Decided 2026-08-10: the
+      S32K144's CSEc is SHE-compliant and therefore **AES-128 only**, which
+      capped the authenticated hot path; the MSPM0G351x provides an
+      **AES-128/256 accelerator with GCM/CMAC** and a 4-key secure keystore
+      ([44] p.1; crypto architecture in [40]). This retires finding C-01 in
+      `docs/secure-element-architecture.md`.
+      **Full plan, verified facts, and constraints:**
+      `docs/HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md`. Start there.
+  - [ ] 13.1.a **(Hazard — read before editing the schematic.)** `VCORE` is
+        NOT the equivalent of the S32K144's `VDDA`. `VDDA` is an analog supply
+        input tied to 3V3; `VCORE` is a regulator **output**, and [44] p.52
+        states "The VCORE pin must only be connected to C_VCORE. Do not supply
+        any voltage or apply any external load to the VCORE pin." A
+        slot-for-slot swap would tie VCORE to 3V3 and violate the datasheet.
+        **Decided 2026-08-10: drop VDDA's rail connection and give VCORE its
+        own dedicated capacitor to VSS, with nothing else on that net.**
+  - [ ] 13.1.b `UNVERIFIED — needs primary source` : the C_VCORE capacitance
+        value. It is in the [44] p.51 Recommended Operating Conditions table,
+        whose columns do not survive `pdftotext`. Do not guess it. The ±20%
+        tolerance requirement IS verified and belongs on the BOM line.
+  - [ ] 13.1.c Author `symbols/specs/MSPM0G3518_Q1_PM.json` + `.kicad_sym`,
+        mirroring the S32K144's functional signal-role names so the existing
+        schematic wiring survives. Do not reuse
+        `symbols/MSPM0G3518_Q1_RHB.kicad_sym` — that is the VQFN-32 package.
+  - [ ] 13.1.d Pin numbers will again be an `UNVERIFIED PLACEHOLDER PIN MAP`
+        unless [44]'s Table 6-2 can be read. **Try `pdfdetach -list` on
+        `docs/datasheets/mspm0g3518-q1.pdf` first** — that trick is what
+        unblocked the S32K144 map (see 1.11(a)) and may avoid the caveat.
+  - [ ] 13.1.e Rewrite `docs/secure-element-architecture.md`: C-01 becomes
+        RESOLVED, C-05 (CSEc/HSRUN exclusion) no longer applies, and every
+        "CSEc" reference needs revisiting. **The Trust M's justification does
+        NOT change** — the MSPM0's AES engine is still symmetric, so the
+        asymmetric layer is still required.
+  - [ ] 13.1.f Check the keystore reduction: MSPM0 holds **4** AES keys
+        ([44] p.1) against CSEc's 17 ([31] Table 36-75). Confirm that suits the
+        intended key hierarchy before closing 13.1.
+  - [ ] 13.1.g Preserve `SE_I2C_SCL` / `SE_I2C_SDA` / `SE_RST` on the new
+        symbol, or the OPTIGA Trust M silently disconnects.
+  - [ ] 13.1.h Update `docs/security-mcu-comparison.md` — its S32K144-vs-
+        alternatives argument is the document this decision overturns.
