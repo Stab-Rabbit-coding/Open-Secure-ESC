@@ -30,15 +30,15 @@ from kiutils.items.fpitems import FpLine, FpText
 # Dimensions, all from drawing 4226365/A (see module docstring).
 # ---------------------------------------------------------------------------
 # "EXAMPLE BOARD LAYOUT" sheet -- the manufacturer's recommended land pattern:
-PAD_LEN = 1.45      # "28X (1.45)" -- pad length, along the lead axis (X here)
-PAD_WID = 0.30      # "28X (0.3)"  -- pad width, along the pitch axis (Y here)
-PITCH = 0.50        # "26X (0.5)"  -- 13 spaces per side x 2 sides = 26
-ROW_SPAN = 4.40     # "(4.4)"      -- centreline-to-centreline of the two rows
+PAD_LEN = 1.45  # "28X (1.45)" -- pad length, along the lead axis (X here)
+PAD_WID = 0.30  # "28X (0.3)"  -- pad width, along the pitch axis (Y here)
+PITCH = 0.50  # "26X (0.5)"  -- 13 spaces per side x 2 sides = 26
+ROW_SPAN = 4.40  # "(4.4)"      -- centreline-to-centreline of the two rows
 
 # "PACKAGE OUTLINE" sheet -- the physical body, used for F.Fab/silk/courtyard:
-BODY_LEN = 7.10     # D  = 7.2 / 7.0 -> 7.1 nominal (note 3: excludes mold flash)
-BODY_WID = 3.00     # E1 = 3.1 / 2.9 -> 3.0 nominal
-LEAD_SPAN = 5.10    # E  = 5.1 / 4.7 -> use the MAX for courtyard safety
+BODY_LEN = 7.10  # D  = 7.2 / 7.0 -> 7.1 nominal (note 3: excludes mold flash)
+BODY_WID = 3.00  # E1 = 3.1 / 2.9 -> 3.0 nominal
+LEAD_SPAN = 5.10  # E  = 5.1 / 4.7 -> use the MAX for courtyard safety
 
 PINS_PER_SIDE = 14  # 28 pins, "1" and "14" left, "15" and "28" right
 
@@ -63,8 +63,7 @@ def _line(start, end, layer, width):
 
 def _rect(half_x, half_y, layer, width):
     """Four lines forming a rectangle centred on the origin."""
-    c = [(-half_x, -half_y), (half_x, -half_y),
-         (half_x, half_y), (-half_x, half_y)]
+    c = [(-half_x, -half_y), (half_x, -half_y), (half_x, half_y), (-half_x, half_y)]
     return [_line(c[i], c[(i + 1) % 4], layer, width) for i in range(4)]
 
 
@@ -88,12 +87,17 @@ def build() -> Footprint:
 
     # --- Reference/value text, clear of the body on F.SilkS / F.Fab ---
     text_y = BODY_LEN / 2 + 1.0
-    fp.graphicItems.append(FpText(
-        type="reference", text="REF**",
-        position=Position(0, -text_y, 0), layer="F.SilkS"))
-    fp.graphicItems.append(FpText(
-        type="value", text=NAME,
-        position=Position(0, text_y, 0), layer="F.Fab"))
+    fp.graphicItems.append(
+        FpText(
+            type="reference",
+            text="REF**",
+            position=Position(0, -text_y, 0),
+            layer="F.SilkS",
+        )
+    )
+    fp.graphicItems.append(
+        FpText(type="value", text=NAME, position=Position(0, text_y, 0), layer="F.Fab")
+    )
 
     # --- Pads: 1..14 down the left row, 15..28 up the right row ---
     # (matches the datasheet's own "LAND PATTERN EXAMPLE" numbering, where
@@ -103,22 +107,28 @@ def build() -> Footprint:
     for i in range(PINS_PER_SIDE):
         y = y0 + i * PITCH
         for number, px in ((i + 1, -x), (2 * PINS_PER_SIDE - i, x)):
-            fp.pads.append(Pad(
-                number=str(number),
-                type="smd",
-                shape="roundrect",
-                roundrectRatio=0.25,
-                position=Position(round(px, 4), round(y, 4)),
-                size=Position(PAD_LEN, PAD_WID),
-                layers=["F.Cu", "F.Paste", "F.Mask"],
-            ))
+            fp.pads.append(
+                Pad(
+                    number=str(number),
+                    type="smd",
+                    shape="roundrect",
+                    roundrectRatio=0.25,
+                    position=Position(round(px, 4), round(y, 4)),
+                    size=Position(PAD_LEN, PAD_WID),
+                    layers=["F.Cu", "F.Paste", "F.Mask"],
+                )
+            )
 
     # --- F.Fab: true body outline, with a chamfer marking pin 1 ---
     hx, hy = BODY_WID / 2, BODY_LEN / 2
     ch = 0.6
-    fab = [((-hx + ch, -hy), (hx, -hy)), ((hx, -hy), (hx, hy)),
-           ((hx, hy), (-hx, hy)), ((-hx, hy), (-hx, -hy + ch)),
-           ((-hx, -hy + ch), (-hx + ch, -hy))]
+    fab = [
+        ((-hx + ch, -hy), (hx, -hy)),
+        ((hx, -hy), (hx, hy)),
+        ((hx, hy), (-hx, hy)),
+        ((-hx, hy), (-hx, -hy + ch)),
+        ((-hx, -hy + ch), (-hx + ch, -hy)),
+    ]
     for s, e in fab:
         fp.graphicItems.append(_line(s, e, "F.Fab", LINE_FAB))
 
@@ -126,29 +136,30 @@ def build() -> Footprint:
     pad_edge_y = y0 - PAD_WID / 2 - SILK_CLEARANCE
     for sx in (-1, 1):
         fp.graphicItems.append(
-            _line((sx * hx, -hy), (sx * hx, pad_edge_y), "F.SilkS", LINE_SILK))
+            _line((sx * hx, -hy), (sx * hx, pad_edge_y), "F.SilkS", LINE_SILK)
+        )
         fp.graphicItems.append(
-            _line((sx * hx, -pad_edge_y), (sx * hx, hy), "F.SilkS", LINE_SILK))
+            _line((sx * hx, -pad_edge_y), (sx * hx, hy), "F.SilkS", LINE_SILK)
+        )
     fp.graphicItems.append(_line((-hx, -hy), (hx, -hy), "F.SilkS", LINE_SILK))
     fp.graphicItems.append(_line((-hx, hy), (hx, hy), "F.SilkS", LINE_SILK))
     # Pin-1 marker, outboard of pad 1 so it survives assembly silk trimming.
     p1x = ROW_SPAN / 2 + PAD_LEN / 2 + SILK_CLEARANCE + 0.15
     fp.graphicItems.append(
-        _line((-p1x, y0 - 0.2), (-p1x, y0 + 0.2), "F.SilkS", LINE_SILK))
+        _line((-p1x, y0 - 0.2), (-p1x, y0 + 0.2), "F.SilkS", LINE_SILK)
+    )
 
     # --- F.CrtYd: encloses whichever is wider, the pads or the lead span ---
     crtyd_x = max(LEAD_SPAN / 2, ROW_SPAN / 2 + PAD_LEN / 2) + CRTYD_CLEARANCE
     crtyd_y = max(BODY_LEN / 2, -y0 + PAD_WID / 2) + CRTYD_CLEARANCE
-    fp.graphicItems.extend(
-        _rect(crtyd_x, crtyd_y, "F.CrtYd", LINE_CRTYD))
+    fp.graphicItems.extend(_rect(crtyd_x, crtyd_y, "F.CrtYd", LINE_CRTYD))
 
     return fp
 
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("-o", "--outdir", default=".",
-                    help="Output .pretty directory")
+    ap.add_argument("-o", "--outdir", default=".", help="Output .pretty directory")
     args = ap.parse_args(argv)
 
     outdir = Path(args.outdir)

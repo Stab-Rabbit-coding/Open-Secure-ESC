@@ -4,6 +4,35 @@
 Builds the .kicad_sch programmatically via kiutils so every wire/label is
 derived from the same verified pin data in symbols/specs/*.json that
 generated symbols/*.kicad_sym (see symbols/tools/gen_kicad_symbol.py).
+
+!! DIVERGENCE WARNING -- READ BEFORE RUNNING (2026-08-10) !!
+
+    This script is NO LONGER the sole author of the committed
+    open_secure_esc_6s_50a_can485_faraday.kicad_sch. Running it as-is will
+    OVERWRITE that file and SILENTLY DROP work that is not reproduced here:
+
+      1. The OPTIGA(TM) Trust M secure element block -- U2, its two 10k I2C
+         pull-ups, its 100 nF decoupling cap, the no-connect flags on contacts
+         2/4/5/6/7, the SE_I2C_SDA / SE_I2C_SCL / SE_RST nets, and the three
+         matching pins (28/29/30) on the embedded S32K144 symbol.
+         Added by tools/inject_optiga_secure_element.py.
+         Circuit source: REFERENCES.md [45] p.12 Sec.3 Figure 2.
+
+      2. Any edit made in the KiCad GUI since the last generation. The sheet
+         has been opened and saved by KiCad (see the -backups/ directory),
+         so the committed file is already ahead of this generator.
+
+    The secure-element placement has deliberately NOT been ported into
+    place_all()/wire_all() yet. `kiutils` is not installed on the machine where
+    that work was done and cannot be installed there, so any such code could
+    not have been executed or verified even once -- and shipping unverified
+    generator code that silently replaces a verified schematic is exactly the
+    failure mode AGENTS.md Sec.1.3 exists to prevent. Porting it is tracked in
+    TODO.md and must be done on a machine with kiutils, then diffed against the
+    committed sheet before the result is trusted.
+
+    Until then: extend the schematic with a targeted injection script (see
+    tools/inject_optiga_secure_element.py for the pattern), not by regenerating.
 """
 
 import json

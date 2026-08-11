@@ -26,7 +26,22 @@ detail belongs in design docs, not here.
       Reference Manual; that RM is now locally available
       (`docs/datasheets/S32K-RM.pdf`, see [31]) but its pinout chapter has
       not yet been read/regenerated into `symbols/specs/S32K144.json`, so
-      `pins[].num` remains an `UNVERIFIED PLACEHOLDER PIN MAP`. **2026-08-03:
+      `pins[].num` remains an `UNVERIFIED PLACEHOLDER PIN MAP`.
+      **2026-08-10: (a) is now UNBLOCKED — the source has been located.** The
+      RM body does not contain the per-pin map either: its Ch. 4 §4.1 defers to
+      an "IO Signal Description Input Multiplexing sheet(s) attached to the
+      Reference Manual." Those sheets are **embedded files inside
+      `docs/datasheets/S32K-RM.pdf`** and extract cleanly:
+      `pdfdetach -savefile 'S32K144_IO_Signal_Description_Input_Multiplexing.xlsx'
+      -o S32K144_IO.xlsx docs/datasheets/S32K-RM.pdf`. Its "IO Signal Table" tab
+      carries an `S32K144_64lqfp` column giving the real pin number for every
+      port/function pair — e.g. the LPI2C0 options for the secure element are
+      PTA2/PTA3 = pins 48/47 (ALT3) and PTB6/PTB7 = pins 12/11 (ALT2). Those
+      candidates are recorded in `docs/secure-element-architecture.md` §6.1 but
+      deliberately **not** committed to the symbol: three real pin numbers
+      cannot be conflict-checked against 27 placeholders, so the whole 64-pin
+      map must be resolved in one pass. That pass is the remaining work here.
+      **2026-08-03:
       (b) RESOLVED** — CSEc's message-authentication algorithm
       (AES-128-CMAC, `CMD_GENERATE_MAC`/`CMD_VERIFY_MAC`) is now VERIFIED
       directly against the local S32K1xx Reference Manual Ch. 36 §36.5.13;
@@ -252,3 +267,104 @@ detail belongs in design docs, not here.
       and PCB regenerated via `kicad/tools/gen_schematic.py`/`gen_pcb.py`
       (connectivity check clean, `check_shorts.py` clean, kiutils
       round-trip validated). See 1.11/3.1/4.1 for what's still open.
+
+- [~] 12.3 Secure element (`U2`, OPTIGA™ Trust M V3, [45]) — added to
+      `builds/6s/50A/CAN_485_faraday` 2026-08-10. Symbol, footprint, 3D model,
+      schematic placement and LPI2C wiring are **done and verified** (pin map
+      from [45] p.17 Table 6; reference circuit from [45] p.12 §3 Fig. 2; ERC
+      shows no new errors). Design rationale and the full assessment are in
+      `docs/secure-element-architecture.md`. The items below are **OPEN and
+      must be closed before this build flies** — they are firmware and policy
+      decisions, not layout work.
+  - [ ] 12.3.a **(High, safety-critical)** Define the behaviour on CSEc MAC
+        verification failure. If a failed MAC hard-stops a motor in flight,
+        a single corrupted frame — or a transient bus fault — becomes a
+        shutdown primitive, i.e. the security control becomes the attack.
+        Decide fail-operational vs fail-safe and over what window of
+        consecutive failures. See `docs/secure-element-architecture.md` O-04.
+  - [ ] 12.3.b **(High)** Specify an anti-replay freshness scheme. AES-128
+        CMAC authenticates content, not recency; without a freshness value a
+        recorded throttle command replays as valid. The Trust M's 4 monotonic
+        counters ([45] p.10 Fig. 1) are boot-scale and cannot serve per-frame.
+        See C-03.
+  - [ ] 12.3.c **(High)** Enable the Trust M I²C **Shielded Connection** and
+        provision the platform binding secret ([45] p.1 Features, p.10 Fig. 1).
+        Without it the agreed session key crosses an exposed 2-wire bus in
+        clear and the whole asymmetric layer buys nothing against an attacker
+        with board access. See C-06.
+  - [ ] 12.3.d **(Medium)** Decide `MAC_LENGTH` for CAN-FD frames and the
+        verification-failure rate limit. CAN-FD carries at most 64 byte
+        ([31] RM Rev. 14 §55.2.2, p. 1802); a full 128-bit CMAC is 16 byte.
+        Truncation to 32 bit gives 2⁻³² per attempt, which is insufficient
+        without a lockout. Interacts directly with 12.3.a. See C-04.
+  - [ ] 12.3.e **(Medium)** Reconcile the control-loop clock budget with the
+        CSEc/HSRUN exclusion: [31] §1.1 states the device must drop from
+        HSRUN (112 MHz) to RUN (80 MHz) to execute CSEc. Any budget assuming
+        112 MHz *and* per-frame CMAC is wrong. See C-05.
+  - [ ] 12.3.f **(Medium)** Design fleet key lifecycle and revocation. With 4
+        certificate slots and 3 trust anchors there is no room for a
+        conventional CRL, and there is no defined process for retiring a
+        compromised controller. See O-05.
+  - [ ] 12.3.g **(Low)** Pin the ECC curve in the provisioning profile
+        (P-256 minimum, P-384 preferred). The device also supports RSA-1024
+        ([45] pp. 8–9 Table 4), which must not be selected. See C-07.
+  - [ ] 12.3.h Port the secure-element placement into
+        `kicad/tools/gen_schematic.py`. It was deliberately **not** written
+        blind: `kiutils` is unavailable on the machine where this work was
+        done, so the code could not have been executed even once, and
+        unverified generator code that silently overwrites a verified
+        schematic is precisely what `AGENTS.md` §1.3 guards against. The
+        schematic was extended by `kicad/tools/inject_optiga_secure_element.py`
+        instead, and `gen_schematic.py` now carries a divergence warning. Do
+        this on a machine with `kiutils`, then diff against the committed
+        sheet before trusting the result.
+  - [ ] 12.3.i Annotate the sheet. Every reference on
+        `open_secure_esc_6s_50a_can485_faraday.kicad_sch` is still `R?`/`C?`/
+        `U?`, which is why a netlist export collapses passives. Pre-existing,
+        but it blocks BOM/CPL generation and PCB placement of `U2`.
+  - [ ] 12.3.j Place `U2` and its three passives on the PCB
+        (`gen_pcb.py` / manual). Schematic-only at present.
+
+## 13. MCU Swap — S32K144 → MSPM0G3518-Q1 (NOT STARTED)
+
+- [ ] 13.1 **Replace the NXP S32K144 with the TI MSPM0G3518-Q1**, package PM
+      (LQFP-64), orderable `M0G3518QPMRQ1` [44]. Decided 2026-08-10: the
+      S32K144's CSEc is SHE-compliant and therefore **AES-128 only**, which
+      capped the authenticated hot path; the MSPM0G351x provides an
+      **AES-128/256 accelerator with GCM/CMAC** and a 4-key secure keystore
+      ([44] p.1; crypto architecture in [40]). This retires finding C-01 in
+      `docs/secure-element-architecture.md`.
+      **Full plan, verified facts, and constraints:**
+      `docs/HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md`. Start there.
+  - [ ] 13.1.a **(Hazard — read before editing the schematic.)** `VCORE` is
+        NOT the equivalent of the S32K144's `VDDA`. `VDDA` is an analog supply
+        input tied to 3V3; `VCORE` is a regulator **output**, and [44] p.52
+        states "The VCORE pin must only be connected to C_VCORE. Do not supply
+        any voltage or apply any external load to the VCORE pin." A
+        slot-for-slot swap would tie VCORE to 3V3 and violate the datasheet.
+        **Decided 2026-08-10: drop VDDA's rail connection and give VCORE its
+        own dedicated capacitor to VSS, with nothing else on that net.**
+  - [ ] 13.1.b `UNVERIFIED — needs primary source` : the C_VCORE capacitance
+        value. It is in the [44] p.51 Recommended Operating Conditions table,
+        whose columns do not survive `pdftotext`. Do not guess it. The ±20%
+        tolerance requirement IS verified and belongs on the BOM line.
+  - [ ] 13.1.c Author `symbols/specs/MSPM0G3518_Q1_PM.json` + `.kicad_sym`,
+        mirroring the S32K144's functional signal-role names so the existing
+        schematic wiring survives. Do not reuse
+        `symbols/MSPM0G3518_Q1_RHB.kicad_sym` — that is the VQFN-32 package.
+  - [ ] 13.1.d Pin numbers will again be an `UNVERIFIED PLACEHOLDER PIN MAP`
+        unless [44]'s Table 6-2 can be read. **Try `pdfdetach -list` on
+        `docs/datasheets/mspm0g3518-q1.pdf` first** — that trick is what
+        unblocked the S32K144 map (see 1.11(a)) and may avoid the caveat.
+  - [ ] 13.1.e Rewrite `docs/secure-element-architecture.md`: C-01 becomes
+        RESOLVED, C-05 (CSEc/HSRUN exclusion) no longer applies, and every
+        "CSEc" reference needs revisiting. **The Trust M's justification does
+        NOT change** — the MSPM0's AES engine is still symmetric, so the
+        asymmetric layer is still required.
+  - [ ] 13.1.f Check the keystore reduction: MSPM0 holds **4** AES keys
+        ([44] p.1) against CSEc's 17 ([31] Table 36-75). Confirm that suits the
+        intended key hierarchy before closing 13.1.
+  - [ ] 13.1.g Preserve `SE_I2C_SCL` / `SE_I2C_SDA` / `SE_RST` on the new
+        symbol, or the OPTIGA Trust M silently disconnects.
+  - [ ] 13.1.h Update `docs/security-mcu-comparison.md` — its S32K144-vs-
+        alternatives argument is the document this decision overturns.

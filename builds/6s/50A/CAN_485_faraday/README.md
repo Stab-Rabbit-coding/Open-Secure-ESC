@@ -46,6 +46,36 @@ yet independently verified against a primary NXP/HIS source in this repo —
 flagged `UNVERIFIED — needs primary source (see TODO.md)` per `AGENTS.md`
 §1.3, tracked in `TODO.md` §4.
 
+**2026-08-10: secure element added (`U2`).** The TPM stays dropped, but CSEc
+alone was never a complete root of trust — it is symmetric-only, so it cannot
+do public-key device authentication, key agreement with an unknown peer, or
+certificate validation. An **Infineon OPTIGA™ Trust M V3** secure element
+(sales code SLS 32AIA010ML, ETR −40 °C to +105 °C, PG-USON-10-2,-4,
+3 mm × 3 mm / 0.118 in × 0.118 in) [45] now occupies the `U2` designator the
+SLB9672 vacated and supplies exactly that asymmetric layer over LPI2C.
+
+| Part | Qty | Citation | Status |
+| --- | --- | --- | --- |
+| Infineon OPTIGA™ Trust M V3 (PG-USON-10-2,-4) | 1 | [45] | Pin map VERIFIED from [45] p.17 Table 6. Footprint hand-authored for this repo; its LAND PATTERN is an IPC-7351-style derivation, **not** an Infineon recommendation — [45] publishes none. |
+| 10 kΩ 0805 I²C pull-up | 2 | [45] p.12 Fig. 2 | Datasheet reference value; [45] notes the correct value depends on bus capacitance and I²C frequency — confirm before fab. |
+| 100 nF 0805 VCC decoupling | 1 | [45] p.12 Fig. 2 | — |
+
+It is a **secure element, not a TPM** — a key vault with a crypto engine,
+not a platform-integrity module with PCRs and attestation. The division of
+labour is deliberate and load-bearing: the Trust M establishes identity and
+agrees a session key at boot; CSEc consumes that key for every frame
+thereafter. The hot path **must not** call the secure element — [45] p.28
+§7.2 permits only one protected operation per 5 s `t_max` period, and any use
+of the fab-provisioned identity key is a protected operation.
+
+Full rationale, the security-monitor budget, the cryptographic assessment
+(including anti-replay, MAC truncation on CAN-FD, and the CSEc/HSRUN clock
+exclusion), and the OT-style review are in
+[`../../../../docs/secure-element-architecture.md`](../../../../docs/secure-element-architecture.md).
+Several items there are **OPEN and safety-relevant** — in particular, the
+behaviour on MAC verification failure is undefined and must be decided before
+this build flies.
+
 ### Voltage tier — 6S
 
 | Part | Qty | Citation | Status |

@@ -36,24 +36,24 @@ from kiutils.items.fpitems import FpLine, FpText
 # Dimensions, all from drawing 4224744/A (see module docstring).
 # ---------------------------------------------------------------------------
 # "EXAMPLE BOARD LAYOUT" -- the manufacturer's recommended land pattern:
-PAD_LEN = 0.62      # "32X (0.62)" -- pad length, radial (outward from centre)
-PAD_WID = 0.25      # "32X (0.25)" -- pad width, tangential
-PITCH = 0.50        # "28X (0.5)"  -- 7 spaces per side x 4 sides = 28
-OUTER_SPAN = 4.78   # "(4.78)"     -- outer pad edge to outer pad edge
-EP_SIZE = 3.45      # "( 3.45)"    -- exposed thermal pad land, square
+PAD_LEN = 0.62  # "32X (0.62)" -- pad length, radial (outward from centre)
+PAD_WID = 0.25  # "32X (0.25)" -- pad width, tangential
+PITCH = 0.50  # "28X (0.5)"  -- 7 spaces per side x 4 sides = 28
+OUTER_SPAN = 4.78  # "(4.78)"     -- outer pad edge to outer pad edge
+EP_SIZE = 3.45  # "( 3.45)"    -- exposed thermal pad land, square
 
 # "EXAMPLE STENCIL DESIGN" -- EP paste is deliberately NOT one big aperture:
-EP_PASTE_N = 2          # "4X" apertures, i.e. a 2x2 grid
-EP_PASTE_SIZE = 1.49    # "4X ( 1.49)"
+EP_PASTE_N = 2  # "4X" apertures, i.e. a 2x2 grid
+EP_PASTE_SIZE = 1.49  # "4X ( 1.49)"
 EP_PASTE_OFFSET = 0.845  # "(0.845)" from centreline, both axes
 # -> 4 x 1.49^2 / 3.45^2 = 74.6%, matching the sheet's stated
 #    "75% PRINTED SOLDER COVERAGE BY AREA UNDER PACKAGE".
 
 # "PACKAGE OUTLINE" -- physical body, for F.Fab / silk / courtyard:
-BODY = 5.00         # D = E = 5.15 / 4.85 -> 5.0 nominal, square
-BODY_MAX = 5.15     # use the MAX for courtyard safety
+BODY = 5.00  # D = E = 5.15 / 4.85 -> 5.0 nominal, square
+BODY_MAX = 5.15  # use the MAX for courtyard safety
 
-PINS_PER_SIDE = 8   # 32 pins, 8 per side
+PINS_PER_SIDE = 8  # 32 pins, 8 per side
 
 # KiCad house style (drawing/DRC conventions, not datasheet values):
 CRTYD_CLEARANCE = 0.25
@@ -97,82 +97,108 @@ def build() -> Footprint:
     )
 
     text_y = BODY / 2 + 1.0
-    fp.graphicItems.append(FpText(
-        type="reference", text="REF**",
-        position=Position(0, -text_y, 0), layer="F.SilkS"))
-    fp.graphicItems.append(FpText(
-        type="value", text=NAME,
-        position=Position(0, text_y, 0), layer="F.Fab"))
+    fp.graphicItems.append(
+        FpText(
+            type="reference",
+            text="REF**",
+            position=Position(0, -text_y, 0),
+            layer="F.SilkS",
+        )
+    )
+    fp.graphicItems.append(
+        FpText(type="value", text=NAME, position=Position(0, text_y, 0), layer="F.Fab")
+    )
 
     # --- Signal pads -------------------------------------------------------
     # Numbering per Figure 6-6 (the datasheet's own pin diagram): pin 1 at the
     # top-left, counting counterclockwise -- 1..8 down the left side, 9..16
     # left-to-right along the bottom, 17..24 up the right side, 25..32
     # right-to-left along the top. (KiCad's +Y axis points down.)
-    r = OUTER_SPAN / 2 - PAD_LEN / 2          # pad centre, radial
-    t0 = -PITCH * (PINS_PER_SIDE - 1) / 2     # first pad centre, tangential
+    r = OUTER_SPAN / 2 - PAD_LEN / 2  # pad centre, radial
+    t0 = -PITCH * (PINS_PER_SIDE - 1) / 2  # first pad centre, tangential
     for i in range(PINS_PER_SIDE):
         t = t0 + i * PITCH
         for number, pos, size in (
-            (1 + i,                      (-r, t),  (PAD_LEN, PAD_WID)),  # left
-            (PINS_PER_SIDE + 1 + i,      (t, r),   (PAD_WID, PAD_LEN)),  # bot
-            (3 * PINS_PER_SIDE - i,      (r, t),   (PAD_LEN, PAD_WID)),  # right
-            (4 * PINS_PER_SIDE - i,      (t, -r),  (PAD_WID, PAD_LEN)),  # top
+            (1 + i, (-r, t), (PAD_LEN, PAD_WID)),  # left
+            (PINS_PER_SIDE + 1 + i, (t, r), (PAD_WID, PAD_LEN)),  # bot
+            (3 * PINS_PER_SIDE - i, (r, t), (PAD_LEN, PAD_WID)),  # right
+            (4 * PINS_PER_SIDE - i, (t, -r), (PAD_WID, PAD_LEN)),  # top
         ):
-            fp.pads.append(Pad(
-                number=str(number),
-                type="smd",
-                shape="roundrect",
-                roundrectRatio=0.25,
-                position=Position(round(pos[0], 4), round(pos[1], 4)),
-                size=Position(*size),
-                layers=["F.Cu", "F.Paste", "F.Mask"],
-            ))
+            fp.pads.append(
+                Pad(
+                    number=str(number),
+                    type="smd",
+                    shape="roundrect",
+                    roundrectRatio=0.25,
+                    position=Position(round(pos[0], 4), round(pos[1], 4)),
+                    size=Position(*size),
+                    layers=["F.Cu", "F.Paste", "F.Mask"],
+                )
+            )
 
     # --- Exposed thermal pad (pin 33) -------------------------------------
     # Copper/mask as one land; paste split into the drawing's 4 apertures, so
     # the copper pad itself carries no F.Paste.
-    fp.pads.append(Pad(
-        number="33", type="smd", shape="rect",
-        position=Position(0, 0),
-        size=Position(EP_SIZE, EP_SIZE),
-        layers=["F.Cu", "F.Mask"],
-    ))
+    fp.pads.append(
+        Pad(
+            number="33",
+            type="smd",
+            shape="rect",
+            position=Position(0, 0),
+            size=Position(EP_SIZE, EP_SIZE),
+            layers=["F.Cu", "F.Mask"],
+        )
+    )
     for sx in (-1, 1):
         for sy in (-1, 1):
-            fp.pads.append(Pad(
-                number="33", type="smd", shape="rect",
-                position=Position(round(sx * EP_PASTE_OFFSET, 4),
-                                  round(sy * EP_PASTE_OFFSET, 4)),
-                size=Position(EP_PASTE_SIZE, EP_PASTE_SIZE),
-                layers=["F.Paste"],
-            ))
+            fp.pads.append(
+                Pad(
+                    number="33",
+                    type="smd",
+                    shape="rect",
+                    position=Position(
+                        round(sx * EP_PASTE_OFFSET, 4), round(sy * EP_PASTE_OFFSET, 4)
+                    ),
+                    size=Position(EP_PASTE_SIZE, EP_PASTE_SIZE),
+                    layers=["F.Paste"],
+                )
+            )
 
     # --- F.Fab: body outline with a pin-1 chamfer --------------------------
     h = BODY / 2
     ch = 0.6
-    for s, e in (((-h + ch, -h), (h, -h)), ((h, -h), (h, h)),
-                 ((h, h), (-h, h)), ((-h, h), (-h, -h + ch)),
-                 ((-h, -h + ch), (-h + ch, -h))):
+    for s, e in (
+        ((-h + ch, -h), (h, -h)),
+        ((h, -h), (h, h)),
+        ((h, h), (-h, h)),
+        ((-h, h), (-h, -h + ch)),
+        ((-h, -h + ch), (-h + ch, -h)),
+    ):
         fp.graphicItems.append(_line(s, e, "F.Fab", LINE_FAB))
 
     # --- F.SilkS: corner ticks clear of the pads, + pin-1 marker -----------
-    pad_end = -t0 + PAD_WID / 2 + LINE_SILK    # tangential extent of the pads
+    pad_end = -t0 + PAD_WID / 2 + LINE_SILK  # tangential extent of the pads
     tick = h - pad_end
     if tick > LINE_SILK:
         for sx in (-1, 1):
             for sy in (-1, 1):
-                fp.graphicItems.append(_line(
-                    (sx * h, sy * pad_end), (sx * h, sy * h), "F.SilkS",
-                    LINE_SILK))
-                fp.graphicItems.append(_line(
-                    (sx * pad_end, sy * h), (sx * h, sy * h), "F.SilkS",
-                    LINE_SILK))
+                fp.graphicItems.append(
+                    _line(
+                        (sx * h, sy * pad_end), (sx * h, sy * h), "F.SilkS", LINE_SILK
+                    )
+                )
+                fp.graphicItems.append(
+                    _line(
+                        (sx * pad_end, sy * h), (sx * h, sy * h), "F.SilkS", LINE_SILK
+                    )
+                )
     p1 = OUTER_SPAN / 2 + 0.3
-    fp.graphicItems.append(_line((-p1, -p1 + 0.2), (-p1, -p1 - 0.2),
-                                 "F.SilkS", LINE_SILK))
-    fp.graphicItems.append(_line((-p1 - 0.2, -p1), (-p1 + 0.2, -p1),
-                                 "F.SilkS", LINE_SILK))
+    fp.graphicItems.append(
+        _line((-p1, -p1 + 0.2), (-p1, -p1 - 0.2), "F.SilkS", LINE_SILK)
+    )
+    fp.graphicItems.append(
+        _line((-p1 - 0.2, -p1), (-p1 + 0.2, -p1), "F.SilkS", LINE_SILK)
+    )
 
     # --- F.CrtYd -----------------------------------------------------------
     crtyd = max(BODY_MAX / 2, OUTER_SPAN / 2) + CRTYD_CLEARANCE
@@ -183,8 +209,7 @@ def build() -> Footprint:
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("-o", "--outdir", default=".",
-                    help="Output .pretty directory")
+    ap.add_argument("-o", "--outdir", default=".", help="Output .pretty directory")
     args = ap.parse_args(argv)
 
     outdir = Path(args.outdir)

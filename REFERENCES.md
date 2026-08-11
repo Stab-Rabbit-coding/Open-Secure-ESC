@@ -6,7 +6,7 @@ the date it was accessed. Fields that could not be independently verified
 (e.g. behind a purchase paywall, or blocked by anti-bot access controls) are
 marked explicitly — never guessed. Tags are cited in-repo as `[n]`.
 
-Last reviewed: 2026-08-03.
+Last reviewed: 2026-08-09.
 
 ---
 
@@ -82,6 +82,17 @@ any design); the local datasheet copy
 `docs/datasheets/infineon-slb9672-tpm20-spi-fw16.xx-datasheet-rev1.3.pdf`
 this entry's "Local verified copy" line points to is kept as-is so this
 citation record stays resolvable.
+**NOT SUPERSEDED BY [45] (2026-08-09).** The OPTIGA™ Trust M added that
+day ([45]) is a *different device class* — an I2C secure element, not a
+TCG TPM 2.0 — and it is **not** a reinstatement of this part. It occupies
+the schematic designator (U2) this part vacated, but it is adopted for the
+asymmetric PKI capability the S32K144's symmetric-only CSEc structurally
+cannot provide, **alongside** CSEc rather than in place of it; the
+2026-08-03 decision to use CSEc for per-frame message authentication
+stands unchanged. See `docs/secure-element-architecture.md` for the split,
+and `docs/security-mcu-comparison.md` §3.3 for the device-class
+comparison. Nothing in [45] re-verifies, revives, or re-scopes any claim
+made under this tag.
 
 **[3]** Telecommunications Industry Association, *Interface Between Data
 Terminal Equipment and Data Circuit-Terminating Equipment Employing Serial
@@ -1412,6 +1423,137 @@ Date accessed: 2026-08-03.
 
 ---
 
+**[44]** Texas Instruments Incorporated, *MSPM0G351x-Q1 Automotive
+Mixed-Signal Microcontrollers With CAN-FD Interface* (covers MSPM0G3519-Q1 and
+MSPM0G3518-Q1), document SLASFA6B, Rev. B, Texas Instruments Incorporated,
+Dallas, TX, USA, November 2024, revised October 2025. [Online]. Available:
+https://www.ti.com/lit/ds/symlink/mspm0g3519-q1.pdf
+**URL follows TI's standard doc-ID pattern and was NOT independently confirmed
+to resolve** — not fetched this session; do not quote it as verified without
+retesting. Marked explicitly per `AGENTS.md` §2.3 rather than asserted.
+Local verified copy: `docs/datasheets/mspm0g3518-q1.pdf` (144 pp.) —
+`VERIFIED`; the document's own title, document number, and revision dates were
+read directly from p. 1 of this local copy. A second local copy of the same
+document family, `docs/datasheets/mspm0g3519-q1.pdf`, is also present.
+Section/page: p. 1 title block — title, doc number SLASFA6B, "NOVEMBER 2024 –
+REVISED OCTOBER 2025." §12 "Mechanical, Packaging, and Orderable Information"
+begins p. 106; the RHB0032T (32-pin VQFN, 5 × 5 mm) package drawing
+**4224744/A, 01/2019** appears on pp. 137–139, across the "PACKAGE OUTLINE",
+"EXAMPLE BOARD LAYOUT" and "EXAMPLE STENCIL DESIGN" sheets — this is the
+drawing every dimension in `symbols/tools/gen_rhb0032t_footprint.py` is taken
+from.
+**Provenance note (2026-08-10):** this tag was in use in the repo by
+`symbols/tools/gen_rhb0032t_footprint.py` but had **no entry in this file** —
+the catalog jumped [43] → [45]. That was a defect against `AGENTS.md` §1.2
+(every in-repo citation must have a matching entry here), found while
+correcting two symbols that were mistakenly citing [44] for the OPTIGA™ Trust M
+(the correct tag for which is [45]). The entry is reconstructed here from the
+local PDF and from the citing script's own recorded section/drawing numbers.
+Per `AGENTS.md` §2.5 the tag was **not** renumbered or reassigned.
+Cited in: `symbols/tools/gen_rhb0032t_footprint.py`;
+`symbols/MSPM0G3518_Q1_RHB.kicad_sym`.
+Date accessed: 2026-08-10.
+
+---
+
+**[45]** Infineon Technologies AG, *OPTIGA™ Trust M — Datasheet*
+(SLS 32AIA010MH/S/K/L/M), document release reference Z8F80311641-D,
+Rev. 3.70, Infineon Technologies AG, Munich, Germany, 2024-10-09.
+[Online]. Available:
+https://www.infineon.com/assets/row/public/documents/30/49/infineon-optiga-trust-m-datasheet-en.pdf
+**URL located but NOT independently confirmed to serve this document:** a
+live fetch on 2026-08-09 returned HTTP 202 with a 0-byte `text/html` body
+(vendor anti-bot interstitial) rather than the PDF, and the vendor product
+page `https://www.infineon.com/part/OPTIGA-TRUST-M-SLS32AIA` renders
+client-side only, so neither could be used to corroborate the document.
+Marked explicitly per `AGENTS.md` §2.3 rather than asserted.
+Local verified copy: `docs/datasheets/infineon-optiga-trust-m-datasheet-en.pdf`
+(45 pp.) — `VERIFIED`; every section/page cited below was read directly
+from this local copy, which is the primary source this repo relies on.
+Section/page: p. 1, "Features" — Common Criteria EAL6+ (high) certified
+hardware; PSA Level 3 certified; up to 10 kB user memory; PG-USON-10-2,-4
+package (3 mm × 3 mm); I2C interface with Shielded Connection (encrypted
+communication); ECC NIST curves up to P-521 and Brainpool r1 up to 512;
+RSA up to 2048; AES key up to 256; SHA-256, HMAC up to SHA-512; TLS v1.2
+PRF and HKDF up to SHA-512; 4 monotonic up counters; hibernate leakage
+current < 2.5 µA. p. 7, §1.5 "Device features" — CC certificate
+BSI-DSZ-CC-0961 (Hardware Identifier IFX_CCI_00000Bh); I2C up to 1 MHz
+(FM+). p. 8, Table 2 "Products for V3" — sales code **SLS 32AIA010ML**,
+−40 °C to +105 °C Extended Temperature Range (ETR), PG-USON-10-2,-4
+(the variant this repo selects); Table 4 "Features" V1/V3 column split.
+pp. 8–9, Table 4 — V3 adds over V1: ECC NIST P-521 and Brainpool
+P256/384/512 r1, TLS v1.2 PRF SHA-384/512, HKDF SHA-256/384/512, AES
+128/192/256 (ECB, CBC, CBC-MAC, CMAC), and HMAC with SHA-256/384/512.
+p. 10, §2 Figure 1 "System block diagram" — on-chip object inventory:
+arbitrary data objects ~4.5 kB, 4 monotonic counters, 4 X.509 certificate
+slots, 3 trust-anchor slots, 4 ECC key slots, 2 RSA key slots, 1 AES key
+slot (V3 only), 1 platform binding secret. p. 11, §2 Note — unique ECC/RSA
+private keys and X.509 certificates are generated and provisioned at the
+Infineon fab, with the public key signed by a customer-specific CA.
+p. 12, §3 Figure 2 "System integration schematic diagram" — reference
+circuit: SCL pin 8 and SDA pin 3 each with a 10 kΩ pull-up to VCC, 100 nF
+VCC decoupling, GND pin 1, VCC pin 10; accompanying Note — reset may be
+either the IFX I2C soft reset (`IFX_I2C_SOFT_RESET`) or a hardware reset,
+and pull-up values depend on the target circuit and I2C frequency.
+p. 12, §3.1 Figure 3 and p. 13, Figures 4–5 — optional hibernation
+circuits (host GPIO as VCC, or GPIO-switched VCC via FDN304P single
+MOSFET / FDN304P+BSS138N dual MOSFET), not used by this repo.
+p. 15, §4.1 Figure 6 "PG-USON-10-2,-4 Package Outline" — 3 mm × 3 mm body,
+0.5 mm pitch, 0.6 mm max height, 0.05 mm max standoff. p. 16, Figure 7
+"PG-USON-10-2,-4 top view" — pin arrangement and the note "Connect the
+exposed pad with the copper area in the PCB to improve thermal
+dissipation". p. 17, Table 6 "Contact definitions and functions" — full
+10-pin map: 01 GND, 02 NC, 03 SDA (I/O), 04 NC, 05 NC, 06 NC, 07 NC,
+08 SCL (I/O), 09 RST (IN, active low, weak internal pull-up), 10 VCC
+(PWR); NC pins "Not connected/Do not connect externally. Shall be left
+floating". p. 18, Table 7 — V_CC_I2C 1.62 V to 5.5 V. p. 20, §5.1.3.1
+Table 11 "Electrical characteristics" — V_CC 1.62–5.5 V; I_CCAVG typ
+14.0 mA while running a typical authentication profile (25 °C, V_CC =
+5.0 V), with footnote "Supply current can be limited from 6mA to 15mA by
+software commands"; sleep-mode I_CCS3 typ 70 µA / max 100 µA; hibernate
+current < 2.5 µA; RST V_IL ≤ 0.3 × V_CC, V_IH ≥ 0.7 × V_CC. p. 21,
+Table 12 — V_CC ramp time t_VCCR 1 µs to 1000 µs. p. 22, Table 13 —
+power-on startup time t_STARTUP min 15 ms. p. 23, Table 14 — warm-reset
+timing: t_STARTUP min 15 ms, reset-low 10 µs to 2500 µs, reset-detection
+t1 min 10 µs. p. 24, §6.1 Table 15 "Command table" — the external command
+set, including `OpenApplication`, `CloseApplication`, `GetRandom`,
+`CalcHash`, `CalcSign`, `VerifySign`, `CalcSSec`, `DeriveKey`,
+`GenKeyPair`, `GetDataObject`, `SetDataObject`, `SetObjectProtected`, and
+the V3-only `EncryptSym`, `DecryptSym`, `GenSymKey`. p. 25, §6.2 Table 16
+"Mapping of commands with Use cases" — "Secured Communication with (D)TLS"
+maps to GetRandom, CalcHash, CalcSign, VerifySign, CalcSSec, DeriveKey,
+GenKeyPair, EncryptAsym, DecryptAsym. pp. 26–27, Table 18 "Crypto
+performance for V3" (measured at I2C FM 400 kHz, 25 °C, V_CC = 3.3 V) —
+ECDSA sign ≈ 65 ms (≈ 70 ms with Shielded Connection); ECDSA verify
+≈ 85 ms (≈ 95 ms); ECDH key agreement ≈ 60 ms (≈ 65 ms); ECC P-256 key-pair
+generation ≈ 55 ms (≈ 60 ms); AES-128 encrypt ≈ 28 ms / decrypt ≈ 35 ms
+(256 bytes, ECB); TLS v1.2 PRF key derivation ≈ 50 ms; HKDF-SHA256 ≈ 130 ms;
+HMAC-SHA256 ≈ 90 ms (128 bytes input); SHA-256 ≈ 15 KB/s. p. 28, §7
+"Security monitor", Table 19 "Security events" — the events that drive the
+monitor, including "Private key use" and "Secret key use"; §7.2 "Security
+policy" — the permitted usage profile is **one protected operation per
+t_max period, with t_max = 5 seconds (± 5%)**, and a Suspect System
+Behavior event sets the Security Event Counter to its maximum (255).
+pp. 30–33, Appendix A.1 Tables 20–24 — IFX I2C v2.03 register map (DATA
+0x80, DATA_REG_LEN 0x81, I2C_STATE 0x82, BASE_ADDR 0x83, MAX_SCL_FREQU
+0x84, GUARD_TIME 0x85, TRANS_TIMEOUT 0x86, SOFT_RESET 0x88, I2C_MODE
+0x89) and protocol-variation defaults (BASE_ADDR 0x30, MAX_SCL_FREQU
+1000 kHz, GUARD_TIME 50 µs, TRANS_TIMEOUT 10 ms, TRANS_REPEAT 3,
+MAX_PACKET_SIZE 0x110, PRESENT_LAYER — the presentation layer providing
+confidentiality and integrity protection of APDUs, used as part of
+Shielded Connection). p. 34, §A.2 — default I2C slave address 0x30.
+p. 40, §A.3.2 "Low power sleep mode" — the device enters sleep
+automatically after a configurable delay t_SDY and resumes as soon as its
+address is detected on the I2C bus.
+Cited in: `README.md`; `docs/secure-element-architecture.md`;
+`docs/security-mcu-comparison.md` §3.3/§9.5;
+`symbols/specs/OPTIGA_TRUST_M.json`; `symbols/README.md`;
+`builds/6s/50A/CAN_485_faraday/README.md`;
+`builds/6s/50A/CAN_485_faraday/kicad/` (schematic U2 + `sym-lib-table`).
+Date accessed: 2026-08-09.
+
+---
+
 ## Pending Verification — Not Yet Cited
 
 The following items are named in `README.md` but currently have **no**
@@ -1480,5 +1622,19 @@ secondary-sourced figures for any of the three. [12]–[18], [21], and
 [23] still have no local copy and remain secondary-sourced only —
 re-attempt direct fetch or manual PDF download before design docs cite
 those as verified.
+
+**Network-access update (2026-08-09):** the session-wide egress denial
+described above no longer applies — a neutral control URL
+(`https://example.com`) returned HTTP 200 and general web search worked.
+The remaining obstacle is **vendor-side**, not policy-side: `infineon.com`
+answers document requests with HTTP 202 and a 0-byte `text/html` anti-bot
+interstitial instead of the PDF, and its product pages render client-side
+only, so neither can corroborate a datasheet. This was retested while
+adding [45]. Consequence for the still-open items above: a direct-fetch
+re-attempt is now *worth making* for the non-Infineon sources
+([12]–[18], [21], [23] — Analog Devices, TIA, IEC, Würth, TI, Vishay),
+which was pointless under the earlier blanket block. That re-attempt has
+**not** been made yet; those entries remain secondary-sourced only and
+must not be cited as verified until it is. Tracked in `TODO.md` 1.10.
 
 Track resolution of these items in `TODO.md`.
