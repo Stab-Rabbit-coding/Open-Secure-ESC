@@ -41,5 +41,7 @@ fp-info-cache
 
 # Local project settings
 *.kicad_prl
-**/*__pycache__*
-**/*.pyc
+
+# Python bytecode from the symbol/schematic/PCB generator scripts
+__pycache__/
+*.py[cod]

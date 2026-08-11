@@ -2979,7 +2979,271 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "S32K144:S32K144"
+		(symbol "OPTIGA_TRUST_M:OPTIGA_TRUST_M"
+			(pin_names
+				(offset 1.016)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "U"
+				(at 0 15.24 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "OPTIGA_TRUST_M"
+				(at 0 12.7 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "Open_Secure_ESC:Infineon_PG-USON-10-2-4_3x3mm_P0.5mm_EP1.7x2.5mm"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "docs/datasheets/infineon-optiga-trust-m-datasheet-en.pdf"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Infineon OPTIGA(TM) Trust M V3 secure element (sales code SLS 32AIA010ML, Extended Temperature Range -40C..+105C), PG-USON-10-2,-4 (3x3mm), I2C. Hardware root of trust for the ESC: asymmetric PKI device authentication (ECDSA over a fab-provisioned private key + X.509 certificate) and ephemeral session-key agreement (ECDHE + key derivation). It does NOT perform per-frame message authentication -- that stays on the S32K144's on-chip CSEc (REFERENCES.md [31]) using the session key this device agrees, because [45] p.28 SS7.2 permits only one protected operation per 5s t_max period. See docs/secure-element-architecture.md for the full split and the security-monitor budget. Occupies the schematic designator (U2) vacated by the dropped SLB9672 TPM 2.0 (REFERENCES.md [2]) but is a different device class and is not a reinstatement of it."
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Citation" "[45]"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Verification" "VERIFIED -- full 10-pin map read directly from the local copy of [45] (OPTIGA(TM) Trust M Datasheet, document release reference Z8F80311641-D, Rev. 3.70, 2024-10-09), p.17 Table 6 'Contact definitions and functions of PG-USON-10-2,-4 packages', corroborated against p.16 Figure 7 'PG-USON-10-2,-4 top view' (same pin arrangement drawn graphically) and p.12 Figure 2 'System integration schematic diagram' (which independently shows SCL on pin 8, SDA on pin 3, VCC on pin 10, GND on pin 1) and p.12 Figure 3 (RST on pin 9). Pin electrical types follow Table 6's own Type column: GND/VCC 'PWR' -> power_in; SDA/SCL 'I/O' -> bidirectional (SCL is modeled bidirectional rather than input because the device supports clock stretching, p.32 Table 23 CLK_STRETCHING, and Table 6 itself types it I/O); RST 'IN' -> input. The five NC contacts (02, 04, 05, 06, 07) are typed no_connect because Table 6 states 'Not connected/Do not connect externally. Shall be left floating' -- this is a datasheet requirement, not a layout preference, so they must NOT be tied to a rail. Device/feature facts also VERIFIED from the same local copy: variant selection SLS 32AIA010ML = V3 silicon, ETR -40C..+105C, PG-USON-10-2,-4 (p.8 Table 2); V3 crypto set ECC NIST P-256/384/521 + Brainpool P256/384/512 r1, RSA 1024/2048, AES 128/192/256, HMAC SHA-256/384/512, HKDF SHA-256/384/512, TLS v1.2 PRF, SHA-256, TRNG/DRNG (pp.8-9 Table 4); on-chip slots 4x ECC key, 2x RSA key, 1x AES key, 4x X.509 cert, 3x trust anchor, 4x monotonic counter, 1x platform binding secret, ~4.5kB arbitrary data (p.10 Figure 1); VCC 1.62-5.5V, I_CCAVG typ 14.0mA during a typical authentication profile (software-limitable 6-15mA), sleep typ 70uA, hibernate <2.5uA (p.20 Table 11); CC EAL6+ (high) hardware, PSA Level 3, CC certificate BSI-DSZ-CC-0961 / IFX_CCI_00000Bh (p.1, p.7 SS1.5); I2C up to 1MHz FM+ (p.7 SS1.5), default slave address 0x30 (p.34 SS A.2). FOOTPRINT: 'Open_Secure_ESC:Infineon_PG-USON-10-2-4_3x3mm_P0.5mm_EP1.7x2.5mm', authored for this repo by symbols/tools/gen_optiga_uson10_footprint.py with a 3D model from symbols/tools/gen_optiga_uson10_3dmodel.py. Package dimensions are VERIFIED from p.15 Figure 6 and p.16 Figure 7: body 3x3mm, 0.5mm pitch (basic), terminal 0.25mm wide x 0.4mm long, exposed pad 1.7 x 2.5mm, 0.6mm max height, 0.05mm max standoff. Figure 6 is a raster drawing, so each printed callout was additionally cross-checked by measuring the figure's own geometry in pixels against the dimensioned 3mm body (101.67 px/mm); all six features reproduced their callout (see the generator docstring for the table). The pin numbering (1 top-left, 1-5 down the left, 6-10 up the right) is from p.16 Figure 7. SEPARATELY FLAGGED, per AGENTS.md SS4: the LAND PATTERN (toe/heel/side fillets) is an IPC-7351-style engineering derivation, NOT an Infineon recommendation -- [45] publishes no recommended land pattern for this package. Its fillet values are taken from KiCad 9.0's Package_DFN_QFN:DFN-10-1EP_3x3mm_P0.5mm_EP1.7x2.5mm, an IPC-generated footprint for an identically dimensioned DFN-10 whose body, pitch, terminal width, exposed-pad size and pin numbering independently reproduce every dimension measured from Figure 6; the 10 signal lands in this repo's footprint are byte-identical to that KiCad footprint's. That KiCad footprint is NOT used directly because its own descr cites an unrelated Monolithic Power part (untraceable provenance under AGENTS.md SS1.2) and because its 3D model is not installed on this system. The exposed pad is intentionally NOT modeled as a symbol pin, consistent with how this repo models every other QFN/USON/LQFP part, and is correspondingly emitted as an UNNUMBERED land in the footprint so symbol and footprint pin counts cannot disagree; per p.16 Figure 7 it is 'n.c.' internally and exists to 'improve thermal dissipation', so it carries no net of its own -- connect it to a copper pour at layout time if desired. No thermal vias are emitted: at I_CCAVG 14mA the device dissipates on the order of 50mW."
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "OPTIGA_TRUST_M_0_1"
+				(rectangle
+					(start -5.08 10.16)
+					(end 5.08 -10.16)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "OPTIGA_TRUST_M_1_1"
+				(pin bidirectional line
+					(at -7.62 2.54 0)
+					(length 2.54)
+					(name "SDA"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at -7.62 0.0 0)
+					(length 2.54)
+					(name "SCL"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "8"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -7.62 -2.54 0)
+					(length 2.54)
+					(name "RST"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "9"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin no_connect line
+					(at 7.62 5.08 180)
+					(length 2.54)
+					(name "NC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin no_connect line
+					(at 7.62 2.54 180)
+					(length 2.54)
+					(name "NC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin no_connect line
+					(at 7.62 0.0 180)
+					(length 2.54)
+					(name "NC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin no_connect line
+					(at 7.62 -2.54 180)
+					(length 2.54)
+					(name "NC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin no_connect line
+					(at 7.62 -5.08 180)
+					(length 2.54)
+					(name "NC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0.0 12.7 270)
+					(length 2.54)
+					(name "VCC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "10"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0.0 -12.7 90)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
+		(symbol "MSPM0G3518_Q1_PM:MSPM0G3518_Q1_PM"
 			(pin_names
 				(offset 1.016)
 			)
@@ -2994,7 +3258,7 @@
 					)
 				)
 			)
-			(property "Value" "S32K144"
+			(property "Value" "MSPM0G3518_Q1_PM"
 				(at 0 13.97 0)
 				(effects
 					(font
@@ -3011,7 +3275,7 @@
 					(hide yes)
 				)
 			)
-			(property "Datasheet" "docs/datasheets/S32K1xx.pdf"
+			(property "Datasheet" "docs/datasheets/mspm0g3518-q1.pdf"
 				(at 0 0 0)
 				(effects
 					(font
@@ -3020,7 +3284,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "NXP S32K144 Arm Cortex-M4F MCU with on-chip CSEc (Cryptographic Services Engine, SHE-compliant) security module, 64-pin LQFP -- project MCU per README.md. Replaces the MSPM0G3507 (REFERENCES.md [1], superseded); the SLB9672 external TPM (REFERENCES.md [2], dropped) is no longer part of this design -- CSEc provides on-chip message authentication instead, see this file's verification field and README.md."
+			(property "Description" "TI MSPM0G3518-Q1 Arm Cortex-M0+ MCU, PM (LQFP-64, 12x12mm) package, orderable M0G3518QPMRQ1 -- project MCU as of 2026-08-10, replacing the NXP S32K144 (REFERENCES.md [31], superseded). Swapped in for its AES-128/256 accelerator with GCM support plus a hardware keystore, which lifts the AES-128 ceiling the S32K144's SHE-compliant CSEc imposed (finding C-01 in docs/secure-element-architecture.md). The Infineon OPTIGA(TM) Trust M secure element (REFERENCES.md [45], schematic U2) is UNAFFECTED by this swap and remains required: the MSPM0's AES engine is symmetric-only, so the Trust M still provides asymmetric PKI device authentication (ECDSA over a fab-provisioned key + X.509 certificate) and ephemeral session-key agreement (ECDHE + KDF), while the MCU consumes the agreed session key for the per-frame authenticated hot path. See docs/secure-element-architecture.md for the full division of labour."
 				(at 0 0 0)
 				(effects
 					(font
@@ -3029,7 +3293,7 @@
 					(hide yes)
 				)
 			)
-			(property "Citation" "[31]"
+			(property "Citation" "[44]"
 				(at 0 0 0)
 				(effects
 					(font
@@ -3038,7 +3302,7 @@
 					(hide yes)
 				)
 			)
-			(property "Verification" "MIXED -- feature-level facts VERIFIED, physical pin NUMBERS are an UNVERIFIED PLACEHOLDER PIN MAP, per AGENTS.md SS1.3/SS3. VERIFIED against the local copy of [31] (S32K1xx Data Sheet Rev. 15, 5 March 2026): Arm Cortex-M4F core, 80 MHz (RUN) / 112 MHz (HSRUN) (p.6, Fig.3); on-chip CSEc implementing the SHE (Secure Hardware Extension) Functional Specification's cryptographic function set (p.3 SS1.1); 512 KB flash / 64 KB RAM (p.6, Fig.3); 64-pin LQFP is one of four packages this device ships in (48-LQFP, 64-LQFP, 100-LQFP, 100-MAPBGA -- p.6, Fig.3), document number SOT1699-1 (p.89); real power/analog-reference pin NAMES VDD, VSS, VDDA, VREFH, and a combined VREFL/VSSA/VSS pin (p.13 SS5.4, p.14 short note); real reset pin name RESET_B (p.26); real SWD pin names SWD_CLK/SWD_DIO (p.3, p.77). UNVERIFIED / PLACEHOLDER: the local data sheet explicitly states (p.89 SS10.1) that package pinouts and signal descriptions are in the S32K1xx Series Reference Manual, NOT this document -- that Reference Manual was not obtained this session (nxp.com fetch returned HTTP 403, matching this repo's established pattern for this vendor). Every pin 'num' below is therefore a sequential PLACEHOLDER (1..27 in the order pins are listed here) and does NOT represent a real, datasheet-confirmed physical package pin location -- do not send to fab. This build's own signal-role names (CAN_TX, RS485_TXD, GD_SPI_*, ADC_*, PWM_*, etc., mirroring the naming convention already used in the now-superseded symbols/specs/MSPM0G3507.json) are this build's functional labels, not literal NXP silicon pad names, same convention as before. No TPM_SPI_*/TPM_PIRQ#/TPM_RST# pins are included -- CSEc is an internal peripheral with no dedicated external pins (it is driven by firmware over an internal command interface, not an external bus), so dropping the SLB9672 also frees the LPSPI channel that build previously reserved for it; see TODO.md for what would upgrade this from PLACEHOLDER to VERIFIED (S32K1xx Reference Manual pinout chapter, or NXP's IO Signal Description / Signal Multiplexing spreadsheet attachment)."
+			(property "Verification" "VERIFIED -- pin NUMBERS are real, datasheet-confirmed physical PM (LQFP-64) package pins, NOT placeholders. This supersedes the UNVERIFIED PLACEHOLDER PIN MAP caveat that symbols/specs/S32K144.json and symbols/specs/MSPM0G3507_Q1.json both carry. Everything below is read from the local copy of [44] (SLASFA6B, MSPM0G3519-Q1/MSPM0G3518-Q1 datasheet, Nov 2024 rev. Oct 2025) at docs/datasheets/mspm0g3518-q1.pdf. METHOD (reproducible): the pin tables in this datasheet DO survive text extraction, contrary to the assumption recorded in docs/HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md SS4 -- they only fail under a bare 'pdftotext'. Use 'pdftotext -layout'. Two independent extractions were cross-checked against each other and agree with zero discrepancies: (a) Figure 6-3 '64-pin PM (0.5mm) (LQFP) Package Diagram' (p.11) gives PM pin number -> pad name for all 64 pins; (b) Table 6-2 'Pin Attributes' (pp.14-34) gives, per pad, the full IOMUX function list -- parsed by exploiting the fact that the IOMUX PF column restarts at 1 for each new pad and that the PF=1 entry is always the pad's own GPIO name, which makes row boundaries unambiguous; all 64 PM pads parsed, none missing, none duplicated. Cross-check (c): the per-peripheral signal tables in SS6.3 (Tables 6-3, 6-7, 6-10, 6-14, 6-15, 6-17, 6-18, 6-19) carry an explicit 'PM PIN' column, and every assignment below was confirmed against it independently of (a) and (b). Package/orderable VERIFIED from [44] p.3 'Device Information': M0G3518QPMRQ1 = PM (LQFP, 64), 12mm x 12mm. Dedicated (non-IOMUX) pins VERIFIED: VDD = PM 40, VSS = PM 41, VCORE = PM 32, NRST = PM 38 (Fig 6-3; NRST also confirmed at Table 6-16 'PM PIN' = 38). SWD VERIFIED from Table 6-15: SWCLK = PM 13 (pad PA20), SWDIO = PM 12 (pad PA19). NOTE ON PACKAGE PIN COUNT: this datasheet covers both the MSPM0G3519-Q1 and the MSPM0G3518-Q1; Figure 6-3 and Table 6-2 are shared across both devices for the PM package, and no PM-package pin used below is marked device-specific. FOOTPRINT VERIFIED CORRECT (and a trap worth recording): the 'footprint' field above is inherited unchanged from the superseded S32K144 spec, and it IS right for this part, despite [44] p.3 'Device Information' listing the PM package as '12mm x 12mm'. That p.3 figure is the LEAD SPAN, not the body -- p.3 note (2) says the package size 'includes pins, where applicable'. The PM0064A package outline drawing in [44] SS12 gives body = 10.2/9.8 mm (nominal 10 x 10) and lead span = 12.2/11.8 mm (nominal 12 x 12), with 60X 0.5 mm pitch and 4X 7.5 mm pin-field span (16 pins per side). The same pattern is visible on the 48-pin part as a cross-check: p.3 lists PT as '9mm x 9mm' while drawing PT0048A gives body 7.2/6.8 and lead span 9.2/8.8. KiCad names LQFP footprints by BODY size, so Package_QFP:LQFP-64_10x10mm_P0.5mm is the correct choice and no new footprint is needed. This also corrects docs/HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md SS2, which took the p.3 '12 x 12 mm' figure at face value and inferred a body-size difference from the outgoing S32K144 64-LQFP; there is none at the body level. THREE PINS DROPPED relative to the S32K144 symbol, deliberately, each for a datasheet-cited reason: (1) VDDA -- no such pin exists on the MSPM0; it must NOT be slot-swapped onto VCORE, because [44] p.51 SS7.3 note (2) states 'The VCORE pin must only be connected to CVCORE. Do not supply any voltage or apply any external load to the VCORE pin.' A naive VDDA->VCORE remap would have tied VCORE to 3V3, which the datasheet explicitly forbids. (2) VREFH and (3) VREFL_VSSA_VSS -- the MSPM0 has no dedicated reference pins. Per Table 6-19, VREF+ and VREF- are IOMUX functions on pads PA23 (PM 24) and PA21 (PM 17) respectively. The superseded design tied VREFH to 3V3 and VREFL to GND, i.e. it ran the ADC supply-referenced; on this device that same behaviour is obtained by selecting VDDA as the ADC reference internally, with no external pins consumed. Routing VREF+/VREF- out would have burned two GPIOs to duplicate an on-die selection and would have exposed the ADC reference as an external node. Those two pads are therefore reassigned as ordinary ADC inputs below (ADC_IV on PA23 = A1_12, ADC_VBUS on PA21 = A1_7). FIRMWARE REQUIREMENT arising from that choice: firmware MUST select VDDA (not external VREF) as the ADC reference, and must configure any unused IOMUX pad per [44] Table 6-20 (PINCMx.PF = 0x1 GPIO, driven low or input with internal pull). If a future revision instead enables the internal VREF, PA23 must be freed and given its own capacitor -- see TODO.md. ONE PIN ADDED: VCORE (PM 32), an internal-regulator OUTPUT, typed 'power_out' rather than 'power_in' precisely because it is a source, not a supply input; it carries a dedicated 470nF capacitor to VSS and nothing else -- see the capacitance note below. CAPACITORS VERIFIED from [44] p.51 SS7.3 'Recommended Operating Conditions': CVCORE = 470 nF nominal between VCORE and VSS; CVDD = 10 uF nominal between VDD and VSS; note (1) requires a low-ESR part with at least the specified value and a tolerance of +/-20% or better for BOTH, placed as close to the device pins as possible; VCORE itself is 1.35 V nominal. This resolves the 'UNVERIFIED -- the capacitance value' item raised in docs/HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md SS3; the value was never unobtainable, it was only hidden behind the missing 'pdftotext -layout' flag. NRST TERMINATION VERIFIED from [44] Table 6-20: 'NRST is an active-low reset signal; it must be pulled high to VCC or the device will not start' -- a 10k pull-up to 3V3 is therefore mandatory, not optional, and was absent from the superseded design; it is added on the schematic by this swap. PERIPHERAL FEATURE SET VERIFIED from [44] p.1 'Features': AES-128/256 accelerator with support for GCM, secure key storage for up to four AES keys, TRNG, CAN 2.0 A/B + CAN-FD, 7x UART, 3x I2C (FM+), 3x SPI, 512 KB flash, 128 KB SRAM, up to 94 GPIO, Arm Cortex-M0+. Device sections SS8.20 AESADV and SS8.21 Keystore exist per the p.5 table of contents. Broader MSPM0 security architecture (CSC, BCR, BSL, secure storage) is described in [40] (SLAAE29A). KEY-SLOT REGRESSION, recorded here because it is a real consequence of this swap and not yet closed: the MSPM0 keystore holds FOUR AES keys ([44] p.1) against CSEc's seventeen ([31] Table 36-75). The intended key hierarchy must be re-checked against a four-slot budget -- tracked in TODO.md and in docs/secure-element-architecture.md. SIGNAL-ROLE NAMING: as with every prior MCU symbol in this repo, the pin 'name' values below (CAN_TX, RS485_TXD, GD_SPI_*, ADC_*, PWM_*, SE_*) are THIS BUILD's functional role labels, not literal TI silicon pad names; the underlying pad and the specific IOMUX function selected for each are recorded in the per-pin 'pad' and 'func' fields so the mapping is auditable. Every one of those IOMUX functions was verified available on that specific pad in Table 6-2, and the whole assignment was machine-checked to be conflict-free (no pad used twice). LAYOUT NOTE: the three PWM complementary pairs were deliberately placed on physically adjacent package pins -- AH/AL = 54/55, BH/BL = 52/53, CH/CL = 47/48 -- and the gate-driver SPI block on contiguous pins 1-4, to keep gate-drive loop area small; this is an EMI choice, not a datasheet requirement. HAND-AUTHORED SYMBOL: symbols/MSPM0G3518_Q1_PM.kicad_sym is hand-written, NOT produced by symbols/tools/gen_kicad_symbol.py, because kiutils is not installed in this environment and pip is not permitted (see docs/HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md SS6). Its pin COORDINATES were chosen to match the previously embedded S32K144 symbol slot-for-slot so that the existing schematic wiring survives the swap untouched; regenerating it from this spec with gen_kicad_symbol.py would re-lay-out the pins and silently break that wiring. Treat the committed .kicad_sym as ahead of the generator, the same divergence that gen_schematic.py already documents."
 				(at 0 0 0)
 				(effects
 					(font
@@ -3047,7 +3311,7 @@
 					(hide yes)
 				)
 			)
-			(symbol "S32K144_0_1"
+			(symbol "MSPM0G3518_Q1_PM_0_1"
 				(rectangle
 					(start -15.24 11.43)
 					(end 15.24 -11.43)
@@ -3060,169 +3324,7 @@
 					)
 				)
 			)
-			(symbol "S32K144_1_1"
-				(pin input line
-					(at -17.78 10.16 0)
-					(length 2.54)
-					(name "SWD_CLK"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "7"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin bidirectional line
-					(at -17.78 7.62 0)
-					(length 2.54)
-					(name "SWD_DIO"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "8"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at -17.78 5.08 0)
-					(length 2.54)
-					(name "CAN_TX"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "9"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -17.78 2.54 0)
-					(length 2.54)
-					(name "CAN_RX"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "10"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at -17.78 0 0)
-					(length 2.54)
-					(name "RS485_TXD"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "11"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -17.78 -2.54 0)
-					(length 2.54)
-					(name "RS485_RXD"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "12"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at -17.78 -5.08 0)
-					(length 2.54)
-					(name "RS485_DE_RE"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "13"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -11.43 -13.97 90)
-					(length 2.54)
-					(name "ADC_IU"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "18"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -8.89 -13.97 90)
-					(length 2.54)
-					(name "ADC_IV"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "19"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
+			(symbol "MSPM0G3518_Q1_PM_1_1"
 				(pin power_in line
 					(at -6.35 13.97 270)
 					(length 2.54)
@@ -3233,25 +3335,7 @@
 							)
 						)
 					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -6.35 -13.97 90)
-					(length 2.54)
-					(name "ADC_IW"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "20"
+					(number "40"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3269,7 +3353,25 @@
 							)
 						)
 					)
-					(number "2"
+					(number "41"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_out line
+					(at -1.27 13.97 270)
+					(length 2.54)
+					(name "VCORE"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "32"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3278,16 +3380,16 @@
 					)
 				)
 				(pin input line
-					(at -3.81 -13.97 90)
+					(at 6.35 13.97 270)
 					(length 2.54)
-					(name "ADC_VBUS"
+					(name "NRST"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "21"
+					(number "38"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3295,107 +3397,17 @@
 						)
 					)
 				)
-				(pin power_in line
-					(at -1.27 13.97 270)
+				(pin input line
+					(at -17.78 10.16 0)
 					(length 2.54)
-					(name "VDDA"
+					(name "SWCLK"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at -1.27 -13.97 90)
-					(length 2.54)
-					(name "PWM_AH"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "22"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 1.27 13.97 270)
-					(length 2.54)
-					(name "VREFH"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 1.27 -13.97 90)
-					(length 2.54)
-					(name "PWM_AL"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "23"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 3.81 13.97 270)
-					(length 2.54)
-					(name "VREFL_VSSA_VSS"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "5"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 3.81 -13.97 90)
-					(length 2.54)
-					(name "PWM_BH"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "24"
+					(number "13"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3404,16 +3416,16 @@
 					)
 				)
 				(pin bidirectional line
-					(at 6.35 13.97 270)
+					(at -17.78 7.62 0)
 					(length 2.54)
-					(name "RESET_B"
+					(name "SWDIO"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "6"
+					(number "12"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3422,16 +3434,34 @@
 					)
 				)
 				(pin output line
-					(at 6.35 -13.97 90)
+					(at -17.78 5.08 0)
 					(length 2.54)
-					(name "PWM_BL"
+					(name "CAN_TX"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "25"
+					(number "30"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -17.78 2.54 0)
+					(length 2.54)
+					(name "CAN_RX"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "31"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3440,16 +3470,34 @@
 					)
 				)
 				(pin output line
-					(at 8.89 -13.97 90)
+					(at -17.78 0 0)
 					(length 2.54)
-					(name "PWM_CH"
+					(name "RS485_TXD"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "26"
+					(number "33"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -17.78 -2.54 0)
+					(length 2.54)
+					(name "RS485_RXD"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "34"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3458,16 +3506,16 @@
 					)
 				)
 				(pin output line
-					(at 11.43 -13.97 90)
+					(at -17.78 -5.08 0)
 					(length 2.54)
-					(name "PWM_CL"
+					(name "RS485_DE_RE"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "27"
+					(number "37"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3485,7 +3533,7 @@
 							)
 						)
 					)
-					(number "14"
+					(number "1"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3503,7 +3551,7 @@
 							)
 						)
 					)
-					(number "15"
+					(number "2"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3521,7 +3569,7 @@
 							)
 						)
 					)
-					(number "16"
+					(number "3"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3539,7 +3587,241 @@
 							)
 						)
 					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -11.43 -13.97 90)
+					(length 2.54)
+					(name "ADC_IU"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "25"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -8.89 -13.97 90)
+					(length 2.54)
+					(name "ADC_IV"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "24"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -6.35 -13.97 90)
+					(length 2.54)
+					(name "ADC_IW"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "26"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -3.81 -13.97 90)
+					(length 2.54)
+					(name "ADC_VBUS"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
 					(number "17"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at -1.27 -13.97 90)
+					(length 2.54)
+					(name "PWM_AH"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "54"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 1.27 -13.97 90)
+					(length 2.54)
+					(name "PWM_AL"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "55"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 3.81 -13.97 90)
+					(length 2.54)
+					(name "PWM_BH"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "52"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 6.35 -13.97 90)
+					(length 2.54)
+					(name "PWM_BL"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "53"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 8.89 -13.97 90)
+					(length 2.54)
+					(name "PWM_CH"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "47"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 11.43 -13.97 90)
+					(length 2.54)
+					(name "PWM_CL"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "48"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at 25.4 -5.08 180)
+					(length 2.54)
+					(name "SE_I2C_SCL"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "8"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at 25.4 -7.62 180)
+					(length 2.54)
+					(name "SE_I2C_SDA"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "9"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 25.4 -10.16 180)
+					(length 2.54)
+					(name "SE_RST"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "7"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -4012,7 +4294,7 @@
 		)
 		(uuid "809b2017-c9fc-4737-871c-f36ae2d59024")
 	)
-	(text "No external TPM: message authentication is provided by the S32K144's own on-chip CSEc security module (internal peripheral, no dedicated pins) -- see ../README.md"
+	(text "MCU U1 = TI MSPM0G3518-Q1 (PM/LQFP-64). Per-frame message authentication runs on its on-chip AES-128/256 accelerator with GCM and a 4-slot hardware keystore (REFERENCES.md [44]) -- this replaced the S32K144 CSEc, which was SHE-compliant and therefore AES-128 only. Asymmetric identity and session-key agreement remain on the OPTIGA(TM) Trust M secure element U2 (REFERENCES.md [45]); the MCU AES engine is symmetric-only, so U2 is still required. VCORE carries a dedicated 470nF cap and nothing else per [44] p.51 SS7.3. See ../README.md and docs/secure-element-architecture.md"
 		(exclude_from_sim no)
 		(at 529.85 132.54 0)
 		(effects
@@ -4667,16 +4949,6 @@
 			(type default)
 		)
 		(uuid "2910d6c9-fdf9-4665-98f4-7c94bc01577b")
-	)
-	(wire
-		(pts
-			(xy 531.12 278.57) (xy 531.12 273.49)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "292b970d-5bed-45da-bb2a-2193a5ec1364")
 	)
 	(wire
 		(pts
@@ -6710,16 +6982,6 @@
 	)
 	(wire
 		(pts
-			(xy 533.66 278.57) (xy 533.66 283.65)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "eadbedf4-d5a5-4b84-ba44-6c4b6236c76c")
-	)
-	(wire
-		(pts
 			(xy 380.01 431.27) (xy 385.09 431.27)
 		)
 		(stroke
@@ -7227,7 +7489,7 @@
 			)
 		)
 	)
-	(global_label "3V3"
+	(global_label "VCORE"
 		(shape passive)
 		(at 528.58 273.49 90)
 		(effects
@@ -7702,25 +7964,6 @@
 			)
 		)
 	)
-	(global_label "GND"
-		(shape passive)
-		(at 533.66 283.65 90)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "3e70f873-0c92-4a25-9a38-ffcce448f9a6")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 533.66 283.65 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "RS485_ISO_GND"
 		(shape passive)
 		(at 385.09 418.57 0)
@@ -7740,7 +7983,7 @@
 			)
 		)
 	)
-	(global_label "3V3"
+	(global_label "VCORE"
 		(shape passive)
 		(at 589.85 151.11 90)
 		(effects
@@ -9317,25 +9560,6 @@
 			)
 		)
 	)
-	(global_label "3V3"
-		(shape passive)
-		(at 531.12 273.49 90)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "fd1d9751-57fc-477d-9872-479bace957da")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 531.12 273.49 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "ISENSE_A_HI"
 		(shape passive)
 		(at 899.85 193.97 90)
@@ -9792,7 +10016,7 @@
 		)
 	)
 	(symbol
-		(lib_id "S32K144:S32K144")
+		(lib_id "MSPM0G3518_Q1_PM:MSPM0G3518_Q1_PM")
 		(at 529.85 292.54 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -9808,7 +10032,7 @@
 				)
 			)
 		)
-		(property "Value" "S32K144"
+		(property "Value" "MSPM0G3518_Q1_PM"
 			(at 529.85 278.57 0)
 			(effects
 				(font
@@ -9825,7 +10049,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "docs/datasheets/S32K1xx.pdf"
+		(property "Datasheet" "docs/datasheets/mspm0g3518-q1.pdf"
 			(at 529.85 292.54 0)
 			(effects
 				(font
@@ -9834,7 +10058,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "TI MSPM0G3518-Q1 Arm Cortex-M0+ MCU, PM (LQFP-64, 12x12mm) package, orderable M0G3518QPMRQ1 -- project MCU as of 2026-08-10, replacing the NXP S32K144 (REFERENCES.md [31], superseded). Swapped in for its AES-128/256 accelerator with GCM support plus a hardware keystore, which lifts the AES-128 ceiling the S32K144's SHE-compliant CSEc imposed (finding C-01 in docs/secure-element-architecture.md). The Infineon OPTIGA(TM) Trust M secure element (REFERENCES.md [45], schematic U2) is UNAFFECTED by this swap and remains required: the MSPM0's AES engine is symmetric-only, so the Trust M still provides asymmetric PKI device authentication (ECDSA over a fab-provisioned key + X.509 certificate) and ephemeral session-key agreement (ECDHE + KDF), while the MCU consumes the agreed session key for the per-frame authenticated hot path. See docs/secure-element-architecture.md for the full division of labour."
 			(at 529.85 292.54 0)
 			(effects
 				(font
@@ -9842,7 +10066,7 @@
 				)
 			)
 		)
-		(property "Citation" "[31]"
+		(property "Citation" "[44]"
 			(at 529.85 292.54 0)
 			(effects
 				(font
@@ -11590,7 +11814,7 @@
 				)
 			)
 		)
-		(property "Value" "100nF"
+		(property "Value" "470nF"
 			(at 589.85 156.19 0)
 			(effects
 				(font
@@ -11624,7 +11848,7 @@
 				)
 			)
 		)
-		(property "Note" "MCU VDDA decoupling, generic value. Datasheet [31] p.13 requires VDD and VDDA shorted to a common source on PCB -- both rails carry the 3V3 label here per that requirement, not an independent design choice."
+		(property "Note" "C_VCORE for U1 (MSPM0G3518-Q1). REQUIRED value: 470nF nominal between VCORE and VSS per [44] p.51 SS7.3, low-ESR, tolerance +/-20% or better, placed as close to the VCORE pin as possible. This net carries the cap and nothing else -- [44] p.51 note (2) forbids supplying any voltage or applying any external load to VCORE. Repurposed 2026-08-10 from the S32K144 VDDA decoupling cap; the MSPM0 has no VDDA pin."
 			(at 589.85 162.54 0)
 			(effects
 				(font
@@ -13421,10 +13645,979 @@
 			)
 		)
 	)
+		(global_label "NRST"
+			(shape passive)
+			(at 471.07 278.66 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			(uuid "cab94dd1-e17d-45cc-9795-2351a1c03f19")
+			(property "Intersheetrefs" "${INTERSHEET_REFS}"
+				(at 471.07 278.66 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+		)
+	(symbol
+		(lib_id "Device:C")
+		(at 629.85 162.54 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "e0b975e9-eff7-41dc-860a-81c11a7eeb89")
+		(property "Reference" "C?"
+			(at 629.85 153.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10uF"
+			(at 629.85 156.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+			(at 629.85 162.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 629.85 162.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 629.85 162.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Note" "C_VDD bulk for U1 (MSPM0G3518-Q1). REQUIRED value: 10uF nominal between VDD and VSS per [44] p.51 SS7.3, low-ESR, tolerance +/-20% or better, as close to the VDD pin as possible. Added 2026-08-10 with the S32K144 -> MSPM0G3518-Q1 swap; the sheet previously carried only a 100nF MCU VDD decoupling cap."
+			(at 629.85 162.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "3e2dc20b-5fd3-49c7-9b5c-615ce6d60c86")
+		)
+		(pin "2"
+			(uuid "cb2af070-912e-4473-b2c3-4fda993101c0")
+		)
+		(instances
+			(project "open_secure_esc_6s_50a_can485_faraday"
+				(path "/b6909b5a-de2d-4466-bb5d-8520126b59da"
+					(reference "C?")
+					(unit 1)
+				)
+			)
+		)
+	)
+		(wire
+			(pts
+				(xy 629.85 156.19)
+				(xy 629.85 151.11)
+			)
+			(stroke
+				(width 0)
+				(type default)
+			)
+			(uuid "0e8400f9-2ac3-4e8c-ab9a-85442140c905")
+		)
+		(global_label "3V3"
+			(shape passive)
+			(at 629.85 151.11 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			(uuid "c3404481-04d2-4272-8198-29382a519bcd")
+			(property "Intersheetrefs" "${INTERSHEET_REFS}"
+				(at 629.85 151.11 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+		)
+		(wire
+			(pts
+				(xy 629.85 168.89)
+				(xy 629.85 173.97)
+			)
+			(stroke
+				(width 0)
+				(type default)
+			)
+			(uuid "1a4666f8-acd9-4b57-b261-2f71b5088792")
+		)
+		(global_label "GND"
+			(shape passive)
+			(at 629.85 173.97 270)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			(uuid "d8a9390a-31ff-4551-a9ac-641c46c17ee9")
+			(property "Intersheetrefs" "${INTERSHEET_REFS}"
+				(at 629.85 173.97 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+		)
+	(symbol
+		(lib_id "Device:R")
+		(at 669.85 162.54 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "228a4e1b-7757-4125-b136-0886d01f991e")
+		(property "Reference" "R?"
+			(at 669.85 153.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10k"
+			(at 669.85 156.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 669.85 162.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 669.85 162.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 669.85 162.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Note" "NRST pull-up for U1 (MSPM0G3518-Q1). MANDATORY, not optional: [44] Table 6-20 states NRST 'must be pulled high to VCC or the device will not start'. Added 2026-08-10 -- the superseded S32K144 design had no pull-up on its reset pin."
+			(at 669.85 162.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "ec641ed0-ebbe-4dfb-8c89-36e4e1c820aa")
+		)
+		(pin "2"
+			(uuid "5c5af3a3-dd31-4144-ad86-21763f88ce91")
+		)
+		(instances
+			(project "open_secure_esc_6s_50a_can485_faraday"
+				(path "/b6909b5a-de2d-4466-bb5d-8520126b59da"
+					(reference "R?")
+					(unit 1)
+				)
+			)
+		)
+	)
+		(wire
+			(pts
+				(xy 669.85 156.19)
+				(xy 669.85 151.11)
+			)
+			(stroke
+				(width 0)
+				(type default)
+			)
+			(uuid "db406c95-4d4c-4bfa-8a1a-c3d6058696b4")
+		)
+		(global_label "3V3"
+			(shape passive)
+			(at 669.85 151.11 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			(uuid "155637e7-b32a-4cdf-bf68-51cd03482599")
+			(property "Intersheetrefs" "${INTERSHEET_REFS}"
+				(at 669.85 151.11 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+		)
+		(wire
+			(pts
+				(xy 669.85 168.89)
+				(xy 669.85 173.97)
+			)
+			(stroke
+				(width 0)
+				(type default)
+			)
+			(uuid "cfa298ea-cc08-46b8-add4-b7c44bcfb8ce")
+		)
+		(global_label "NRST"
+			(shape passive)
+			(at 669.85 173.97 270)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+			(uuid "06a93c05-d948-4546-b38e-00f071c4c597")
+			(property "Intersheetrefs" "${INTERSHEET_REFS}"
+				(at 669.85 173.97 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+		)
 	(sheet_instances
 		(path "/"
 			(page "1")
 		)
 	)
 	(embedded_fonts no)
+	(symbol
+		(lib_id "OPTIGA_TRUST_M:OPTIGA_TRUST_M")
+		(at 660.4 543.5600000000001 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "8da1741f-a373-44d9-92b7-272ee3226a1c")
+		(property "Reference" "U?"
+			(at 660.4 528.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "OPTIGA_TRUST_M"
+			(at 660.4 530.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Open_Secure_ESC:Infineon_PG-USON-10-2-4_3x3mm_P0.5mm_EP1.7x2.5mm"
+			(at 660.4 543.5600000000001 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "docs/datasheets/infineon-optiga-trust-m-datasheet-en.pdf"
+			(at 660.4 543.5600000000001 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Infineon OPTIGA(TM) Trust M V3 secure element (sales code SLS 32AIA010ML, Extended Temperature Range -40C..+105C), PG-USON-10-2,-4 (3x3mm), I2C. Hardware root of trust for the ESC: asymmetric PKI device authentication (ECDSA over a fab-provisioned private key + X.509 certificate) and ephemeral session-key agreement (ECDHE + key derivation). It does NOT perform per-frame message authentication -- that stays on the S32K144's on-chip CSEc (REFERENCES.md [31]) using the session key this device agrees, because [45] p.28 SS7.2 permits only one protected operation per 5s t_max period. See docs/secure-element-architecture.md for the full split and the security-monitor budget. Occupies the schematic designator (U2) vacated by the dropped SLB9672 TPM 2.0 (REFERENCES.md [2]) but is a different device class and is not a reinstatement of it."
+			(at 660.4 543.5600000000001 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Citation" "[45]"
+			(at 660.4 543.5600000000001 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Verification" "VERIFIED -- full 10-pin map read directly from the local copy of [45] (OPTIGA(TM) Trust M Datasheet, document release reference Z8F80311641-D, Rev. 3.70, 2024-10-09), p.17 Table 6 'Contact definitions and functions of PG-USON-10-2,-4 packages', corroborated against p.16 Figure 7 'PG-USON-10-2,-4 top view' (same pin arrangement drawn graphically) and p.12 Figure 2 'System integration schematic diagram' (which independently shows SCL on pin 8, SDA on pin 3, VCC on pin 10, GND on pin 1) and p.12 Figure 3 (RST on pin 9). Pin electrical types follow Table 6's own Type column: GND/VCC 'PWR' -> power_in; SDA/SCL 'I/O' -> bidirectional (SCL is modeled bidirectional rather than input because the device supports clock stretching, p.32 Table 23 CLK_STRETCHING, and Table 6 itself types it I/O); RST 'IN' -> input. The five NC contacts (02, 04, 05, 06, 07) are typed no_connect because Table 6 states 'Not connected/Do not connect externally. Shall be left floating' -- this is a datasheet requirement, not a layout preference, so they must NOT be tied to a rail. Device/feature facts also VERIFIED from the same local copy: variant selection SLS 32AIA010ML = V3 silicon, ETR -40C..+105C, PG-USON-10-2,-4 (p.8 Table 2); V3 crypto set ECC NIST P-256/384/521 + Brainpool P256/384/512 r1, RSA 1024/2048, AES 128/192/256, HMAC SHA-256/384/512, HKDF SHA-256/384/512, TLS v1.2 PRF, SHA-256, TRNG/DRNG (pp.8-9 Table 4); on-chip slots 4x ECC key, 2x RSA key, 1x AES key, 4x X.509 cert, 3x trust anchor, 4x monotonic counter, 1x platform binding secret, ~4.5kB arbitrary data (p.10 Figure 1); VCC 1.62-5.5V, I_CCAVG typ 14.0mA during a typical authentication profile (software-limitable 6-15mA), sleep typ 70uA, hibernate <2.5uA (p.20 Table 11); CC EAL6+ (high) hardware, PSA Level 3, CC certificate BSI-DSZ-CC-0961 / IFX_CCI_00000Bh (p.1, p.7 SS1.5); I2C up to 1MHz FM+ (p.7 SS1.5), default slave address 0x30 (p.34 SS A.2). FOOTPRINT: 'Open_Secure_ESC:Infineon_PG-USON-10-2-4_3x3mm_P0.5mm_EP1.7x2.5mm', authored for this repo by symbols/tools/gen_optiga_uson10_footprint.py with a 3D model from symbols/tools/gen_optiga_uson10_3dmodel.py. Package dimensions are VERIFIED from p.15 Figure 6 and p.16 Figure 7: body 3x3mm, 0.5mm pitch (basic), terminal 0.25mm wide x 0.4mm long, exposed pad 1.7 x 2.5mm, 0.6mm max height, 0.05mm max standoff. Figure 6 is a raster drawing, so each printed callout was additionally cross-checked by measuring the figure's own geometry in pixels against the dimensioned 3mm body (101.67 px/mm); all six features reproduced their callout (see the generator docstring for the table). The pin numbering (1 top-left, 1-5 down the left, 6-10 up the right) is from p.16 Figure 7. SEPARATELY FLAGGED, per AGENTS.md SS4: the LAND PATTERN (toe/heel/side fillets) is an IPC-7351-style engineering derivation, NOT an Infineon recommendation -- [45] publishes no recommended land pattern for this package. Its fillet values are taken from KiCad 9.0's Package_DFN_QFN:DFN-10-1EP_3x3mm_P0.5mm_EP1.7x2.5mm, an IPC-generated footprint for an identically dimensioned DFN-10 whose body, pitch, terminal width, exposed-pad size and pin numbering independently reproduce every dimension measured from Figure 6; the 10 signal lands in this repo's footprint are byte-identical to that KiCad footprint's. That KiCad footprint is NOT used directly because its own descr cites an unrelated Monolithic Power part (untraceable provenance under AGENTS.md SS1.2) and because its 3D model is not installed on this system. The exposed pad is intentionally NOT modeled as a symbol pin, consistent with how this repo models every other QFN/USON/LQFP part, and is correspondingly emitted as an UNNUMBERED land in the footprint so symbol and footprint pin counts cannot disagree; per p.16 Figure 7 it is 'n.c.' internally and exists to 'improve thermal dissipation', so it carries no net of its own -- connect it to a copper pour at layout time if desired. No thermal vias are emitted: at I_CCAVG 14mA the device dissipates on the order of 50mW."
+			(at 660.4 543.5600000000001 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "32e7b5c2-df65-4192-9248-36a3900f8ac5")
+		)
+		(pin "2"
+			(uuid "280d9120-2244-4ae4-a467-deea39d2ee05")
+		)
+		(pin "3"
+			(uuid "688f3a1d-bd00-4178-a1e0-94b84aa378db")
+		)
+		(pin "4"
+			(uuid "a1fd9032-2b8d-4690-9f15-a0ac6deb4bc3")
+		)
+		(pin "5"
+			(uuid "ee90915c-4f2c-452d-9db9-32e537758f2d")
+		)
+		(pin "6"
+			(uuid "f3b51950-b446-49c7-b939-008ff1fd8480")
+		)
+		(pin "7"
+			(uuid "de49bda0-7a5d-486c-9197-6a1f23b4c5c8")
+		)
+		(pin "8"
+			(uuid "12e3fcab-e1f6-4528-8c0a-c7994b65d692")
+		)
+		(pin "9"
+			(uuid "da3b00f1-d37a-4dae-9071-5104eb715706")
+		)
+		(pin "10"
+			(uuid "b9fd89bb-230d-46e4-a506-23fd73bc1cec")
+		)
+		(instances
+			(project "open_secure_esc_6s_50a_can485_faraday"
+				(path "/b6909b5a-de2d-4466-bb5d-8520126b59da"
+					(reference "U?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 627.38 534.67 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "5ee33ec3-9702-4669-98c9-7789bf5b390d")
+		(property "Reference" "R?"
+			(at 627.38 525.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10k"
+			(at 627.38 528.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 627.38 534.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 627.38 534.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 627.38 534.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c0b9f481-1e99-4d56-bab3-d5ca0d94abef")
+		)
+		(pin "2"
+			(uuid "907eb553-2118-4f9b-b0cc-065f7b4f4e84")
+		)
+		(instances
+			(project "open_secure_esc_6s_50a_can485_faraday"
+				(path "/b6909b5a-de2d-4466-bb5d-8520126b59da"
+					(reference "R?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 615.95 537.21 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "e0b681a0-ca84-4043-9eb3-b75a0480326f")
+		(property "Reference" "R?"
+			(at 615.95 528.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10k"
+			(at 615.95 530.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 615.95 537.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 615.95 537.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 615.95 537.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "269478f1-b170-49d0-bdd2-73fe4c05ef5e")
+		)
+		(pin "2"
+			(uuid "576d0c44-5bf3-42eb-81fe-9e53c7afcb4d")
+		)
+		(instances
+			(project "open_secure_esc_6s_50a_can485_faraday"
+				(path "/b6909b5a-de2d-4466-bb5d-8520126b59da"
+					(reference "R?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 679.45 537.21 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "5d5de1aa-a6da-4df4-9b36-84ba63b65c8c")
+		(property "Reference" "C?"
+			(at 679.45 528.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100n"
+			(at 679.45 530.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+			(at 679.45 537.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 679.45 537.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 679.45 537.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "60a8ede6-7c01-44a2-a41d-7f414c4158da")
+		)
+		(pin "2"
+			(uuid "1d05a34a-a06a-418d-a38d-3a2b4327ca31")
+		)
+		(instances
+			(project "open_secure_esc_6s_50a_can485_faraday"
+				(path "/b6909b5a-de2d-4466-bb5d-8520126b59da"
+					(reference "C?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 652.78 541.02) (xy 627.38 541.02)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fa41f916-1fd6-46c0-8eaf-8d39ef635e26")
+	)
+	(wire
+		(pts
+			(xy 652.78 543.5600000000001) (xy 615.95 543.5600000000001)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4396fe25-3548-4bd0-a4a4-3d9c78cbc4e9")
+	)
+	(wire
+		(pts
+			(xy 652.78 546.1) (xy 641.35 546.1)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c8ff8fe4-080d-4447-a938-d58c4213c647")
+	)
+	(global_label "SE_I2C_SDA"
+		(shape passive)
+		(at 641.35 541.02 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "b40678e7-0836-42a3-aa6c-bbb70e40322b")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 641.35 541.02 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "SE_I2C_SCL"
+		(shape passive)
+		(at 641.35 543.5600000000001 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "831da1a6-7cdd-4d23-9a16-fbcafe731aa2")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 641.35 543.5600000000001 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "SE_RST"
+		(shape passive)
+		(at 641.35 546.1 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "a91b3287-aae3-4f92-a7ff-579befb1506f")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 641.35 546.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 627.38 528.3199999999999) (xy 627.38 525.78)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cce34135-dbd3-49e7-936c-9a4b48387701")
+	)
+	(global_label "3V3"
+		(shape passive)
+		(at 627.38 525.78 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "d70cc706-5cbb-4a72-93c7-808d6107ef83")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 627.38 525.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 615.95 530.86) (xy 615.95 525.78)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "abef8934-aed5-4326-aa43-868baf89be7f")
+	)
+	(global_label "3V3"
+		(shape passive)
+		(at 615.95 525.78 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "7742a3a4-f158-4f55-940a-5de208382c3a")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 615.95 525.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 660.4 530.86) (xy 660.4 525.78)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "515d4bd4-a17f-4501-8052-c4b6a40bb4f8")
+	)
+	(global_label "3V3"
+		(shape passive)
+		(at 660.4 525.78 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "c1fb93b2-cdc5-44ad-9ae5-46839eb612c9")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 660.4 525.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 660.4 556.26) (xy 660.4 561.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d45b8a65-e1dc-42ea-b4e4-c3478d6f383e")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 660.4 561.34 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "d539ccf3-a582-4cf5-85ca-aed15a0e36ad")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 660.4 561.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 679.45 530.86) (xy 679.45 525.78)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fb57e79a-0bcd-4dd4-afbf-e133cb116a81")
+	)
+	(global_label "3V3"
+		(shape passive)
+		(at 679.45 525.78 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "12ec73c4-10c3-4732-b783-37616ca1eabc")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 679.45 525.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 679.45 543.5600000000001) (xy 679.45 549.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "feaf051d-94f1-41d4-a589-3f005c6170ca")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 679.45 549.91 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "51560774-cbb3-4b83-a327-8a726c574d19")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 679.45 549.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(no_connect
+		(at 668.02 538.48)
+		(uuid "0cebeb6d-3d61-439c-9964-12c661618af2")
+	)
+	(no_connect
+		(at 668.02 541.02)
+		(uuid "8584d623-ccc0-4271-ba2b-4b2f477d7ec6")
+	)
+	(no_connect
+		(at 668.02 543.5600000000001)
+		(uuid "5681deb8-d661-458c-ba7f-7c0b6aa593fe")
+	)
+	(no_connect
+		(at 668.02 546.1)
+		(uuid "3c6142cc-0a39-4e62-9b54-907ca4f54c97")
+	)
+	(no_connect
+		(at 668.02 548.64)
+		(uuid "1f4c7c30-27e3-4f24-8019-a373a586ce11")
+	)
+	(wire
+		(pts
+			(xy 555.25 297.62) (xy 575.25 297.62)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a6b03aab-db2b-41c0-9a74-c60c5ac78d38")
+	)
+	(global_label "SE_I2C_SCL"
+		(shape passive)
+		(at 575.25 297.62 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "1dcfb83a-3b86-4d9c-b71f-fd5e20cfa011")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 575.25 297.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 555.25 300.16) (xy 575.25 300.16)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b994ed69-3258-46bc-94b7-73aceab8718d")
+	)
+	(global_label "SE_I2C_SDA"
+		(shape passive)
+		(at 575.25 300.16 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "39a537f4-83c3-44a5-9c55-2b431e30d295")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 575.25 300.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 555.25 302.7) (xy 575.25 302.7)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ee97327d-9b9a-428d-a2e8-27cb73ec4c51")
+	)
+	(global_label "SE_RST"
+		(shape passive)
+		(at 575.25 302.7 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "32d61532-0be0-4ef4-a91f-0a4237a5089b")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 575.25 302.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
 )
