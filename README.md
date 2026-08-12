@@ -4,10 +4,11 @@ All builds:
 
 MCU: NXP S32K144 [31]
 Message authentication: on-chip CSEc (Cryptographic Services Engine, SHE-compliant) security module built into the S32K144 [31] — no discrete TPM (the previously used Infineon SLB9672 [2] has been dropped from this design)
-Root of trust: Infineon OPTIGA™ Trust M V3 secure element [45] over I²C (schematic `U2`) — device identity (ECDSA over a fab-provisioned key + X.509 certificate) and ephemeral session-key agreement (ECDHE). This is a secure element, **not** a TPM: it supplies the asymmetric layer CSEc structurally lacks, while CSEc keeps the per-frame AES-128 CMAC hot path. The split, and the 5 s security-monitor budget that forces it, are documented in [`docs/secure-element-architecture.md`](docs/secure-element-architecture.md)
+Root of trust: Infineon OPTIGA™ Trust M V3 secure element [45] over I²C (schematic `U2`) — device identity (ECDSA over a fab-provisioned key + X.509 certificate) and ephemeral session-key agreement (ECDHE). This is a secure element, **not** a TPM: it supplies the asymmetric layer CSEc structurally lacks, while CSEc keeps the per-frame AES-128 CMAC hot path. The split, and the 5 s security-monitor budget that forces it, are documented in [`docs/secure-element-architecture.md`](docs/secure-element-architecture.md),
 
 Build Options:
-
+* ADC/DIO/SPI shaft sensor input
+* Brushed / Brushless
 * Voltage: 2S, 4S, 6S, 8S, 12S
 * Amperage: 10A, 20A, 30A, 40A, 50A, 80A, 120A
 * Protocol: PWM, SBus, DBus, UART, TTL, SPI, RS-232 [3], RS-485 [4], CAN2.0 [5], CAN-FD [6], MIL-STD-1553B [7]
