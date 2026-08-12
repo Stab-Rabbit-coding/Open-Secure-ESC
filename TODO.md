@@ -11,159 +11,45 @@ detail belongs in design docs, not here.
 - [x] 1.3 TODO.md — this WBS
 - [x] 1.4 Verify [1] MSPM0G3507 datasheet doc ID/rev/page (local copy
       verified 2026-08-02; live ti.com fetch blocked: 403). **[1] superseded
-      2026-08-03 — project MCU changed to NXP S32K144, see 1.11/[31].**
-- [x] 1.5 Verify [2] SLB9672 datasheet page refs for compliance claims —
-      superseded by dropping the part before this was resolved. **[2]
-      DROPPED 2026-08-03 — TPM removed from design in favor of the S32K144's
-      on-chip CSEc, see 1.11/4.1/[31].**
-- [~] 1.11 Verify [31] NXP S32K1xx Data Sheet claims used in
-      `symbols/specs/S32K144.json`/README.md (local copy VERIFIED
-      2026-08-03 for CSEc, packages, memory, clock, power-pin names,
-      RESET_B/SWD_CLK/SWD_DIO pin names — see [31] for exact pages; live
-      nxp.com fetch blocked: 403, same pattern as [2]/[6]/[12]-[23]). Still
-      open: (a) physical package-pin **numbers** for the 64-pin LQFP — the
-      local data sheet explicitly defers this to the S32K1xx Series
-      Reference Manual; that RM is now locally available
-      (`docs/datasheets/S32K-RM.pdf`, see [31]) but its pinout chapter has
-      not yet been read/regenerated into `symbols/specs/S32K144.json`, so
-      `pins[].num` remains an `UNVERIFIED PLACEHOLDER PIN MAP`.
-      **2026-08-10: (a) is now UNBLOCKED — the source has been located.** The
-      RM body does not contain the per-pin map either: its Ch. 4 §4.1 defers to
-      an "IO Signal Description Input Multiplexing sheet(s) attached to the
-      Reference Manual." Those sheets are **embedded files inside
-      `docs/datasheets/S32K-RM.pdf`** and extract cleanly:
-      `pdfdetach -savefile 'S32K144_IO_Signal_Description_Input_Multiplexing.xlsx'
-      -o S32K144_IO.xlsx docs/datasheets/S32K-RM.pdf`. Its "IO Signal Table" tab
-      carries an `S32K144_64lqfp` column giving the real pin number for every
-      port/function pair — e.g. the LPI2C0 options for the secure element are
-      PTA2/PTA3 = pins 48/47 (ALT3) and PTB6/PTB7 = pins 12/11 (ALT2). Those
-      candidates are recorded in `docs/secure-element-architecture.md` §6.1 but
-      deliberately **not** committed to the symbol: three real pin numbers
-      cannot be conflict-checked against 27 placeholders, so the whole 64-pin
-      map must be resolved in one pass. That pass is the remaining work here.
-      **2026-08-03:
-      (b) RESOLVED** — CSEc's message-authentication algorithm
-      (AES-128-CMAC, `CMD_GENERATE_MAC`/`CMD_VERIFY_MAC`) is now VERIFIED
-      directly against the local S32K1xx Reference Manual Ch. 36 §36.5.13;
-      see [31] and `docs/security-mcu-comparison.md` §3.1/§7. The Reference
-      Manual also confirms CSEc's command set is symmetric-only (no
-      RSA/ECC/certificate commands anywhere in Ch. 36) — used in the new
-      security-module comparison doc, see 1.12 below.
-- [x] 1.12 `docs/security-mcu-comparison.md` — NXP S32K144 CSEc vs.
-      Infineon SLB9672 TPM 2.0 comparison (authentication/message-signing
-      latency, PKI capability, footprint, EMI/ESD/EMC, pricing), expanded
-      2026-08-03 into a full 8-candidate survey as more datasheets were
-      added to the repo: Infineon TLE987x/TLE9879 (§9.1, no crypto engine,
-      [32] `UNVERIFIED` beyond the CMSIS pack); Microchip dsPIC33CK512MPT608
-      (§9.2, [33], VERIFIED — full on-die PKI/X.509, AEC-Q100 Grade 1,
-      100-TQFP, 3.0–3.6V not 5V, availability unclear); Renesas RH850/U2A16
-      (§9.3, [34], `UNVERIFIED`); STM32G431K + SLB9672 combo (§9.4, [35]
-      restored from git history + [2], VERIFIED — weakest option: no
-      AEC-Q100, worst ESD, no on-die crypto fallback); Microchip SAM E51G19
-      (§9.5, [36], VERIFIED — AES/TRNG/PUKCC math accelerator + ICM hash
-      engine with real cycle counts, AEC-Q100 Grade 1, 25 mm²); TI
-      TMS320F280025(-Q1) (§9.6, [37], VERIFIED — **excluded**, no crypto
-      module, only DCSM code-protection); TI MSPM0G3107 (§9.7, [38]-[42],
-      VERIFIED — AES/CRC/TRNG + platform secure-boot/Keystore/software-ECDSA
-      per the cybersecurity app note [40], real AES cycle-count latency
-      data from the TRM [39], Cortex-M0+ core is the one weak point); TI
-      MSPM0G350x-Q1 (§9.8, [43], VERIFIED — same security model as 9.7 plus
-      ISO 26262 ASIL B TÜV certification and AEC-Q100 Grade 1 stated
-      directly, smallest footprint (~21 mm²) in the whole survey). New §8
-      resolves the standing "can the bus/crypto keep up" question with the
-      MSPM0/SAM cycle-count data: symmetric MAC is always fast enough
-      (microseconds); only asymmetric/PKI primitives are architecturally
-      unsuited to per-frame authentication, regardless of chip. §6.1 records
-      the 5V-vs-3.3V EMI/SNR design-rationale discussion (repo owner
-      confirmed most of the rest of this project is 3.3V-class). Supports
-      4.2. Repo owner separately confirmed CSC-vs-BIM secure-boot choice is
-      a firmware/SDK decision usable on either MSPM0 part, not gated by
-      silicon variant (noted in [40]'s entry and §9.7/§9.8).
-- [ ] 1.6 Verify [3]-[7] section/page pins once standards obtained (paywalled)
-- [ ] 1.7 Confirm MIL-STD-1553B vs -1553C target revision, update [7]
-- [~] 1.8 Source authoritative refs: SBus, DBus, PWM-interface, UART/TTL/SPI, EMI tiers
-      (EMI standards found: MIL-STD-461G [15], IEC 62368-1 [16], IEC/TR
-      61000-5-2 [17]; SBus/DBus still lack an official spec — hardware
-      invert note added citing [1] p.67 §8.23; PWM/UART/TTL/SPI need no
-      external standard, cite MCU datasheet directly)
-- [ ] 1.9 CONTRIBUTING.md — citation workflow quick-reference (derive from AGENTS.md §2)
-- [~] 1.10 Re-run live fetch (or manual PDF download) for [12]-[23] once
-      network access allows — this session's WebFetch returned HTTP 403
-      for every domain tried (including a neutral control URL); all specs
-      in [12]-[23] were originally corroborated via secondary search
-      sources only, not read from a primary PDF, and none had a local
-      verified copy.
-      2026-08-02 update: manual PDF downloads resolved [14], [19], [20],
-      [21], [22], [23], [30] (VERIFIED, local copies added) plus four
-      alternative-part citations [26]-[29] (Molicel P45B, Samsung SDI
-      40T, Analog Devices AD8410A, Infineon TLE9180D-31QK — none
-      adopted into the BOM). **[27] (Samsung 40T) is marked "Confidential
-      Proprietary" by Samsung on every page — flagged for the repo owner
-      to decide whether it should be removed rather than committed; see
-      [27].** Two other manual downloads added the same day turned out
-      NOT to resolve any open citation — [24] (Vishay WSL, doc 30100) is
-      a related-but-different family from [23] (WSLP2512, doc 30122,
-      since resolved separately); [25] (Würth WE-SHC 3690103020) is a
-      ~3mm single-IC-scale shield, not [19]/[30]'s 3671375/3670375
-      cover+frame pair (since resolved separately). Every BOM line in
-      this build's own BOM (§12.1) now has a locally verified primary
-      datasheet; [12], [13], [16]-[18] (standards/parts not used by
-      this build's own BOM) remain open, so this item stays `[~]`
-      rather than `[x]` at the [12]-[23] range level.
+      2026-08-03 — project MCU changed, see 13.**
+- [x] 1.5 Verify [2] SLB9672 datasheet page refs for compliance claims — DROPPED
+      (external TPM removed; see 4.1).
+- [~] 1.11 Verify [31] NXP S32K1xx Data Sheet claims used historically (local
+      copy VERIFIED); S32K144 removed as project MCU (see 13). Keep artifacts
+      for audit/history; do not reuse the S32K144 symbol as an active part.
+- [~] 1.12 `docs/security-mcu-comparison.md` — updated to reflect MCU swap and
+      Trust M justification; ensure any claim referencing MCU crypto or SHE
+      is traced to an authoritative source (Cn).
 
 ## 2. Requirements
 
 - [ ] 2.1 Functional requirements spec (per voltage/amperage/protocol/control/EMI variant)
-- [ ] 2.2 Safety requirements (motor runaway, overcurrent, thermal, CSEc-based message-authentication trust boundary)
-- [ ] 2.3 Regulatory/EMC targets per market (cite standard, C6)
+- [ ] 2.2 Safety requirements (motor runaway, overcurrent, thermal, CSEc/SE-based message-authentication trust boundary)
+- [ ] 2.3 Regulatory/EMC targets per market (cite standard, Cn)
 - [ ] 2.4 Requirements traceability matrix → REFERENCES.md tags
+- [ ] 2.5 Motor speed-sensor requirement (ALL variants): define required accuracy, latency, interfaces and failure modes; enumerate supported sensor types (Hall/low-voltage digital, optical encoder/quadrature, analog tachometer → ADC). Trace to authoritative references where applicable (Cn). See `docs/design-speed-sensor-integration.md`.
+- [ ] 2.6 Environmental & ingress protection requirements: specify supported IP ratings (up to IP68) and NEMA equivalents (up to NEMA 6P); define temperature, humidity, condensation and immersion duration/pressure profiles per-variant; submersible variants MUST include cooling strategies that operate in both air and water and have verification tests (see `docs/design-submersible-cooling.md` — DRAFT to author). Mark any environmental spec values UNVERIFIED until primary-source standards are cited (Cn).
 
 ## 3. Hardware — MCU Subsystem
 
-- [~] 3.1 S32K144 schematic (power, clock, decoupling per [31]) — MCU/support
-      passives placed and wired in `builds/6s/50A/CAN_485_faraday/kicad/`
-      (VDD/VSS/VDDA/VREFH/VREFL_VSSA_VSS decoupling per [31] p.13's "VDD and
-      VDDA must be shorted to a common source" requirement); physical pin
-      **numbers** still UNVERIFIED PLACEHOLDER, see 1.11.
-- [ ] 3.2 Programming/debug interface (SWD_CLK/SWD_DIO per [31])
-- [ ] 3.3 Peripheral pin mapping vs. protocol variant matrix
+- [~] 3.1 S32K144 schematic (historical) — kept for record; S32K144 removed as active MCU.
+- [~] 3.2 Programming/debug interface — update mapping to new MCU (see 13).
+- [~] 3.3 Peripheral pin mapping vs. protocol variant matrix — update and verify for MSPM0G3518-Q1 (Cn).
+- [~] 3.4 Motor speed-sensor pin/interface mapping: allocate pins + ADC channels/OPAMP/COMP/interrupts/Quadrature timers for Hall/encoder/analog tach across the active MCU symbol/spec; add to `symbols/specs/*` and per-build variants. Mark pin numbers UNVERIFIED until primary-source pinmap read (Cn).
 
 ## 4. Hardware — Trust/Security Subsystem
 
-- [x] 4.1 ~~SLB9672 TPM schematic (SPI per [2])~~ — **superseded 2026-08-03:
-      external TPM dropped from the design.** Message authentication is now
-      provided by the S32K144's on-chip CSEc security module [31] — no
-      discrete chip, no SPI schematic needed; CSEc is driven entirely by
-      firmware over an internal command interface (see 4.4 below).
-- [ ] 4.2 Secure boot / attestation chain design doc (now CSEc/SHE-based —
-      see [31], and 1.11 for what's still open on the SHE spec itself).
-      `docs/security-mcu-comparison.md` (1.12) now documents CSEc's
-      symmetric-only trust model and its `BOOT_MAC_KEY`-based secure-boot
-      mechanism as background, but a full attestation-chain design doc is
-      still a separate, not-yet-started deliverable.
-- [ ] 4.3 Key provisioning process (CSEc key slots per the SHE Functional
-      Specification's command set — spec itself not yet obtained, see 1.11)
-- [ ] 4.4 CSEc firmware integration: message authentication (CMAC
-      generate/verify per SHE) for CAN/RS-485 frame traffic — algorithm
-      detail (AES-128-CMAC) UNVERIFIED against a primary source pending 1.11
+- [x] 4.1 External SLB9672 TPM (historical) — removed 2026-08-03. OPTIGA™ Trust M (`U2`) integrated for asymmetric identity where required — see `docs/secure-element-architecture.md` and `docs/design-se-integration.md`.
+- [ ] 4.2 Secure boot / attestation chain design doc (CSEc + Trust M): finish and VERIFY against primary sources (Cn).
+- [ ] 4.3 Key provisioning process (Trust M provisioning profile, platform binding secret, SE Shielded Connection) — MUST be specified & verified (Cn).
+- [ ] 4.4 CSEc firmware integration: message authentication (CMAC generate/verify per SHE); reconcile clock/CSEc execution budget vs hot-path control timing (Cn).
 
 ## 5. Hardware — Power Stage
 
-- [~] 5.1 Gate driver + FET selection per amperage tier (10/20/30/40/50/80/120 A)
-      — candidates: Infineon IRFB4110PBF FET [20] (1x-3x parallel per
-      tier), TI DRV8353S gate driver [21] (same part all tiers); both
-      VERIFIED against local datasheets 2026-08-02, not yet settled in
-      a bill of materials
-- [~] 5.2 Voltage tier variants (2S/4S/6S/8S/12S) — component derating table
-      — candidate cell Molicel INR-21700-P42A [14], VERIFIED against
-      local datasheet 2026-08-02, gives nominal/max/min table (2S
-      7.2/8.4/5.0V ... 12S 43.2/50.4/30.0V); cell not yet selected in
-      BOM, cutoff voltage is cell-dependent (see [14] note)
-- [~] 5.3 Current sensing (shunt/hall) selection + citation — candidates:
-      Vishay WSLP2512 shunt [23] (VERIFIED against local datasheet
-      2026-08-02) + TI INA240 amplifier [22], same parts across tiers
-      except 80A/120A where single-shunt power rating is exceeded (open
-      gap, no part selected yet for those two tiers)
+- [~] 5.1 Gate driver + FET selection per amperage tier (10/20/30/40/50/80/120 A) — maintain candidate list; verify datasheets for final BOM lines (Cn).
+- [~] 5.2 Voltage tier variants (2S/4S/6S/8S/12S) — component derating table; verify cell choices (Cn).
+- [~] 5.3 Current sensing (shunt/hall) selection + citation — verify across tiers; INA240/WSLP candidates remain.
+- [ ] 5.4 Brushed-ESC power-stage variant: add H-bridge / half-bridge design task, BOM candidate(s), protections (reverse current, flyback diodes, current sensing placement), and interaction with control firmware. See `docs/design-brushed-esc-variant.md`. Mark part-selection claims UNVERIFIED until datasheets cited (Cn).
 
 ## 6. Hardware — Protocol Interfaces
 
@@ -172,36 +58,35 @@ detail belongs in design docs, not here.
 - [ ] 6.3 DBus input stage (flag UNVERIFIED spec, C-pending)
 - [ ] 6.4 UART/TTL transceiver
 - [ ] 6.5 SPI interface
-- [~] 6.6 RS-232 transceiver per [3]; candidate part ADM3232E [12]
-- [ ] 6.7 RS-485 transceiver per [4]; candidate part ADM2582E/ADM2587E [9]
-- [ ] 6.8 CAN 2.0 controller/transceiver per [5]; candidate part ADM3055E/ADM3057E [10]
-- [ ] 6.9 CAN-FD controller/transceiver per [6]; candidate part ADM3055E/ADM3057E [10]
-- [ ] 6.10 MIL-STD-1553B interface per [7]; candidate module Alta MEZ-E1553 [11]
+- [~] 6.6 RS-232 transceiver per [3]; candidate part ADM3232E [Cn]
+- [ ] 6.7 RS-485 transceiver per [4]; candidate part ADM2582E/ADM2587E [Cn]
+- [ ] 6.8 CAN 2.0 controller/transceiver per [5]; candidate part ADM3055E/ADM3057E [Cn]
+- [ ] 6.9 CAN-FD controller/transceiver per [6]; candidate part ADM3055E/ADM3057E [Cn]
+- [ ] 6.10 MIL-STD-1553B interface per [7]; candidate module Alta MEZ-E1553 [Cn]
+- [ ] 6.11 Motor speed-sensor interfaces (ALL variants required):
+      - 6.11.a Hall-effect: digital input(s) with interrupt and optional differential input path.
+      - 6.11.b Quadrature encoder: A/B ±index input with pull resistors and optional hardware quadrature decoder (or ISR fallback).
+      - 6.11.c Analog tachometer: analog front-end → ADC channel with anti-alias filtering, input protection and op-amp/comp front-end where needed.
+      Add BOM candidates, level shifting, input protection and EMI filtering guidance; cite datasheets/standards where applicable (Cn). See `docs/design-speed-sensor-integration.md`.
 
 ## 7. Hardware — EMI Hardening
 
-- [~] 7.1 Define tier requirements: None / Isolation / Grounding / Faraday
-      — standards found: MIL-STD-461G [15] (Grounding, Faraday), IEC
-      62368-1 [16] (Isolation classification), IEC/TR 61000-5-2 [17]
-      (Grounding, layout-only); candidate parts: ADuM4221 isolated gate
-      driver [18] (Isolation), Würth WE-SHC 3671375 cover [19] + 3670375
-      frame [30] (Faraday) — both VERIFIED against local datasheets
-      2026-08-02, no shielding-effectiveness dB figure in either;
-      Grounding tier confirmed layout-only, no part needed. Clause/page
-      pins for [15]-[18] still open (see 1.10).
+- [~] 7.1 Define tier requirements: None / Isolation / Grounding / Faraday; source clauses (Cn).
 - [ ] 7.2 Layout guidelines per tier
 - [ ] 7.3 Pre-compliance test plan
+- [ ] 7.4 EMI considerations for speed-sensor inputs: ground referencing, filtered inputs for analog tach, twisted-pair differential routing for encoder/Hall lines, comparator hysteresis, input common-mode and ESD protection. Add to layout checklist and per-build README.
 
 ## 8. Firmware
 
 - [ ] 8.1 Control loop: Open-loop
-- [~] 8.2 Control loop: Closed-loop differential — feedback approach:
-      sensorless FOC per TI SLAAE96A [13] (no extra BOM part; MCU's own
-      ADC/OPA/COMP per [1]); Hall-sensored fallback DRV5013 noted in [13]
-- [~] 8.3 Control loop: Closed-loop PID — same feedback approach as 8.2
+- [~] 8.2 Control loop: Closed-loop differential — sensorless FOC (where applicable) and sensors fallback.
+- [~] 8.3 Control loop: Closed-loop PID
 - [ ] 8.4 Protocol drivers (per §6)
-- [ ] 8.5 TPM integration / secure boot firmware
+- [ ] 8.5 Secure-boot / trust-chain firmware integration (CSEc + Trust M)
 - [ ] 8.6 Fault handling (overcurrent/thermal/comm-loss)
+- [ ] 8.7 Brushed-ESC firmware variant: H-bridge control, commutation strategy, regen handling, and safety limits. See `docs/design-brushed-esc-variant.md`.
+- [ ] 8.8 Motor-speed sensor drivers and abstractions (common API): Hall (edge interrupts + debounce), quadrature decoder (hardware timer or ISR fallback), analog tachometer (ADC sampling + filtering). Include failure modes and fallback behavior per safety reqs (2.2).
+- [ ] 8.9 Sensor fusion + control use-cases: map sensor input selection to control loop modes (sensorless fallback → sensor-based closed-loop), calibrations, and per-build configuration stored in NVM.
 
 ## 9. Verification & Test
 
@@ -209,162 +94,43 @@ detail belongs in design docs, not here.
 - [ ] 9.2 HIL bench test plan
 - [ ] 9.3 EMC pre-compliance test
 - [ ] 9.4 Protocol conformance test per interface
+- [ ] 9.5 Motor-speed sensor functional tests (Hall pulse-train test, encoder quadrature correctness, analog ADC calibration & accuracy)
+- [ ] 9.6 Brushed power-stage test procedures (H-bridge switching, dead-time verification, reverse-current handling)
 
 ## 10. Release
 
 - [ ] 10.1 Design review gate (AGENTS.md §5 checklist)
-- [ ] 10.2 BOM finalization per variant
+- [ ] 10.2 BOM finalization per variant (include sensor lines for every variant)
 - [ ] 10.3 Manufacturing/fab release
 - [ ] 10.4 v1.0 documentation freeze
 
 ## 11. Shared KiCad Symbol Library (symbols/)
 
-- [x] 11.1 Generator + JSON-spec workflow (`symbols/tools/gen_kicad_symbol.py`,
-      `symbols/specs/*.json`) so future components/builds source a pin map
-      once and regenerate rather than hand-edit S-expressions
-- [x] 11.2 ~~MSPM0G3507 [1] symbol~~ — removed 2026-08-03, superseded by
-      11.7 (S32K144). Historical: pin subset VERIFIED against local PDF
-      Table 6-2 (64-LQFP column); full 64-pin symbol was never built.
-- [x] 11.3 ~~SLB9672 [2] symbol~~ — removed 2026-08-03, TPM dropped from
-      the design (see 4.1). Historical: full 32-pin, VERIFIED,
-      footprint-complete.
-- [~] 11.7 S32K144 [31] symbol (`symbols/specs/S32K144.json`) — replaces
-      11.2 as the project MCU. Feature-level facts VERIFIED against the
-      local S32K1xx Data Sheet; pin **numbers** are an
-      `UNVERIFIED PLACEHOLDER PIN MAP` — the local datasheet defers the
-      physical pinout to the S32K1xx Series Reference Manual (not
-      obtained, nxp.com fetch blocked: 403). Do not send to fab until
-      resolved — see 1.11.
-- [x] 11.4 ADM2582E/ADM2587E [9] and ADM3055E/ADM3057E [10] symbols — full
-      20-pin, VERIFIED against local PDFs
-- [x] 11.5 DRV8353S [21] and INA240 [22] symbols — both resolved
-      2026-08-02: local datasheets added, symbols regenerated. DRV8353S:
-      full 40-pin VERIFIED map (RTA/WQFN package, SPI-variant column of
-      the datasheet's pin table — see `symbols/specs/DRV8353S.json`),
-      replacing the prior 26-pin sequential placeholder. INA240: VERIFIED
-      D/SOIC-8 8-pin map (see `symbols/specs/INA240.json`).
-- [x] 11.6 IRFB4110PBF [20], WSLP2512 [23], INR21700-P42A [14],
-      WE-SHC 3671375 cover [15], [19] and 3670375 frame [15], [19], [30]
-      symbols — generic/mechanical pinouts, no part-specific pin diagram
-      needed. All five now additionally VERIFIED (electrical/dimensional
-      ratings) against local datasheets added 2026-08-02.
+- [x] 11.1 Generator + JSON-spec workflow (`symbols/tools/gen_kicad_symbol.py`, `symbols/specs/*.json`) retained.
+- [x] 11.2 Historical S32K144 symbols retained for audit, not active.
+- [~] 11.7 Active MCU symbol: author `symbols/specs/MSPM0G3518_Q1_PM.json` + `.kicad_sym` (work in progress). Pin numbers remain `UNVERIFIED PLACEHOLDER` until the primary pinmap is extracted/verified (Cn).
+- [x] 11.4/11.5 previously VERIFIED symbols retained.
+- [ ] 11.8 Add sensor symbols & footprint candidates: Hall sensor (digital), quadrature encoder connector, analog-tach front-end parts (OPAMP/COMP), level-shifters and input protection devices. Add generator JSON entries for each and ensure tools can emit them for each build variant.
 
 ## 12. Per-Build Instances (builds/`<voltage>`/`<amperage>`/`<variant>`/)
 
-- [~] 12.1 `builds/6s/50A/CAN_485_faraday/` — 6S, 50A, CAN-FD + RS-485
-      (concurrent), Faraday EMI tier (sized against a 500 W/m² broadband RF
-      requirement, derived ~434 V/m). BOM drafted from
-      `docs/decision-matrix.xlsx` (README.md in that folder); `kicad/`
-      contains a project skeleton wired to `symbols/` but no placed
-      components; `gerbers/` empty pending a PCB layout. Blocked on the
-      same open items as 1.10/5.1-5.3/6.7-6.9/7.1: most BOM lines are still
-      `Candidate (unverified)`, and the CAN-FD/RS-485 transceiver variant
-      choice (isolation voltage vs. data rate) and DRV8353S-vs-INA240
-      current-sense sourcing are open design questions, not resolved in
-      that build's README.
-      **2026-08-03: MCU/TPM swap applied to this build** — U1 is now
-      S32K144 (was MSPM0G3507), the SLB9672 TPM (U2) was removed, schematic
-      and PCB regenerated via `kicad/tools/gen_schematic.py`/`gen_pcb.py`
-      (connectivity check clean, `check_shorts.py` clean, kiutils
-      round-trip validated). See 1.11/3.1/4.1 for what's still open.
+- [~] 12.1 `builds/6s/50A/CAN_485_faraday/` — update U1 → `MSPM0G3518-Q1` (see 13). MUST include motor-speed sensor input in BOM & schematic (see 2.5/6.11/3.4).
+- [~] 12.2 Add brushed-ESC build variant skeleton(s) — e.g. `builds/<voltage>/<amperage>/BRUSHED_<variant>/`:
+      - README: summarize brushed vs brushless differences, H-bridge BOM lines, sensor input requirements (required), protections (mark UNVERIFIED until datasheets are added).
+      - `kicad/` schematic template: H-bridge placeholders, speed-sensor connector footprint.
+      - Acceptance checklist: H-bridge ERC, current-sense integration, dead-time verification tests, firmware mapping.
+- [~] 12.3 Secure element (`U2`, OPTIGA™ Trust M V3) — integrated. Remaining open items:
+  - [ ] 12.3.a Enable Shielded Connection on I²C and provision platform binding secret (High, Cn).
+  - [ ] 12.3.b Anti-replay/freshness scheme for per-frame CMAC (High).
+  - [ ] 12.3.c MAC_LENGTH and verification-failure policy (Medium).
+  - [ ] 12.3.d Reconcile control-loop timing vs CSEc/SE operations (Medium).
+  - [ ] 12.3.e Fleet key lifecycle and revocation strategy (Medium).
+  - [ ] 12.3.f Annotate schematic and place U2 on PCB (placement/BOM).
 
-- [~] 12.3 Secure element (`U2`, OPTIGA™ Trust M V3, [45]) — added to
-      `builds/6s/50A/CAN_485_faraday` 2026-08-10. Symbol, footprint, 3D model,
-      schematic placement and LPI2C wiring are **done and verified** (pin map
-      from [45] p.17 Table 6; reference circuit from [45] p.12 §3 Fig. 2; ERC
-      shows no new errors). Design rationale and the full assessment are in
-      `docs/secure-element-architecture.md`. The items below are **OPEN and
-      must be closed before this build flies** — they are firmware and policy
-      decisions, not layout work.
-  - [ ] 12.3.a **(High, safety-critical)** Define the behaviour on CSEc MAC
-        verification failure. If a failed MAC hard-stops a motor in flight,
-        a single corrupted frame — or a transient bus fault — becomes a
-        shutdown primitive, i.e. the security control becomes the attack.
-        Decide fail-operational vs fail-safe and over what window of
-        consecutive failures. See `docs/secure-element-architecture.md` O-04.
-  - [ ] 12.3.b **(High)** Specify an anti-replay freshness scheme. AES-128
-        CMAC authenticates content, not recency; without a freshness value a
-        recorded throttle command replays as valid. The Trust M's 4 monotonic
-        counters ([45] p.10 Fig. 1) are boot-scale and cannot serve per-frame.
-        See C-03.
-  - [ ] 12.3.c **(High)** Enable the Trust M I²C **Shielded Connection** and
-        provision the platform binding secret ([45] p.1 Features, p.10 Fig. 1).
-        Without it the agreed session key crosses an exposed 2-wire bus in
-        clear and the whole asymmetric layer buys nothing against an attacker
-        with board access. See C-06.
-  - [ ] 12.3.d **(Medium)** Decide `MAC_LENGTH` for CAN-FD frames and the
-        verification-failure rate limit. CAN-FD carries at most 64 byte
-        ([31] RM Rev. 14 §55.2.2, p. 1802); a full 128-bit CMAC is 16 byte.
-        Truncation to 32 bit gives 2⁻³² per attempt, which is insufficient
-        without a lockout. Interacts directly with 12.3.a. See C-04.
-  - [ ] 12.3.e **(Medium)** Reconcile the control-loop clock budget with the
-        CSEc/HSRUN exclusion: [31] §1.1 states the device must drop from
-        HSRUN (112 MHz) to RUN (80 MHz) to execute CSEc. Any budget assuming
-        112 MHz *and* per-frame CMAC is wrong. See C-05.
-  - [ ] 12.3.f **(Medium)** Design fleet key lifecycle and revocation. With 4
-        certificate slots and 3 trust anchors there is no room for a
-        conventional CRL, and there is no defined process for retiring a
-        compromised controller. See O-05.
-  - [ ] 12.3.g **(Low)** Pin the ECC curve in the provisioning profile
-        (P-256 minimum, P-384 preferred). The device also supports RSA-1024
-        ([45] pp. 8–9 Table 4), which must not be selected. See C-07.
-  - [ ] 12.3.h Port the secure-element placement into
-        `kicad/tools/gen_schematic.py`. It was deliberately **not** written
-        blind: `kiutils` is unavailable on the machine where this work was
-        done, so the code could not have been executed even once, and
-        unverified generator code that silently overwrites a verified
-        schematic is precisely what `AGENTS.md` §1.3 guards against. The
-        schematic was extended by `kicad/tools/inject_optiga_secure_element.py`
-        instead, and `gen_schematic.py` now carries a divergence warning. Do
-        this on a machine with `kiutils`, then diff against the committed
-        sheet before trusting the result.
-  - [ ] 12.3.i Annotate the sheet. Every reference on
-        `open_secure_esc_6s_50a_can485_faraday.kicad_sch` is still `R?`/`C?`/
-        `U?`, which is why a netlist export collapses passives. Pre-existing,
-        but it blocks BOM/CPL generation and PCB placement of `U2`.
-  - [ ] 12.3.j Place `U2` and its three passives on the PCB
-        (`gen_pcb.py` / manual). Schematic-only at present.
+## 13. MCU Swap — S32K144 → MSPM0G3518-Q1 (IN PROGRESS)
 
-## 13. MCU Swap — S32K144 → MSPM0G3518-Q1 (NOT STARTED)
-
-- [ ] 13.1 **Replace the NXP S32K144 with the TI MSPM0G3518-Q1**, package PM
-      (LQFP-64), orderable `M0G3518QPMRQ1` [44]. Decided 2026-08-10: the
-      S32K144's CSEc is SHE-compliant and therefore **AES-128 only**, which
-      capped the authenticated hot path; the MSPM0G351x provides an
-      **AES-128/256 accelerator with GCM/CMAC** and a 4-key secure keystore
-      ([44] p.1; crypto architecture in [40]). This retires finding C-01 in
-      `docs/secure-element-architecture.md`.
-      **Full plan, verified facts, and constraints:**
-      `docs/HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md`. Start there.
-  - [ ] 13.1.a **(Hazard — read before editing the schematic.)** `VCORE` is
-        NOT the equivalent of the S32K144's `VDDA`. `VDDA` is an analog supply
-        input tied to 3V3; `VCORE` is a regulator **output**, and [44] p.52
-        states "The VCORE pin must only be connected to C_VCORE. Do not supply
-        any voltage or apply any external load to the VCORE pin." A
-        slot-for-slot swap would tie VCORE to 3V3 and violate the datasheet.
-        **Decided 2026-08-10: drop VDDA's rail connection and give VCORE its
-        own dedicated capacitor to VSS, with nothing else on that net.**
-  - [ ] 13.1.b `UNVERIFIED — needs primary source` : the C_VCORE capacitance
-        value. It is in the [44] p.51 Recommended Operating Conditions table,
-        whose columns do not survive `pdftotext`. Do not guess it. The ±20%
-        tolerance requirement IS verified and belongs on the BOM line.
-  - [ ] 13.1.c Author `symbols/specs/MSPM0G3518_Q1_PM.json` + `.kicad_sym`,
-        mirroring the S32K144's functional signal-role names so the existing
-        schematic wiring survives. Do not reuse
-        `symbols/MSPM0G3518_Q1_RHB.kicad_sym` — that is the VQFN-32 package.
-  - [ ] 13.1.d Pin numbers will again be an `UNVERIFIED PLACEHOLDER PIN MAP`
-        unless [44]'s Table 6-2 can be read. **Try `pdfdetach -list` on
-        `docs/datasheets/mspm0g3518-q1.pdf` first** — that trick is what
-        unblocked the S32K144 map (see 1.11(a)) and may avoid the caveat.
-  - [ ] 13.1.e Rewrite `docs/secure-element-architecture.md`: C-01 becomes
-        RESOLVED, C-05 (CSEc/HSRUN exclusion) no longer applies, and every
-        "CSEc" reference needs revisiting. **The Trust M's justification does
-        NOT change** — the MSPM0's AES engine is still symmetric, so the
-        asymmetric layer is still required.
-  - [ ] 13.1.f Check the keystore reduction: MSPM0 holds **4** AES keys
-        ([44] p.1) against CSEc's 17 ([31] Table 36-75). Confirm that suits the
-        intended key hierarchy before closing 13.1.
-  - [ ] 13.1.g Preserve `SE_I2C_SCL` / `SE_I2C_SDA` / `SE_RST` on the new
-        symbol, or the OPTIGA Trust M silently disconnects.
-  - [ ] 13.1.h Update `docs/security-mcu-comparison.md` — its S32K144-vs-
-        alternatives argument is the document this decision overturns.
+- [~] 13.1 Replace NXP S32K144 with TI MSPM0G3518-Q1 (PM LQFP-64) — decision 2026-08-10; work in `docs/HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md`.
+  - [~] 13.1.a Author `symbols/specs/MSPM0G3518_Q1_PM.json` + `.kicad_sym`; preserve functional signal names so wiring survives.
+  - [~] 13.1.b Hazard: `VCORE` != `VDDA`. `VCORE` must only connect to dedicated `C_VCORE`. `C_VCORE` value = `UNVERIFIED — needs primary source` until table read.
+  - [~] 13.1.c Resolve pin numbers from MSPM0 datasheet attachments (try embedded attachments extraction). Mark pin number changes VERIFIED only after primary-source confirmation.
+  - [ ] 13.1.d Update `docs/security-mcu-comparison.md`, `README.md`, per-build READMEs to record swap and any security implications (Cn).
