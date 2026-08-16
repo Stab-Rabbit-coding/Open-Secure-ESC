@@ -459,6 +459,28 @@ detail belongs in design docs, not here.
         shorts **GND to VM or to a phase**. [21] RTA0040B note 5 makes the
         vias optional, so deleting them is a legitimate fix. Check after any
         move of U5 or any Q.
+  - [x] 12.5.p **Conductor sizing answered as an interim derivation**
+        (2026-08-16). `docs/tools/conductor_sizing.py` derives phase-pour
+        resistance and dissipation from copper's resistivity: **2 oz outer is
+        the floor**, because at 1 oz the three phase pours dissipate 13.3 W
+        against the FETs' 10.5 W -- the copper would be the dominant heat
+        source. A phase changing layers needs ~23 x 0.3 mm vias to match the
+        pour. This is an AGENTS.md Sec.4 engineering derivation giving WATTS,
+        not degrees; **IPC-2152 [46] stays open** (12.4.k) because turning
+        watts into temperature rise is exactly what it provides and this does
+        not.
+  - [ ] 12.5.q **(High) Set IDRIVE from a bench measurement, not a table.**
+        Overshoot is 25.2 + L_loop x dI/dt. At 5 nH every IDRIVE setting is
+        survivable; at 20 nH almost none are. Minimise the commutation loop
+        first, then raise IDRIVE as far as measured V_DS allows. Table in
+        `kicad/README.md`. Closes the open half of 12.5.n.
+  - [ ] 12.5.r **(Low) Two PCB reference sets were consulted 2026-08-16 and
+        both need treating with care.** One labelled the **IPC-2221**
+        Appendix A equation (k=0.048/0.024, b=0.44, c=0.725) as "the IPC-2152
+        formula" -- different standards, and 2152 exists because 2221's curves
+        were found inaccurate -- and its own quick-reference table disagreed
+        with that formula by ~2x at 10 A. Neither was used as a source. Noted
+        so nobody adopts those numbers later believing they are IPC-2152.
   - [ ] 12.5.h Route (`tools/autoroute.py`), then DRC to zero errors.
   - [ ] 12.5.i Fab outputs, then documentation.
   - [ ] 12.5.j **Where the next session picks up:** open the PCB, hand-place

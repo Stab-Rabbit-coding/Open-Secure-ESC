@@ -141,6 +141,85 @@ the PCB editor.
 board from the netlist every time. Once you start placing by hand, either stop
 running it or fold your positions back into its `PLACEMENT` table.
 
+### VERIFIED DEFECT in the current placement -- fix before anything else
+
+`U5`'s 12 GND thermal vias land inside `Q3`'s pads. Checked against the board,
+not inferred:
+
+| Q3 pad | Net | GND vias inside it | Result |
+| --- | --- | --- | --- |
+| 5 | `VM` | 4 | **GND-to-VM short** -- a dead battery short |
+| 1 | `PH_B` | 1 | GND-to-phase short |
+| 4 | `Net-(Q3-G)` | 1 | gate shorted to GND |
+
+Three fixes, any one sufficient:
+
+1. Offset `U5` so its via field clears the FET pads above it.
+2. Delete the vias. [21]'s RTA0040B sheet note 5 makes them optional
+   ("vias are optional depending on application").
+3. Keep the vias but move them out of the drain-pad shadow.
+
+Re-check with the script in `TODO.md` 12.5.g after any move of `U5` or a `Q`.
+
+### Copper weight: 2 oz outer minimum, decided by calculation
+
+`docs/tools/conductor_sizing.py` derives this from copper's resistivity --
+run it, it prints the table. At 50 A through a 7.5 x 22 mm phase pour:
+
+| Copper | R per phase | Drop | Dissipation, all 3 phases |
+| --- | --- | --- | --- |
+| 1 oz | 1.78 mΩ | 89 mV | **13.3 W** |
+| 2 oz | 0.89 mΩ | 44 mV | 6.7 W |
+| 3 oz | 0.59 mΩ | 30 mV | 4.4 W |
+
+The six TPHR8504PL FETs dissipate 10.5 W of conduction loss between them. **At
+1 oz the phase pours alone dissipate more than the FETs do** -- the copper
+becomes the dominant heat source, which is indefensible on a board whose
+reference design [47] already measures 103 °C at this current. 2 oz outer is
+the floor; 2 oz inner as well if the budget allows, since In1/In2 carry the
+GND and VM planes.
+
+This is an engineering derivation from material constants, flagged per
+`AGENTS.md` §4 -- **not** an IPC-2152 [46] result. It gives watts, not degrees.
+
+### Keep each phase terminal on the SAME side as its pour
+
+A phase changing layers needs **~23 × 0.3 mm vias** to present as much copper
+as the 2 oz pour it continues (2.2 A per via at that count). Keeping `J4A/B/C`
+on the top side, with the phase pours, costs zero vias and zero extra
+dissipation. The current placement has them on the bottom -- move them up, or
+budget the via field.
+
+### Commutation loop inductance -- the number that decides the FET choice
+
+The TPHR8504PL is a 40 V part on a 25.2 V pack. Overshoot is
+`V_DS = 25.2 + L_loop x dI/dt`, and dI/dt follows the DRV8353S IDRIVE setting
+(SPI-programmable 50-1000 mA, [21]; TPHR8504PL Q_SW = 23 nC, [49]):
+
+| IDRIVE | dI/dt | L=2 nH | L=5 nH | L=10 nH | L=20 nH |
+| --- | --- | --- | --- | --- | --- |
+| 150 mA | 326 A/µs | 25.9 V | 26.8 V | 28.5 V | 31.7 V |
+| 300 mA | 652 A/µs | 26.5 V | 28.5 V | 31.7 V | 38.2 V |
+| 600 mA | 1304 A/µs | 27.8 V | 31.7 V | 38.2 V | **51.3 V** |
+| 1000 mA | 2174 A/µs | 29.5 V | 36.1 V | **46.9 V** | **68.7 V** |
+
+Bold exceeds the 40 V rating. **Loop inductance decides this, not IDRIVE.**
+A 2-5 nH loop survives the fastest gate drive; a 20 nH loop breaches 40 V at
+almost any useful setting. So while placing:
+
+- Put the high-side and low-side FET of each phase **as close as the package
+  allows**, drain-to-source, in the same column.
+- Get the bulk capacitor into that loop, not off beside the pack terminals --
+  the loop is C1 -> Q(high) -> Q(low) -> shunt -> back to C1.
+- Use the In1 GND plane as the return directly beneath the loop; every mm of
+  detour is inductance.
+- Add local high-frequency ceramics right at each half-bridge if the bulk cap
+  cannot be close to all three.
+
+Then set IDRIVE as fast as a **bench measurement** of V_DS allows. Do not pick
+it from this table -- the table shows which loop inductances are survivable,
+not what your loop actually is.
+
 ### Do not move these -- they are the reason the layout works
 
 | Group | Constraint | Why |
