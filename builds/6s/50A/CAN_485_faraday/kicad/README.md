@@ -6,14 +6,15 @@ Governed by `AGENTS.md`. Open items are tracked in the repo-root `TODO.md`
 ## Status
 
 **Schematic: ERC-clean (0 errors). PCB: hand-placed by the repo owner and
-narrowed to 25.4 mm; placement has converged.** Not fabrication-ready — the
-phase nets do not reach their terminals in copper (see "The phase gap" below).
+narrowed to 25.4 mm; placement has converged. Signal nets routed.** Not
+fabrication-ready — the three phase nets still do not reach their terminals in
+copper (see "The high-current gaps" below).
 
 | | State |
 | --- | --- |
 | Schematic | 50 parts, annotated, **0 ERC errors** (`endpoint_off_grid` + `global_label_dangling` warnings remain — see below) |
 | PCB | **25.4 × 60.1 mm**, double-sided, 47 footprints, 73 nets, 4 layers, planes poured, isolation keepout. **0 courtyard overlaps, 0 clearance errors, 0 hole-clearance errors** |
-| Routing | See "Routing" below |
+| Routing | FreeRouting: **352 segments, 48 vias, 57 connections still open**. See "Routing" below |
 | Gerbers | Not generated. See "Before you fabricate". |
 
 ### Placement history
@@ -231,6 +232,39 @@ not what your loop actually is.
 | `U3`, `U4`, `J2`, `J3` | Keep together, past the isolation keepout, away from `U1` | The keepout removes all plane copper under the barrier; parts must stay on their correct side of it |
 | `C1` | Keep in the FET loop, not off by the pack pads | [21] Sec. 11.1 asks for bulk positioned to minimise the high-current loop through the MOSFETs |
 | Phase pours | One per column, higher priority than the GND pour | The phase nets have no plane; the pour is their conductor |
+
+## Routing
+
+`tools/autoroute.py` was run 2026-08-16 (FreeRouting 2.2.4, 100 passes,
+15 min 26 s). It took the board from 124 unrouted connections to 56, laying
+381 segments and 48 vias.
+
+**Then 29 of those segments were deleted on purpose.** The router had closed
+`VM` with 3.0 mm track from the "power" net class — the 5.2 W outcome
+described below. `tools/strip_high_current_tracks.py` removed them and refilled
+the zones, and `tools/add_vm_top_pour.py` replaced them with copper. The
+router did **not** attempt the three phase nets; those connections were left
+open and still are.
+
+Current state: **352 segments, 48 vias, 57 open connections.** Of those 57:
+
+| | Count | Status |
+| --- | --- | --- |
+| Phase nets to their terminals | 3 | **Blocked** — needs a placement decision, see below |
+| Phase nets to `U5` sense pins | 3 | Low current; routable |
+| `VM` bottom-side taps (`U5`, `R8`, `C6`) | 4 | Low current (gate-driver supply, sense divider, decoupling); routable |
+| `GND` stitches | 9 | Short pour-to-pad; routable |
+| Ordinary signal nets | 38 | Router did not converge; re-run with more passes or route by hand |
+
+Non-electrical DRC after all of the above: 32 `silk_over_copper`,
+21 `silk_overlap`, 12 `starved_thermal`, 5 `isolated_copper`,
+2 `silk_edge_clearance`. Every `starved_thermal` and `isolated_copper` is on
+`GND`; none is on `VM` or a phase. Silkscreen is deferred (`TODO.md` 12.5.u).
+
+**Fab-capability note:** `U5`'s 12 thermal vias are **0.20 mm** drill. That
+matches this board's own minimum (`m_MinThroughDrill` = 0.2 mm) so it is not a
+rule violation, but it is below the 0.3 mm many fabs treat as standard and
+will be an upcharge or a redesign at some vendors. Confirm before ordering.
 
 ### THE HIGH-CURRENT GAPS — the open electrical problem in the layout
 

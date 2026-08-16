@@ -508,7 +508,8 @@ detail belongs in design docs, not here.
         V_DS at the switching node before fab.
   - [ ] 12.5.o (Low) `tools/respin_30x70_schematic.py` is named for the
         70 mm target that became 60 mm. Rename or note it.
-  - [ ] 12.5.s **(BLOCKING, electrical) VM HAS NO TOP-SIDE COPPER.** The VM
+  - [~] 12.5.s **(electrical) VM HAD NO TOP-SIDE COPPER -- top-side half
+        DONE 2026-08-16, via stitching still open.** The VM
         plane is on **In2.Cu only**, but every part carrying pack current is
         on **F.Cu**: J5A (pack +), C1 (bulk), and the three high-side drains
         Q1/Q3/Q5. KiCad reports **8 unconnected VM items** -- J5A to Q1, Q1 to
@@ -520,6 +521,29 @@ detail belongs in design docs, not here.
         as a 3.0 mm router track vs 0.7 W as the full pour**. The band is
         already reserved for the pack input and the high-side drains, so the
         pour costs no area. **Do not let the autorouter close this.**
+        **DONE:** `tools/add_vm_top_pour.py` poured 235.1 mm^2 of VM on F.Cu
+        over y 0.60..15.50 at priority 2 (below the phase pours' 3, above the
+        F.Cu GND pour's 0), pad connection FULL so no thermal spokes sit in
+        series with a 50 A drain. J5A, C1 and all three high-side drains are
+        now one piece of copper; 4 of the 8 VM connections closed. The other 4
+        are bottom-side low-current taps (U5 supply, R8 sense divider, C6
+        decoupling) and are ordinary routing.
+        **STILL OPEN -- the pour alone is NOT the finished conductor.**
+        Measured on the filled result, it necks to **2.39 mm of copper height
+        at x = 17.3 mm**, pinched between J5B (the GND pack terminal,
+        y 1.10..8.10) above and the PH_C pour (y >= 11.10) below. That neck is
+        the sole F.Cu path to Q5's drain: ~2.2 mm long, ~0.9 squares,
+        0.28 mOhm, **0.7 W concentrated in about 5 mm^2** -- a hot spot, not a
+        margin. Fix is via stitching to the unobstructed In2 VM plane so the
+        neck stops being the sole path. NOT done here because it needs two
+        decisions: (a) via count/placement -- ~23 x 0.3 mm vias to match 2 oz,
+        with free pour area either side of the neck, versus putting them in
+        the drain lands; (b) **via-in-pad is a paid fab option** -- filled and
+        capped costs extra, unfilled wicks paste and starves the joint. On
+        flight hardware that is the repo owner's call. Also check any new via
+        against U5's 12 GND thermal vias directly underneath -- that pair has
+        already produced one verified GND-to-VM short on this board.
+        REFERRED TO USER.
   - [ ] 12.5.t **(BLOCKING, electrical) THE PHASE GAP -- the phase nets do
         not reach their own terminals in copper.** Measured off the board
         2026-08-16: the PH_A/PH_B/PH_C pours are on **F.Cu** and end at
@@ -546,9 +570,23 @@ detail belongs in design docs, not here.
         not require. REFERRED TO USER.
   - [ ] 12.5.u **(Medium) Silkscreen cleanup, deferred by the repo owner
         until after routing** ("silkscreen can wait till after routing",
-        2026-08-16). Outstanding at the 25.4 mm placement: 32
-        `silk_over_copper`, 21 `silk_overlap`, 2 `silk_edge_clearance`. None
-        electrical; all block a clean fab package.
+        2026-08-16). Routing has now run, so this is unblocked. Outstanding:
+        32 `silk_over_copper`, 21 `silk_overlap`, 2 `silk_edge_clearance`.
+        None electrical; all block a clean fab package.
+  - [ ] 12.5.w **(Medium) Finish routing.** FreeRouting (2.2.4, 100 passes,
+        15 min 26 s) took the board 124 -> 56 unrouted, 381 segments, 48 vias.
+        After stripping its 29 VM tracks (12.5.s) and adding the VM pour, the
+        board stands at **352 segments, 48 vias, 57 open**. Of those: 3 phase
+        nets to terminals (BLOCKED on 12.5.t), 3 phase-to-U5 sense, 4 VM
+        bottom-side taps, 9 GND stitches, 38 ordinary signal nets. Re-run with
+        more passes or finish by hand -- but re-run
+        `tools/strip_high_current_tracks.py` afterwards every time.
+  - [ ] 12.5.x **(Medium, fab) U5's 12 thermal vias are 0.20 mm drill.** That
+        matches this board's own `m_MinThroughDrill` (0.2 mm), so it is NOT a
+        rule violation -- but 0.3 mm is standard at many fabs and 0.2 mm is an
+        upcharge or a redesign at some. Confirm against the chosen vendor
+        before ordering. [21] RTA0040B note 5 makes the vias optional, so
+        enlarging or deleting them are both open options.
   - [ ] 12.5.v **(Low) 5 `starved_thermal` and 2 `isolated_copper` DRC
         warnings** at the 25.4 mm placement. Fab-preference and pour-shape
         respectively; confirm each is intentional before generating gerbers.
