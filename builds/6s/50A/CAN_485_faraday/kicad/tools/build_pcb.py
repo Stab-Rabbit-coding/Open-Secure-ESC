@@ -114,7 +114,9 @@ SENSE_NETS = ("ISENSE_A_HI", "ISENSE_B_HI", "ISENSE_C_HI")
 # reference -> (x, y, rotation, side). Board-local mm, (0,0) top-left.
 # side "T" = F.Cu, "B" = B.Cu (flipped).
 #
-# 30 x 60 mm, double-sided. Power stage on top, control underneath, laid out
+# 30 x 60 mm, double-sided. SUPERSEDED BY HAND PLACEMENT -- the committed
+# board is 25.4 x 60.1 mm and was placed by hand; re-running this script
+# discards that. Power stage on top, control underneath, laid out
 # as three phase COLUMNS at x = 6.5 / 15 / 23.5 so each phase runs straight
 # down its own column: high-side FET -> low-side FET -> shunt -> current-sense
 # amp (on the bottom, directly beneath its own shunt) -> phase terminal at the

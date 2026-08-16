@@ -426,11 +426,13 @@ detail belongs in design docs, not here.
   - [ ] 12.4.s (Low) 4 `silk_over_copper` and 1 `starved_thermal` DRC
         warnings remain; cosmetic/fab-preference, not electrical.
 
-- [~] 12.5 **30 x 60 mm respin of `builds/6s/50A/CAN_485_faraday`**
-      (2026-08-16). Triggered by the repo owner: the 150 x 140 mm board from
-      12.4 was "way too big for a single channel ESC ... it won't fit where it
-      needs to". Schematic is complete and ERC-clean on the new BOM; PCB
-      placement has NOT converged. **Next session starts at 12.5.j.**
+- [~] 12.5 **Compact respin of `builds/6s/50A/CAN_485_faraday`, landed at
+      25.4 x 60.1 mm** (2026-08-16). Triggered by the repo owner: the
+      150 x 140 mm board from 12.4 was "way too big for a single channel ESC
+      ... it won't fit where it needs to". Drawn for a 30 x 60 envelope, then
+      hand-placed by the repo owner and narrowed to 1 inch wide without
+      shrinking any phase pour. Schematic complete and ERC-clean; placement
+      converged. **Next session starts at 12.5.t.**
   - [x] 12.5.a **FET swapped to Toshiba TPHR8504PL** [49], package 2-5W1A
         "SOP Advance(N)", chosen by the repo owner over TI CSD19532Q5B [48].
         Symbol, spec and footprint authored. TO-220 -> SMD is what makes
@@ -448,12 +450,17 @@ detail belongs in design docs, not here.
         gate pin's exact coordinate; drains and sources rewired and the
         netlist verified pin-by-pin (high-side drains on VM, low-side drains
         on the phases, low-side sources on the shunts).
-  - [ ] 12.5.f **(BLOCKING) Hand-place the PCB.** ~11 courtyard overlaps
-        remain, all at the bottom end where J4A/B/C and J1 land on U1 and the
-        R4/R5/R8/R9 columns. Constraints that must survive placement are
-        tabulated in `kicad/README.md` "Hand-placement guide". Re-running
-        `tools/build_pcb.py` discards hand placement.
-  - [ ] 12.5.g **(High, electrical) U5's thermal via field vs the FETs.**
+  - [x] 12.5.f **Hand-place the PCB -- DONE by the repo owner** (2026-08-16),
+        then narrowed to 25.4 x 60.1 mm. DRC: **0 courtyard overlaps, 0
+        clearance, 0 hole-clearance, 0 same-layer pad conflicts.** Tightest
+        copper-to-edge 0.83 mm (U3). Constraints that must survive future
+        edits are tabulated in `kicad/README.md` "Placement guide".
+        Re-running `tools/build_pcb.py` discards this placement -- its
+        PLACEMENT table still describes the old 30 x 60 layout.
+  - [x] 12.5.g **(High, electrical) U5's thermal via field vs the FETs --
+        RESOLVED by the hand placement** (verified 2026-08-16: no U5 thermal
+        via intersects any pad of any other footprint). Kept below as the
+        standing re-check after any move of U5 or a Q.**
         U5 sits on the bottom directly beneath the top-side MOSFETs and its
         footprint carries 12 thermal vias on GND. A via under a FET drain pad
         shorts **GND to VM or to a phase**. [21] RTA0040B note 5 makes the
@@ -483,8 +490,8 @@ detail belongs in design docs, not here.
         so nobody adopts those numbers later believing they are IPC-2152.
   - [ ] 12.5.h Route (`tools/autoroute.py`), then DRC to zero errors.
   - [ ] 12.5.i Fab outputs, then documentation.
-  - [ ] 12.5.j **Where the next session picks up:** open the PCB, hand-place
-        per `kicad/README.md`, resolve 12.5.g, then 12.5.h/i.
+  - [x] 12.5.j **Where the next session picks up** -- superseded; placement
+        is done (12.5.f) and 12.5.g is resolved. See 12.5.t.
   - [ ] 12.5.k **(Medium) Strain relief for J2/J3.** They are now bare SMD
         solder pads with no mechanical retention, and they leave the board in
         service. J1 (debug) is fine as-is. Needs a tie-down, potting, or a
@@ -501,6 +508,50 @@ detail belongs in design docs, not here.
         V_DS at the switching node before fab.
   - [ ] 12.5.o (Low) `tools/respin_30x70_schematic.py` is named for the
         70 mm target that became 60 mm. Rename or note it.
+  - [ ] 12.5.s **(BLOCKING, electrical) VM HAS NO TOP-SIDE COPPER.** The VM
+        plane is on **In2.Cu only**, but every part carrying pack current is
+        on **F.Cu**: J5A (pack +), C1 (bulk), and the three high-side drains
+        Q1/Q3/Q5. KiCad reports **8 unconnected VM items** -- J5A to Q1, Q1 to
+        Q3, Q3 to Q5, Q3 to C1, and the rest. Nothing joins them to each other
+        or down to the plane. Top-side VM pads span x 2.20..22.81,
+        y 4.60..13.05 mm, so a single **F.Cu VM pour of about 22.6 x 10.5 mm**
+        reaches all of them; stitch it to In2 where there is room. Worst-case
+        lateral run J5A -> far Q5 drain is ~20.6 mm; at 2 oz that is **5.2 W
+        as a 3.0 mm router track vs 0.7 W as the full pour**. The band is
+        already reserved for the pack input and the high-side drains, so the
+        pour costs no area. **Do not let the autorouter close this.**
+  - [ ] 12.5.t **(BLOCKING, electrical) THE PHASE GAP -- the phase nets do
+        not reach their own terminals in copper.** Measured off the board
+        2026-08-16: the PH_A/PH_B/PH_C pours are on **F.Cu** and end at
+        y = 33.10 mm; their terminals J4A/J4B/J4C are on **B.Cu** starting at
+        y = 48.10 mm. Each phase therefore has a **15 mm gap AND a layer
+        change** between its pour and its terminal. The x-alignment is
+        already correct -- each terminal sits under its own column.
+        **This must not be handed to the autorouter.** `tools/autoroute.py`
+        puts PH_* in a 3.0 mm "power" class, and at 2 oz a 3.0 mm track
+        across this gap dissipates **11.4 W across the three phases -- more
+        than all six FETs' conduction loss combined (10.5 W)**, in series
+        with the pours' own 6.7 W. Run `docs/tools/conductor_sizing.py`,
+        which now models this gap. Three closures, cheapest first:
+        (1) **move J4A/B/C to F.Cu and extend each pour down to its terminal**
+        -- zero vias, zero added dissipation, but J2 (x 6.0) and J3 (x 18.5)
+        currently occupy that top-side band, so it is a PLACEMENT decision
+        and the repo owner's call; (2) keep the terminals on B.Cu, add a B.Cu
+        phase pour per column and stitch with **23 x 0.3 mm vias per phase**
+        (69 total, 2.2 A each) in a region that must also clear U1/U2 and the
+        resistor columns; (3) widen to full pour width on B.Cu without a
+        matching via count -- easiest to draw, easiest to get wrong, because
+        the via field then becomes the narrowest point. **Option 1
+        recommended:** 2 and 3 both pay for a layer change the geometry does
+        not require. REFERRED TO USER.
+  - [ ] 12.5.u **(Medium) Silkscreen cleanup, deferred by the repo owner
+        until after routing** ("silkscreen can wait till after routing",
+        2026-08-16). Outstanding at the 25.4 mm placement: 32
+        `silk_over_copper`, 21 `silk_overlap`, 2 `silk_edge_clearance`. None
+        electrical; all block a clean fab package.
+  - [ ] 12.5.v **(Low) 5 `starved_thermal` and 2 `isolated_copper` DRC
+        warnings** at the 25.4 mm placement. Fab-preference and pour-shape
+        respectively; confirm each is intentional before generating gerbers.
 
 - [x] 12.6 **Decision matrix gained its two missing axes** (2026-08-16).
       `docs/decision-matrix.xlsx` now carries **Motor** (brushed vs brushless)

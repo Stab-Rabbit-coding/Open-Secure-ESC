@@ -5,16 +5,24 @@ Governed by `AGENTS.md`. Open items are tracked in the repo-root `TODO.md`
 
 ## Status
 
-**Schematic: ERC-clean (0 errors) on the 30 x 60 mm respin BOM. PCB: placed,
-netted and poured, but placement has NOT converged — see the hand-placement
-guide below.** Not fabrication-ready.
+**Schematic: ERC-clean (0 errors). PCB: hand-placed by the repo owner and
+narrowed to 25.4 mm; placement has converged.** Not fabrication-ready — the
+phase nets do not reach their terminals in copper (see "The phase gap" below).
 
 | | State |
 | --- | --- |
 | Schematic | 50 parts, annotated, **0 ERC errors** (`endpoint_off_grid` + `global_label_dangling` warnings remain — see below) |
-| PCB | 30 × 60 mm, double-sided, 47 footprints, 73 nets, 4 layers, planes poured, isolation keepout. **~11 courtyard overlaps outstanding** |
-| Routing | Not run on the respin — placement must converge first |
+| PCB | **25.4 × 60.1 mm**, double-sided, 47 footprints, 73 nets, 4 layers, planes poured, isolation keepout. **0 courtyard overlaps, 0 clearance errors, 0 hole-clearance errors** |
+| Routing | See "Routing" below |
 | Gerbers | Not generated. See "Before you fabricate". |
+
+### Placement history
+
+The respin was drawn for a 30 × 60 mm envelope and `tools/build_pcb.py` still
+writes that placement. The repo owner then hand-placed the board, after which
+it narrowed to **25.4 × 60.1 mm (1 inch wide)** without shrinking any phase
+pour — the inch came from dead margin between the FET columns, not from
+copper. See the commit "Narrow the board to 25.4 mm" for the full accounting.
 
 `BT1`–`BT6` (the 21700 cells) and `SH2` (the shield cover) are in the BOM but
 marked *exclude from board*.
@@ -35,7 +43,7 @@ marked *exclude from board*.
 | File | What it is |
 | --- | --- |
 | `*.kicad_sch` | Single sheet, A0. Title block company **Griffing Technology LLC**. |
-| `*.kicad_pcb` | 30 × 60 mm, 4 layers, double-sided, rounded corners. |
+| `*.kicad_pcb` | 25.4 × 60.1 mm, 4 layers, double-sided, rounded corners. |
 | `*.kicad_pro` | Project settings. **Net classes live here**, not in the board. |
 | `sym-lib-table`, `fp-lib-table` | Project-relative tables pointing at the shared `symbols/` library. |
 | `tools/` | Generators. Re-run these rather than hand-editing the generated files. |
@@ -129,37 +137,30 @@ resolved by the layout.
 **`silk_over_copper` and `starved_thermal` (PCB).** Cosmetic and
 fab-preference respectively; neither is electrical.
 
-## Hand-placement guide (30 x 60 mm respin)
+## Placement guide (25.4 × 60.1 mm, hand-placed)
 
-`tools/build_pcb.py` writes a complete, netted, poured board, but its
-placement table does **not** converge on 30 x 60 -- roughly 11 courtyard
-overlaps remain, all in the bottom-end region where the phase pads and J1
-land on U1 and the resistor columns. Placement from here is a manual pass in
-the PCB editor.
+The board is placed. This section is the record of **why** it is placed the
+way it is, so a later edit does not undo a constraint by accident.
 
-**Re-running `tools/build_pcb.py` discards hand placement.** It rebuilds the
-board from the netlist every time. Once you start placing by hand, either stop
-running it or fold your positions back into its `PLACEMENT` table.
+**Re-running `tools/build_pcb.py` discards the hand placement.** It rebuilds
+the board from the netlist every time, from a `PLACEMENT` table that still
+describes the old 30 × 60 layout. Do not run it against the committed board
+without folding the current positions back into it first.
 
-### VERIFIED DEFECT in the current placement -- fix before anything else
+### RESOLVED — the `U5` thermal-via short
 
-`U5`'s 12 GND thermal vias land inside `Q3`'s pads. Checked against the board,
-not inferred:
+Earlier revisions of this file recorded a **verified GND-to-VM short**:
+`U5`'s 12 GND thermal vias landed inside `Q3`'s `VM`, `PH_B` and gate pads.
+The hand placement cleared it. Re-verified against the board 2026-08-16 —
+**no `U5` thermal via intersects any pad of any other footprint**, and DRC
+reports 0 clearance and 0 hole-clearance errors.
 
-| Q3 pad | Net | GND vias inside it | Result |
-| --- | --- | --- | --- |
-| 5 | `VM` | 4 | **GND-to-VM short** -- a dead battery short |
-| 1 | `PH_B` | 1 | GND-to-phase short |
-| 4 | `Net-(Q3-G)` | 1 | gate shorted to GND |
-
-Three fixes, any one sufficient:
-
-1. Offset `U5` so its via field clears the FET pads above it.
-2. Delete the vias. [21]'s RTA0040B sheet note 5 makes them optional
-   ("vias are optional depending on application").
-3. Keep the vias but move them out of the drain-pad shadow.
-
-Re-check with the script in `TODO.md` 12.5.g after any move of `U5` or a `Q`.
+This remains the trap to re-check after **any** move of `U5` or of a `Q`.
+`U5` sits on the bottom directly beneath the top-side FETs, so its via field
+is always one small move away from a FET drain pad. [21]'s RTA0040B sheet
+note 5 makes the vias optional ("vias are optional depending on application"),
+so deleting them is a legitimate fallback if a future move re-creates the
+conflict.
 
 ### Copper weight: 2 oz outer minimum, decided by calculation
 
@@ -231,20 +232,88 @@ not what your loop actually is.
 | `C1` | Keep in the FET loop, not off by the pack pads | [21] Sec. 11.1 asks for bulk positioned to minimise the high-current loop through the MOSFETs |
 | Phase pours | One per column, higher priority than the GND pour | The phase nets have no plane; the pour is their conductor |
 
-### Known conflicts to resolve
+### THE HIGH-CURRENT GAPS — the open electrical problem in the layout
 
-All in the bottom end: `J4A`/`J4B`/`J4C` and `J1` overlap `U1` and the
-`R4`/`R5`/`R8`/`R9` columns. `U5`'s thermal via field also overlaps `Q3`/`Q4`
-above it -- see the warning below.
+Of the 124 unrouted connections KiCad reports, **14 are on the 50 A nets**
+(`VM` 8, `PH_A`/`PH_B`/`PH_C` 2 each). Those 14 are the ones an autorouter
+must not be allowed to close, because `tools/autoroute.py` puts them in a
+3.0 mm "power" class — a sane width for a signal-class power net, not for
+50 A. The other 110 are ordinary signal nets and are the router's job.
 
-### One electrical trap while you place
+#### Gap 1 — `VM` has no top-side copper at all
 
-`U5`'s footprint carries **12 thermal vias on the GND net** (TI's RTA0040B
-sheet, note 5, "vias are optional"). `U5` sits on the bottom directly beneath
-the top-side FETs. If a via lands under a FET drain pad it shorts **GND to VM
-or to a phase**. Either keep the via field clear of the FET drain pads, or
-delete the vias from the footprint. Check this specifically after moving
-either `U5` or any `Q`.
+The `VM` plane is on **In2.Cu only**. Every part that actually carries pack
+current sits on **F.Cu**: `J5A` (pack +), `C1` (bulk), and the three
+high-side drains `Q1`/`Q3`/`Q5`. Nothing joins them — not to each other, and
+not down to the plane. KiCad's own connectivity confirms it:
+
+```text
+PTH pad 1 [VM] of J5A   <-> Pad 6 [VM] of Q1 on F.Cu
+Pad 5  [VM] of Q1 on F.Cu <-> Pad 8 [VM] of Q3 on F.Cu
+Pad 5  [VM] of Q3 on F.Cu <-> Pad 8 [VM] of Q5 on F.Cu
+Pad 8  [VM] of Q3 on F.Cu <-> Pad 1 [VM] of C1 on F.Cu
+```
+
+The top-side `VM` pads span **x 2.20 → 22.81, y 4.60 → 13.05 mm**, so a single
+F.Cu `VM` pour of roughly **22.6 × 10.5 mm** reaches all of them, and stitches
+to the In2 plane wherever there is room. Worst-case lateral run is `J5A` to
+the far `Q5` drain, ≈ 20.6 mm; at 2 oz:
+
+| Conductor | R | Dissipation |
+| --- | --- | --- |
+| 3.0 mm track (what the router draws) | 2.08 mΩ | **5.2 W** |
+| 6.0 mm | 1.04 mΩ | 2.6 W |
+| 10.0 mm | 0.62 mΩ | 1.6 W |
+| Full 22.6 mm pour | 0.28 mΩ | 0.7 W |
+
+**Fix: pour `VM` on F.Cu across the top band.** It costs nothing in area — the
+band is already reserved for the pack input and the high-side drains — and it
+takes the run from 5.2 W to 0.7 W.
+
+#### Gap 2 — the phase nets do not reach their own terminals
+
+Measured off the board 2026-08-16:
+
+| | Layer | Extent |
+| --- | --- | --- |
+| `PH_A`/`PH_B`/`PH_C` pours | **F.Cu** | y 11.10 → **33.10** mm |
+| `J4A`/`J4B`/`J4C` pads | **B.Cu** | y **48.10** → 58.10 mm |
+
+So each phase has a **15 mm gap and a layer change** between the pour that
+carries it and the terminal that leaves the board. The x-alignment is already
+right (each terminal sits under its own pour's column); only the run down the
+board and the side change are missing.
+
+Run `docs/tools/conductor_sizing.py`, which models this gap; at 2 oz:
+
+| Track width | R per phase | Dissipation, all 3 |
+| --- | --- | --- |
+| 3.0 mm (what the router will draw) | 1.52 mΩ | **11.4 W** |
+| 5.0 mm | 0.91 mΩ | 6.8 W |
+| 7.5 mm (full pour width) | 0.61 mΩ | 4.6 W |
+
+At 3.0 mm this gap alone dissipates **more than all six FETs' conduction loss
+combined** (10.5 W), and it is *in series with* the pours' own 6.7 W. That is
+indefensible on a board whose reference design [47] already measures 103 °C at
+this current.
+
+Three ways to close it, in order of electrical cost:
+
+1. **Move `J4A`/`J4B`/`J4C` to F.Cu and extend each phase pour down to its
+   terminal.** Zero vias, zero added dissipation — the pour simply gets
+   longer. Cost: the top side at y ≈ 48–58 currently holds `J2` (x 6.0) and
+   `J3` (x 18.5), so those two solder-pad strips have to go somewhere else.
+   This is a **placement** decision and therefore the repo owner's call.
+2. **Keep the terminals on B.Cu, add a B.Cu phase pour per column, and stitch
+   with a via field.** Needs **23 × 0.3 mm vias per phase** (2.2 A each) to
+   present as much copper as the 2 oz pour — 69 vias total, in a region that
+   also has to clear `U1`/`U2` and the resistor columns.
+3. **Widen to full 7.5 mm pour on B.Cu without a matching via count.** Cheapest
+   to draw and the easiest to get wrong: the via field, not the pour, becomes
+   the narrowest point in the conductor.
+
+Option 1 is the recommendation. Options 2 and 3 both pay for a layer change
+the geometry does not actually require.
 
 ### Getting back into the flow after placing
 

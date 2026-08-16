@@ -71,7 +71,7 @@ concurrently, Faraday EMI tier.
 | Path | What it is |
 | --- | --- |
 | `README.md` | The build's BOM with per-line citation and verification status, the Faraday-tier field-strength derivation, and the open design questions. |
-| `kicad/README.md` → "Hand-placement guide" | The constraints that must survive manual placement of the 30 × 60 respin, and the U5-thermal-via short trap. |
+| `kicad/README.md` → "Placement guide" | Why the hand placement is the way it is, the 15 mm phase gap that is still open, and the U5-thermal-via short trap. |
 | `kicad/README.md` | Exact state of the schematic and PCB, including what is still open. |
 | `kicad/*.kicad_sch` | Single-sheet schematic, A0. |
 | `kicad/*.kicad_pcb` | 4-layer board: F.Cu, In1.Cu GND plane, In2.Cu VM/GND, B.Cu. |

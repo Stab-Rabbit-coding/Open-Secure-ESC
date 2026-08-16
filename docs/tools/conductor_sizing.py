@@ -47,8 +47,8 @@ REFERENCES.md [47] is an instrumented continuous-load test of a shipping
 6S/50 A ESC: 50.18 A produced 103 C at 29 C ambient with EDF airflow, on a
 40 x 17 mm board (680 mm^2). That is a real measured datapoint at this exact
 current, and it is the sanity check to compare any thermal claim against. Our
-board is 30 x 60 mm (1800 mm^2), 2.6x the area, so at equal copper weight and
-equal airflow a lower rise is expected -- but "expected" is not "measured".
+board is 25.4 x 60.1 mm (1527 mm^2), 2.2x the area, so at equal copper weight
+and equal airflow a lower rise is expected -- but "expected" is not "measured".
 
 Usage:
     python3 docs/tools/conductor_sizing.py
@@ -69,6 +69,13 @@ PHASE_CURRENT_A = 50.0
 PHASE_POUR_W_MM = 7.5
 PHASE_POUR_L_MM = 22.0
 COPPER_TEMP_C = 85.0      # assumed operating copper temperature, not measured
+
+# The gap the phase pours do NOT cover. Measured off the board 2026-08-16:
+# each F.Cu phase pour ends at y = 33.10 mm, and its B.Cu terminal pad (J4A/
+# J4B/J4C) starts at y = 48.10 mm. Nothing carries the phase across that span
+# today, so whatever fills it is a new conductor in series with the pour --
+# and it is on the far side of a layer change as well.
+PHASE_RUN_L_MM = 15.0
 
 
 def sheet_resistance(oz: float, temp_c: float = COPPER_TEMP_C) -> float:
@@ -107,6 +114,21 @@ def phase_options() -> list[Row]:
     return out
 
 
+def phase_run_options(oz: float = 2.0) -> list[tuple[float, float, float]]:
+    """Cost of bridging the pour-to-terminal gap at several track widths.
+
+    Returns (width_mm, ohms, watts_all_three). This is the conductor an
+    autorouter will happily invent if the gap is left to it: FreeRouting was
+    handed a 3.0 mm "power" class for VM/GND/PH_* because that is a sane
+    signal-class width, not because 3.0 mm carries 50 A.
+    """
+    out = []
+    for w in (3.0, 5.0, PHASE_POUR_W_MM):
+        r = pour_resistance(oz, w, PHASE_RUN_L_MM)
+        out.append((w, r, 3 * PHASE_CURRENT_A ** 2 * r))
+    return out
+
+
 def vias_to_match_pour(oz: float, drill_mm: float,
                        plating_mm: float = 0.025) -> tuple[int, float]:
     """Vias needed so a layer transition is not thinner than the pour itself.
@@ -142,6 +164,15 @@ def main() -> int:
     print("\n   For scale: the six TPHR8504PL FETs [49] dissipate 6 x 1.75 W")
     print("   = 10.5 W of conduction loss at this current. At 1 oz the phase")
     print("   POURS alone beat that, which is the argument for 2 oz minimum.")
+
+    print(f"\nPour edge to phase terminal -- the {PHASE_RUN_L_MM:.0f} mm the "
+          f"pours do NOT cover, at 2 oz:")
+    print(f"   {'width mm':>8} {'R (mOhm)':>9} {'W all 3':>8}")
+    for w, r, watts in phase_run_options():
+        print(f"   {w:>8.1f} {r * 1e3:>9.3f} {watts:>8.2f}")
+    print("   A 3.0 mm track here costs MORE than all six FETs' conduction")
+    print("   loss combined (10.5 W). Do not let a router fill this gap: it")
+    print("   must be pour, or the terminals must move onto the pour's layer.")
 
     print("\nVia field, if a phase must change layers "
           "(sized by equivalent copper):")
