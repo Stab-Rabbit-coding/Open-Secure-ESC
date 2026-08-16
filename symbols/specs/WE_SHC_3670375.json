@@ -1,12 +1,17 @@
 {
   "name": "WE_SHC_3670375",
   "reference": "SH",
-  "footprint": "",
+  "footprint": "Open_Secure_ESC:Wurth_WE-SHC_3670375_Frame_29.3x37.5mm",
   "datasheet": "docs/datasheets/3670375.pdf",
   "description": "Wurth Elektronik WE-SHC two-piece board-level shielding cabinet, FRAME part 3670375 -- required pair to the 3671375 cover (symbols/specs/WE_SHC_3671375.json) for a complete Faraday-tier EMI shield over the gate-drive / high-di/dt switching-node area (TODO.md 7.1). This build (Faraday EMI tier) uses it per docs/decision-matrix.xlsx EMI Hardening sheet.",
   "citation": "[15], [19], [30]",
-  "verification": "MECHANICAL / NO-SCHEMATIC-SIGNAL PART -- same treatment as the paired 3671375 cover: no functional electrical pins, represented here as a schematic placeholder with one 'shield-to-ground bond' reference pin for net-tying to GND (the frame is the piece actually soldered to the board's shield-ground pour; the cover then clips onto the frame). Dimensions VERIFIED directly from the local copy of [30] (WE order code 3670375, rev. ViM 002.000, 2025-05-12 -- same revision date as the 3671375 cover, consistent with a matched-pair release): inner 28.7mm x 36.9mm, outer 29.3mm x 37.5mm, frame height 6.2mm/6.5mm (+/-0.2mm, two dimensions given for different wall features), an 8.0mm (+/-0.2mm) diameter feature (likely a clip/mounting cutout, not independently confirmed from the extracted text alone). The datasheet's own text confirms the pairing: 'Assembly with Frame: Frame (3670375), Cover (3671375).' This closes the BOM gap flagged when the cover [19] was first verified without its frame -- both order codes are now locally verified, but neither this file nor the cover's datasheet states a shielding-effectiveness (dB) figure; that number remains secondary-sourced only. See TODO.md 7.1-7.2 and 12.1.",
+  "verification": "MECHANICAL / NO-SCHEMATIC-SIGNAL PART -- same treatment as the paired 3671375 cover: no functional electrical pins, represented here as a schematic placeholder with one 'shield-to-ground bond' reference pin for net-tying to GND (the frame is the piece actually soldered to the board's shield-ground pour; the cover then clips onto the frame). Dimensions VERIFIED directly from the local copy of [30] (WE order code 3670375, rev. ViM 002.000, 2025-05-12 -- same revision date as the 3671375 cover, consistent with a matched-pair release): inner 28.7mm x 36.9mm, outer 29.3mm x 37.5mm, frame height 6.2mm/6.5mm (+/-0.2mm, two dimensions given for different wall features), an 8.0mm (+/-0.2mm) diameter feature (likely a clip/mounting cutout, not independently confirmed from the extracted text alone). The datasheet's own text confirms the pairing: 'Assembly with Frame: Frame (3670375), Cover (3671375).' This closes the BOM gap flagged when the cover [19] was first verified without its frame -- both order codes are now locally verified, but neither this file nor the cover's datasheet states a shielding-effectiveness (dB) figure; that number remains secondary-sourced only. See TODO.md 7.1-7.2 and 12.1. FOOTPRINT ADDED 2026-08-15: symbols/tools/gen_we_shc_3670375_footprint.py reproduces Wurth's own Recommended Land Pattern from [30] p.1 -- a 1.5 mm copper ring on a 38.7 x 30.5 mm envelope with R2.4 corners, a 0.5 mm paste ring, and the two 1.3 mm locating holes on the horizontal centreline at X = +/-18.6. The ring centreline derived from the land pattern (38.7/2 - 1.5/2 = 18.60) equals the frame wall centreline derived from the body dimensions ((37.5 + 36.9)/4 = 18.60), which is the cross-check that confirms the reading. Hole PLATING is an engineering default, not a datasheet value. The courtyard is an annulus so enclosed parts are not flagged as overlapping it.",
   "pins": [
-    {"num": "1", "name": "SHIELD_GND", "etype": "passive", "side": "bottom"}
+    {
+      "num": "1",
+      "name": "SHIELD_GND",
+      "etype": "passive",
+      "side": "bottom"
+    }
   ]
 }

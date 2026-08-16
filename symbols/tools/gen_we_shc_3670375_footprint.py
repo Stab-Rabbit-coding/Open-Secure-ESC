@@ -1,0 +1,273 @@
+#!/usr/bin/env python3
+"""Generate the KiCad footprint for the Wurth WE-SHC 3670375 shielding FRAME.
+
+Used by the Faraday-tier EMI shield over the gate-drive / high-di/dt
+switching-node area -- see symbols/specs/WE_SHC_3670375.json and
+builds/6s/50A/CAN_485_faraday/README.md ("EMI Hardening -- Faraday tier").
+
+WHY ONLY THE FRAME GETS A FOOTPRINT
+-----------------------------------
+WE-SHC is a two-piece shield: the FRAME (3670375) is the piece soldered to
+the board, and the COVER (3671375) clips onto that frame. Both datasheets say
+so in the same words -- "Assembly with Frame: Frame (3670375), Cover
+(3671375)". Accordingly:
+
+  * 3670375 (frame) -- has a "Recommended Land Pattern" sheet, so it gets
+    this footprint.
+  * 3671375 (cover) -- its datasheet has NO land pattern sheet at all,
+    because nothing about it is soldered. It is therefore kept as a
+    schematic/BOM-only part (symbol placed, "exclude from board" set), the
+    same treatment builds/6s/50A/CAN_485_faraday/kicad/README.md already
+    gives the BT1-BT6 21700 cells. Inventing a land pattern for it would be
+    a fabricated design decision under AGENTS.md Sec.1.3.
+
+SOURCE OF EVERY NUMBER BELOW
+----------------------------
+Primary source: REFERENCES.md [30], Wurth Elektronik eiSos *WE-SHC Two-piece
+Seamless Shielding Cabinet*, order code 3670375, revision ViM 002.000
+(2025-05-12), local copy `docs/datasheets/3670375.pdf`, page 1, the
+"Dimensions: [mm]" and "Recommended Land Pattern: [mm]" drawings.
+
+From "Dimensions: [mm]" (the frame itself):
+
+    feature                       drawing callout
+    inner opening                 Inner 28,7 +/-0,2  x  Inner 36,9 +/-0,2
+    outer envelope                Outer 29,3 +/-0,2  x  Outer 37,5 +/-0,2
+    wall thickness                0,3           (= (29,3 - 28,7) / 2)
+    frame height                  6,2 +/-0,2 and 6,5 +/-0,2
+
+From "Recommended Land Pattern: [mm]":
+
+    feature                       drawing callout
+    land outer envelope           38,7  x  30,5
+    land ring width               1,5           (called out on both axes)
+    land outer corner radius      R 2,4
+    locating holes                2x  (diameter) 1,3
+    paste ring width              0,5 "Recommended Tin Paste Mask Layer"
+
+The land-pattern drawing is a vector figure whose callouts do not survive
+`pdftotext`'s reading order, so it was rendered at 300 dpi
+(`pdftoppm -r 300`) and read directly. Two independent checks confirm the
+reading rather than relying on the picture alone:
+
+  1. Ring centreline from the land pattern:  38,7/2 - 1,5/2 = 18,60
+                                             30,5/2 - 1,5/2 = 14,50
+     Wall centreline from the frame dimensions: (37,5 + 36,9)/4 = 18,60
+                                                (29,3 + 28,7)/4 = 14,50
+     The 1,5 mm copper ring is therefore exactly centred on the 0,3 mm
+     frame wall -- the two drawings agree to the last digit.
+
+  2. The two 1,3 mm holes sit on the horizontal centreline (Y = 0) at the
+     left and right mid-points of the ring, i.e. X = +/-18,60 -- which is
+     the same ring-centreline figure derived in check 1.
+
+HOLE PLATING -- ENGINEERING DEFAULT, NOT A DATASHEET VALUE
+-----------------------------------------------------------
+[30] dimensions the two 1,3 mm holes but does not state whether they are to
+be plated. They are generated here as PLATED through-holes on the shield net,
+because a soldered locating pin improves the shield-to-ground bond this
+Faraday tier exists to provide. That is an engineering judgment call recorded
+per AGENTS.md Sec.4 and flagged in TODO.md, not a manufacturer recommendation.
+
+Usage:
+    python3 symbols/tools/gen_we_shc_3670375_footprint.py
+"""
+# Authored by Claude Opus 5 (Anthropic) during the 2026-08-15 layout pass,
+# TODO.md 12.4. AI-generated; reviewed against the primary sources named
+# in the docstring above. Not human-authored.
+
+
+import uuid
+from pathlib import Path
+
+FOOTPRINT_NAME = "Wurth_WE-SHC_3670375_Frame_29.3x37.5mm"
+
+# ---- Land pattern (REFERENCES.md [30] p.1, "Recommended Land Pattern") ----
+LAND_X = 38.7          # outer envelope, long axis
+LAND_Y = 30.5          # outer envelope, short axis
+RING_W = 1.5           # copper ring width
+PASTE_W = 0.5          # "0,5 Recommended Tin Paste Mask Layer"
+CORNER_R = 2.4         # R 2,4, outer corner
+HOLE_D = 1.3           # 2x (diameter) 1,3
+# Pad diameter is set flush with the 1,5 mm copper ring so the land keeps the
+# 38,7 x 30,5 envelope Wurth specifies -- a wider pad would push copper past
+# it. The 0,1 mm per-side annular ring that leaves is above the IPC-2221
+# Class 2 minimum, and the hole sits inside the ring band anyway, so the
+# surrounding same-net copper carries the connection regardless.
+HOLE_PAD_D = 1.5
+
+# ---- Frame body (REFERENCES.md [30] p.1, "Dimensions") -------------------
+OUTER_X = 37.5         # Outer 37,5 +/-0,2
+OUTER_Y = 29.3         # Outer 29,3 +/-0,2
+INNER_X = 36.9         # Inner 36,9 +/-0,2
+INNER_Y = 28.7         # Inner 28,7 +/-0,2
+
+# Ring / wall centreline -- see check 1 in the module docstring.
+CX = (LAND_X - RING_W) / 2.0     # 18.60
+CY = (LAND_Y - RING_W) / 2.0     # 14.50
+
+SILK_W = 0.12
+FAB_W = 0.10
+CRTYD_W = 0.05
+CRTYD_CLR = 0.25
+
+DATASHEET = "https://www.we-online.com/components/products/datasheet/3670375.pdf"
+DESCR = (
+    "Wurth Elektronik WE-SHC two-piece seamless shielding cabinet, FRAME "
+    "3670375 (outer 37.5 x 29.3 mm, wall 0.3 mm, height 6.2/6.5 mm). Copper "
+    "ring, paste ring, corner radius and the two 1.3 mm locating holes are "
+    "Wurth's own Recommended Land Pattern from REFERENCES.md [30] p.1 rev. "
+    "ViM 002.000. Pairs with COVER 3671375, which clips on and is NOT "
+    "soldered (no land pattern exists for it). Hole plating is an "
+    "engineering default, see the generator docstring. Generated by "
+    "symbols/tools/gen_we_shc_3670375_footprint.py"
+)
+TAGS = "Wurth WE-SHC 3670375 shield shielding cabinet frame EMI Faraday"
+
+
+def u() -> str:
+    """Fresh UUID for a footprint element."""
+    return str(uuid.uuid4())
+
+
+def rounded_rect(hx: float, hy: float, r: float) -> list[tuple[float, float]]:
+    """Corner points of a rounded rectangle, approximated for silk/fab use."""
+    return [
+        (-hx + r, -hy), (hx - r, -hy),
+        (hx, -hy + r), (hx, hy - r),
+        (hx - r, hy), (-hx + r, hy),
+        (-hx, hy - r), (-hx, -hy + r),
+        (-hx + r, -hy),
+    ]
+
+
+def build() -> str:
+    """Emit the complete .kicad_mod S-expression text."""
+    L: list[str] = []
+    add = L.append
+
+    add(f'(footprint "{FOOTPRINT_NAME}"')
+    add("\t(version 20241229)")
+    add('\t(generator "gen_we_shc_3670375_footprint.py")')
+    add('\t(generator_version "9.0")')
+    add('\t(layer "F.Cu")')
+    add(f'\t(descr "{DESCR}")')
+    add(f'\t(tags "{TAGS}")')
+    add("\t(attr smd)")
+
+    add('\t(property "Reference" "SH**"')
+    add(f"\t\t(at 0 {-(LAND_Y / 2 + 1.2):.3f} 0)")
+    add('\t\t(layer "F.SilkS")')
+    add(f'\t\t(uuid "{u()}")')
+    add("\t\t(effects (font (size 1 1) (thickness 0.15)))")
+    add("\t)")
+    add(f'\t(property "Value" "{FOOTPRINT_NAME}"')
+    add(f"\t\t(at 0 {LAND_Y / 2 + 1.2:.3f} 0)")
+    add('\t\t(layer "F.Fab")')
+    add(f'\t\t(uuid "{u()}")')
+    add("\t\t(effects (font (size 1 1) (thickness 0.15)))")
+    add("\t)")
+    add(f'\t(property "Datasheet" "{DATASHEET}" (at 0 0 0) (layer "F.Fab") (hide yes)')
+    add(f'\t\t(uuid "{u()}")')
+    add("\t\t(effects (font (size 1 1) (thickness 0.15)))")
+    add("\t)")
+
+    # ---- F.Fab: the frame's real outer and inner walls -------------------
+    for hx, hy in ((OUTER_X / 2, OUTER_Y / 2), (INNER_X / 2, INNER_Y / 2)):
+        pts = rounded_rect(hx, hy, 1.0)
+        for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
+            add(
+                f"\t(fp_line (start {x1:.4f} {y1:.4f}) (end {x2:.4f} {y2:.4f}) "
+                f'(stroke (width {FAB_W}) (type solid)) (layer "F.Fab") (uuid "{u()}"))'
+            )
+
+    # ---- F.CrtYd: an ANNULUS, not a filled rectangle ---------------------
+    # A shield frame is a ring and components are meant to sit inside it. A
+    # solid courtyard would make every enclosed part a DRC "courtyards
+    # overlap" error. Two nested closed outlines give KiCad a courtyard with
+    # a hole, so only the ring itself is claimed. The hole is the inner edge
+    # of the copper land (38.7 - 2 x 1.5 = 35.7 by 30.5 - 2 x 1.5 = 27.5),
+    # which is the area a part may legitimately occupy.
+    for hx, hy, radius in (
+        (LAND_X / 2 + CRTYD_CLR, LAND_Y / 2 + CRTYD_CLR, CORNER_R),
+        (LAND_X / 2 - RING_W, LAND_Y / 2 - RING_W, max(CORNER_R - RING_W, 0.5)),
+    ):
+        pts = rounded_rect(hx, hy, radius)
+        for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
+            add(
+                f"\t(fp_line (start {x1:.4f} {y1:.4f}) (end {x2:.4f} {y2:.4f}) "
+                f'(stroke (width {CRTYD_W}) (type solid)) (layer "F.CrtYd") (uuid "{u()}"))'
+            )
+
+    # ---- F.SilkS: outline just outside the land --------------------------
+    hx, hy = LAND_X / 2 + 0.15, LAND_Y / 2 + 0.15
+    pts = rounded_rect(hx, hy, CORNER_R)
+    for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
+        add(
+            f"\t(fp_line (start {x1:.4f} {y1:.4f}) (end {x2:.4f} {y2:.4f}) "
+            f'(stroke (width {SILK_W}) (type solid)) (layer "F.SilkS") (uuid "{u()}"))'
+        )
+
+    # ---- Copper ring, built from four rectangular pads on one net --------
+    # Left/right run the full height; top/bottom span only the gap between
+    # them, so the corners are covered exactly once.
+    span_x = LAND_X - 2 * RING_W
+    ring = [
+        (-CX, 0.0, RING_W, LAND_Y),      # left
+        (CX, 0.0, RING_W, LAND_Y),       # right
+        (0.0, -CY, span_x, RING_W),      # top
+        (0.0, CY, span_x, RING_W),       # bottom
+    ]
+    for x, y, sx, sy in ring:
+        add('\t(pad "1" smd rect')
+        add(f"\t\t(at {x:.4f} {y:.4f})")
+        add(f"\t\t(size {sx:.4f} {sy:.4f})")
+        add('\t\t(layers "F.Cu" "F.Mask")')
+        add(f'\t\t(uuid "{u()}")')
+        add("\t)")
+
+    # ---- Paste ring, 0.5 mm wide, centred on the same wall centreline ----
+    # Left/right are split into two segments each so no paste is printed
+    # over the two locating holes.
+    seg = (LAND_Y - HOLE_PAD_D) / 2.0
+    off = (HOLE_PAD_D + seg) / 2.0
+    paste = [
+        (-CX, -off, PASTE_W, seg), (-CX, off, PASTE_W, seg),
+        (CX, -off, PASTE_W, seg), (CX, off, PASTE_W, seg),
+        (0.0, -CY, span_x, PASTE_W), (0.0, CY, span_x, PASTE_W),
+    ]
+    for x, y, sx, sy in paste:
+        add('\t(pad "1" smd rect')
+        add(f"\t\t(at {x:.4f} {y:.4f})")
+        add(f"\t\t(size {sx:.4f} {sy:.4f})")
+        add('\t\t(layers "F.Paste")')
+        add(f'\t\t(uuid "{u()}")')
+        add("\t)")
+
+    # ---- Two 1.3 mm locating holes, on the shield net --------------------
+    for hx_pos in (-CX, CX):
+        add('\t(pad "1" thru_hole circle')
+        add(f"\t\t(at {hx_pos:.4f} 0)")
+        add(f"\t\t(size {HOLE_PAD_D:.4f} {HOLE_PAD_D:.4f})")
+        add(f"\t\t(drill {HOLE_D:.4f})")
+        add('\t\t(layers "*.Cu" "*.Mask")')
+        add(f'\t\t(uuid "{u()}")')
+        add("\t)")
+
+    add("\t(embedded_fonts no)")
+    add(")")
+    return "\n".join(L) + "\n"
+
+
+def main() -> None:
+    """Write the footprint into this repo's own .pretty library."""
+    repo = Path(__file__).resolve().parents[2]
+    out = repo / "symbols" / "footprints" / "Open_Secure_ESC.pretty"
+    out.mkdir(parents=True, exist_ok=True)
+    target = out / f"{FOOTPRINT_NAME}.kicad_mod"
+    target.write_text(build(), encoding="utf-8")
+    print(f"wrote {target}")
+
+
+if __name__ == "__main__":
+    main()

@@ -28,6 +28,31 @@ KiCad symbols and their own pin-map verification status are in
 
 ### MCU / trust anchor (common to all builds, README.md)
 
+> **AS-BUILT CORRECTION (2026-08-15).** This section describes the NXP
+> S32K144. **The KiCad schematic in `kicad/` does not contain an S32K144.**
+> U1 is a **TI MSPM0G3518-Q1, package PM (LQFP-64), orderable
+> `M0G3518QPMRQ1`** — REFERENCES.md [44] — swapped in per TODO.md §13.1 and
+> recorded in `kicad/sym-lib-table` ("Project MCU as of 2026-08-10;
+> supersedes S32K144"). Unlike the S32K144's, its pin numbers are **VERIFIED**
+> against [44] (`symbols/specs/MSPM0G3518_Q1_PM.json`), so the
+> "UNVERIFIED PLACEHOLDER PIN MAP" caveat below no longer applies to the part
+> actually in the design.
+>
+> The text below is left in place rather than rewritten because the swap's
+> *security* consequences are genuinely unfinished work, not a documentation
+> lag: TODO.md §13.1.e requires `docs/secure-element-architecture.md` to be
+> revisited (C-01 resolved, the CSEc/HSRUN exclusion C-05 no longer applies),
+> and §13.1.f requires checking the keystore reduction from CSEc's 17 keys to
+> the MSPM0's 4. Every "CSEc" statement below therefore describes a part that
+> is no longer in this build and must not be relied on until §13.1.e is
+> closed. The OPTIGA Trust M's justification is unaffected — the MSPM0's AES
+> engine is still symmetric, so the asymmetric layer is still required.
+>
+> Two other things below are also now stale: `C_VCORE` is **verified at
+> 470 nF, +/-20%** ([44] Recommended Operating Conditions, and "A 0.47 µF tank
+> capacitor is required for the VCORE pin"), which closes TODO.md §13.1.b; and
+> the LPSPI/LPI2C channel names are S32K144 peripheral names.
+
 | Part | Qty | Citation | Status |
 | --- | --- | --- | --- |
 | NXP S32K144 (64-pin LQFP) | 1 | [31] | Feature-level facts verified (local datasheet); physical pin-number map is an UNVERIFIED PLACEHOLDER pending the S32K1xx Reference Manual (see `symbols/specs/S32K144.json`). Package choice (64-LQFP, one of four this device ships in) is this build's own decision — needs 1 FlexCAN-FD instance, 1 spare LPUART, 1 LPSPI (gate driver only — see below), 4 analog channels, SWD concurrently, comfortably within every S32K14x family member's minimum peripheral count. |
@@ -154,6 +179,18 @@ The requirement is framed as *broadband*, i.e. a radiated-susceptibility
 scenario; it does not by itself specify conducted-immunity limits (MIL-STD-
 461G CS101/CS114/CS115/CS116) — those remain open per the Grounding tier's
 existing layout guidance ([15], [17]) already in the base decision matrix.
+
+### Parts added by the 2026-08-15 layout pass
+
+| Part | Ref | Qty | Citation | Status |
+| --- | --- | --- | --- | --- |
+| 10 kΩ 0805 pull-up on the gate driver's SDO line | R14 | 1 | [21] | **Required by the datasheet, was missing.** [21]'s "Pin Functions — 40-Pin DRV8353 Devices" gives SDO (pin 27) as type **OD** and states "This pin requires an external pullup resistor." Without it no SPI register read from the gate driver can work. The 10 kΩ *value* is an engineering default matched to R11 (nFAULT, the other open-drain pin); [21] specifies no value. |
+| Pack input terminal, 6 mm² solder-wire pads | J5 | 1 | — | **Engineering default, not a selected part.** VM previously had no connector of any kind, so the board could not be energised (BT1–BT6 are an off-board assembly). Sized as the largest pad in KiCad's stock library, not against a current rating. See TODO.md §12.4.k/§12.4.l. |
+| Motor phase terminal, 6 mm² solder-wire pads | J4 | 1 | — | **Footprint changed 2026-08-15**, was a 2.54 mm pin header — not a 50 A part. Same engineering-default caveat as J5. |
+
+Conductor sizing for all of the above is governed by IPC-2152 [46], whose body
+is paywalled and has **not** been read; only its Table of Contents is verified.
+No width, plane cross-section or pad in this build is an IPC-2152 result.
 
 ## Open items (not resolved in this document)
 

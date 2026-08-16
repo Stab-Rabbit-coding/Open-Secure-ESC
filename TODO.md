@@ -325,7 +325,199 @@ detail belongs in design docs, not here.
   - [ ] 12.3.j Place `U2` and its three passives on the PCB
         (`gen_pcb.py` / manual). Schematic-only at present.
 
-## 13. MCU Swap — S32K144 → MSPM0G3518-Q1 (NOT STARTED)
+- [~] 12.4 **Layout completion pass for `builds/6s/50A/CAN_485_faraday`**
+      (2026-08-15). The build went from "schematic populated, PCB net-less and
+      unrouted" to an annotated schematic with **0 ERC errors** and a
+      4-layer PCB carrying every part, real nets, poured planes and routed
+      copper. Generators live in that build's `kicad/tools/`. What was closed:
+  - [x] 12.4.a Schematic annotated — all 57 symbols; closes 12.3.i. The 8
+        `PWR_FLAG` symbols were also virtualised (`#FLGnn`, out of BOM, off
+        board); they had been ordinary in-BOM parts.
+        (`tools/finish_annotate_and_footprints.py`)
+  - [x] 12.4.b **DRV8353S footprint authored** from TI's own RTA0040B
+        EXAMPLE BOARD LAYOUT / EXAMPLE STENCIL DESIGN sheets [21] — closes the
+        "No footprint for U5" gap. Land, paste apertures and the 12x 0.2 mm
+        thermal vias are manufacturer values, not an IPC derivation.
+        (`symbols/tools/gen_drv8353s_rta0040b_footprint.py`)
+  - [x] 12.4.c **WE-SHC 3670375 frame footprint authored** from Wurth's own
+        Recommended Land Pattern [30]. The 3671375 COVER correctly gets no
+        footprint — it clips on and is not soldered, so it is now
+        schematic/BOM-only like BT1-BT6.
+        (`symbols/tools/gen_we_shc_3670375_footprint.py`)
+  - [x] 12.4.d **Missing SDO pull-up added (R14, 10k).** [21]'s pin table
+        gives DRV8353S SDO (pin 27) as type **OD** and states "This pin
+        requires an external pullup resistor." There was none, so every SPI
+        register read from the gate driver would have failed. nFAULT already
+        had its pull-up (R11); SDO did not.
+  - [x] 12.4.e **Gate-driver thermal pad given electrical existence.** Pin 41
+        added to the DRV8353S symbol and tied to GND, so the exposed pad is
+        not imported as an isolated copper island under the power stage. The
+        GND assignment is an engineering default — see 12.4.n.
+  - [x] 12.4.f **Four isolated-side power flags reconnected.** #FLG04-07 and
+        their L-routes never touched their target pins (legs landed on the
+        right Y at x = 381.5 while the pins are at x = 380.01), leaving 4
+        `power_pin_not_driven` errors on the transceivers' isolated supplies.
+        Replaced with short stubs and rail labels.
+  - [x] 12.4.g **32 `lib_symbol_mismatch` warnings cleared** by moving the
+        generic R/C/connector/flag stand-ins into a repo-owned library,
+        `symbols/Open_Secure_ESC_Generic.kicad_sym`. They had been stored
+        under KiCad's own `Device:`/`Connector_Generic:`/`power:` names
+        despite different pin geometry. `kicad/README.md`'s claim that these
+        are "KiCad's own standard" parts was wrong and is now corrected.
+  - [x] 12.4.h **Battery input added (J5).** VM had no connector at all — the
+        pack is off-board, so the board could not be energised. The previous
+        PCB had a J5 footprint with no schematic counterpart, i.e. two netless
+        pads. J5 is now a real schematic part on VM/GND.
+  - [x] 12.4.i **PCB rebuilt from the exported netlist** — 44 footprints, 73
+        nets, every pad netted from the schematic rather than left on net 0.
+        4-layer stack: In1.Cu solid GND, In2.Cu VM over the power stage and
+        GND elsewhere, GND pours on both outer layers.
+        (`tools/build_pcb.py`)
+  - [x] 12.4.j **Isolation barrier made real** — a copper keepout removes
+        every plane and pour from the isolated band, and both transceivers are
+        rotated so their isolated pin rows face the board edge. Without it the
+        GND plane ran straight under the isolation barrier.
+  - [ ] 12.4.k **(High, blocks fab) Size the power conductors against
+        IPC-2152 [46].** No conductor width in this build is a computed value.
+        VM and GND are poured planes so they do not depend on track width, but
+        the three PHASE nets reach the motor connector partly as routed
+        track, and that IS load-bearing at 50 A. [46] is paywalled: only its
+        Table of Contents has been read, so per `AGENTS.md` §1.3 nothing may
+        be derived from it yet. Buy the standard, then size the phase copper,
+        the plane cross-sections, the vias and the connector pads, and choose
+        the copper weight to match.
+  - [ ] 12.4.l **(High, blocks fab) Select real power connectors.** J4
+        (phases) and J5 (pack) are currently KiCad 6 mm^2 (~10 AWG) solder-wire
+        pads — the largest in the stock library, chosen because the previous
+        J4 was a 2.54 mm pin header, which is not a 50 A part. No connector
+        has actually been selected and no current rating verified. Depends on
+        12.4.k.
+  - [ ] 12.4.m **(Medium) Set the isolation barrier width from the chosen
+        transceiver variant.** The keepout band is sized to clear the isolated
+        pin rows, not to any creepage/clearance table. The real figure follows
+        from the still-open ADM3055E-vs-ADM3057E (5000 vs 3750 V rms) and
+        ADM2582E-vs-ADM2587E choices in this build's README.
+  - [ ] 12.4.n **(Medium) Confirm the DRV8353S exposed pad may be tied to
+        GND.** [21] requires the pad to be soldered (RTA0040B note 3) and
+        requires a ground-plane connection at the GND pin (§11.1), but does
+        not state that the pad is internally common with GND. Currently an
+        engineering default per `AGENTS.md` §4.
+  - [ ] 12.4.o **(Medium) Confirm the WE-SHC frame's two 1.3 mm locating
+        holes should be PLATED.** [30] dimensions them but does not say.
+        Generated as plated on the shield net.
+  - [ ] 12.4.p **(Medium) Model the MCU's remaining 36 package pins.**
+        `symbols/specs/MSPM0G3518_Q1_PM.json` maps 28 of the LQFP-64's 64
+        pins, so 36 pads import with no net. Fine electrically (unused GPIO),
+        but the symbol does not describe the package.
+  - [ ] 12.4.q **(Medium) Finish component placement.** `build_pcb.py`'s
+        placement table is legible and DRC-clean and respects [21] §11.1's
+        gate-loop and bulk-capacitor constraints, but it is a starting point,
+        not a solved placement. Thermal, EMI and manufacturability review of
+        the power stage is a human task.
+  - [ ] 12.4.r **(Low) 347 `endpoint_off_grid` ERC warnings.** `genlib.py`
+        lays the sheet out on a 10 mm grid, which is not a multiple of KiCad's
+        1.27 mm connection grid. **Do not "fix" this with a coordinate
+        snap** — it was tried and reverted: the generator separates parallel
+        routes by 0.01-0.02 mm lane offsets, and snapping merges them
+        (VM shorted to GND, all six PWM lines merged, CPH shorted to CPL;
+        73 nets collapsed to 63). See `tools/snap_to_grid.py`, which now
+        refuses to write without `--force`. A real fix means re-laying out
+        the drawing with >= 1.27 mm lane spacing.
+  - [ ] 12.4.s (Low) 4 `silk_over_copper` and 1 `starved_thermal` DRC
+        warnings remain; cosmetic/fab-preference, not electrical.
+
+- [~] 12.5 **30 x 60 mm respin of `builds/6s/50A/CAN_485_faraday`**
+      (2026-08-16). Triggered by the repo owner: the 150 x 140 mm board from
+      12.4 was "way too big for a single channel ESC ... it won't fit where it
+      needs to". Schematic is complete and ERC-clean on the new BOM; PCB
+      placement has NOT converged. **Next session starts at 12.5.j.**
+  - [x] 12.5.a **FET swapped to Toshiba TPHR8504PL** [49], package 2-5W1A
+        "SOP Advance(N)", chosen by the repo owner over TI CSD19532Q5B [48].
+        Symbol, spec and footprint authored. TO-220 -> SMD is what makes
+        double-sided assembly possible at all.
+  - [x] 12.5.b **Land pattern taken from Toshiba's catalog** [50] p.46, not
+        derived. An IPC-7351 derivation made first (before [50] was located)
+        was 46% short on drain-land area and 86% short on lead-pad area.
+        Toshiba does not publish land patterns in part datasheets.
+  - [x] 12.5.c **Shield swapped to WE-SHC 3670209/3671209** [51]/[52],
+        saving 812 mm^2 -- the single biggest area win available.
+  - [x] 12.5.d Shunts 1 mOhm -> **0.5 mOhm**; C1 radial -> 1210 SMD;
+        J4/J5 split into per-terminal pads; J1-J4 moved to SMD solder pads.
+  - [x] 12.5.e **Schematic swap complete, 0 ERC errors.** All six gate nets
+        preserved by placing the new symbol so its gate pin lands on the old
+        gate pin's exact coordinate; drains and sources rewired and the
+        netlist verified pin-by-pin (high-side drains on VM, low-side drains
+        on the phases, low-side sources on the shunts).
+  - [ ] 12.5.f **(BLOCKING) Hand-place the PCB.** ~11 courtyard overlaps
+        remain, all at the bottom end where J4A/B/C and J1 land on U1 and the
+        R4/R5/R8/R9 columns. Constraints that must survive placement are
+        tabulated in `kicad/README.md` "Hand-placement guide". Re-running
+        `tools/build_pcb.py` discards hand placement.
+  - [ ] 12.5.g **(High, electrical) U5's thermal via field vs the FETs.**
+        U5 sits on the bottom directly beneath the top-side MOSFETs and its
+        footprint carries 12 thermal vias on GND. A via under a FET drain pad
+        shorts **GND to VM or to a phase**. [21] RTA0040B note 5 makes the
+        vias optional, so deleting them is a legitimate fix. Check after any
+        move of U5 or any Q.
+  - [ ] 12.5.h Route (`tools/autoroute.py`), then DRC to zero errors.
+  - [ ] 12.5.i Fab outputs, then documentation.
+  - [ ] 12.5.j **Where the next session picks up:** open the PCB, hand-place
+        per `kicad/README.md`, resolve 12.5.g, then 12.5.h/i.
+  - [ ] 12.5.k **(Medium) Strain relief for J2/J3.** They are now bare SMD
+        solder pads with no mechanical retention, and they leave the board in
+        service. J1 (debug) is fine as-is. Needs a tie-down, potting, or a
+        real connector selected.
+  - [ ] 12.5.l **(Medium) On-board bulk capacitance.** C1 went from a 10 mm
+        radial to a 1210, which holds far less. [47] carries 470 uF 63 V
+        EXTERNAL to the board. Decide whether external bulk is required.
+  - [ ] 12.5.m **(Medium) Confirm the sense chain still resolves.** Halving
+        the shunt halves the sense voltage; check the DRV8353S CSA gain and
+        the INA240 range against the overcurrent trip threshold.
+  - [ ] 12.5.n **(High, carried from the FET choice) Bound the drain
+        overshoot.** [49] is a 40 V part on a 25.2 V pack -- 1.59x, down from
+        3.97x. Set the DRV8353S IDRIVE slew rate via SPI and bench-measure
+        V_DS at the switching node before fab.
+  - [ ] 12.5.o (Low) `tools/respin_30x70_schematic.py` is named for the
+        70 mm target that became 60 mm. Rename or note it.
+
+- [x] 12.6 **Decision matrix gained its two missing axes** (2026-08-16).
+      `docs/decision-matrix.xlsx` now carries **Motor** (brushed vs brushless)
+      and **Shaft Sensor** (sensorless / Hall / quadrature / resolver) sheets,
+      added by `docs/tools/add_motor_and_shaft_sensor_sheets.py`. The whole
+      workbook exports to `docs/decision-matrix.json` via
+      `docs/tools/decision_matrix_to_json.py` (`--check` fails when the JSON
+      goes stale against the workbook hash), so a build can be walked
+      programmatically. Cells with no sourced part read `TBD -- requires
+      primary-source verification` and their rows are `Open / unresolved`:
+      the brushed-DC gate driver, all three sensored shaft-sensor options,
+      and SBus/DBus. `unresolved_cells()` exists so a build script refuses
+      them rather than emitting a BOM line.
+  - [ ] 12.6.a Source an H-bridge gate driver for the brushed row, or vet
+        the noted option of using two of a 3-phase driver's three
+        half-bridges.
+  - [ ] 12.6.b Source a resolver-to-digital converter for the resolver row.
+  - [ ] 12.6.c Verify a Hall-sensor part (TI DRV5013 is carried from the
+        Control sheet as a candidate only).
+
+## 13. MCU Swap — S32K144 → MSPM0G3518-Q1 (PARTIALLY APPLIED)
+
+> **Status corrected 2026-08-15.** This section was headed "NOT STARTED",
+> but the swap is already in the design: `symbols/MSPM0G3518_Q1_PM.kicad_sym`
+> and `symbols/specs/MSPM0G3518_Q1_PM.json` exist, `kicad/sym-lib-table`
+> records the MSPM0G3518 as "Project MCU as of 2026-08-10; supersedes
+> S32K144", and U1 in the build schematic **is** the MSPM0G3518-Q1. So
+> 13.1.c, 13.1.d and 13.1.g below are done — the pin numbers are VERIFIED,
+> not placeholders, and `SE_I2C_SCL`/`SE_I2C_SDA`/`SE_RST` survived the swap
+> (the OPTIGA is still connected). 13.1.b is also closed: `C_VCORE` is
+> **470 nF ±20 %**, read from [44]'s Recommended Operating Conditions and
+> confirmed by its "A 0.47 µF tank capacitor is required for the VCORE pin",
+> and C3 on the sheet is 470 nF.
+>
+> What remains open is the part that matters most: **the security
+> documentation still describes the S32K144's CSEc.** 13.1.e and 13.1.h below
+> are untouched, and `builds/6s/50A/CAN_485_faraday/README.md` carries an
+> as-built correction note pointing here. Do not treat any CSEc statement in
+> the design docs as describing this build until 13.1.e is closed.
 
 - [ ] 13.1 **Replace the NXP S32K144 with the TI MSPM0G3518-Q1**, package PM
       (LQFP-64), orderable `M0G3518QPMRQ1` [44]. Decided 2026-08-10: the

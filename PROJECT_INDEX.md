@@ -1,0 +1,113 @@
+# PROJECT_INDEX.md — Open-Secure-ESC
+
+Directory and file index for the active project. Governed by `AGENTS.md`.
+Archived files, if any are ever moved out of the active tree, belong in
+`ARCHIVE_INDEX.md` rather than here.
+
+Created 2026-08-15 during the `builds/6s/50A/CAN_485_faraday` layout pass
+(`TODO.md` §12.4). Update it whenever active files are added or removed.
+
+## Repository shape
+
+```text
+Open-Secure-ESC/
+├── AGENTS.md                    binding rules for every contributor, human or AI
+├── README.md                    project overview and the build-axis matrix
+├── REFERENCES.md                IEEE-format bibliography, [1]..[46] — the citation authority
+├── TODO.md                      Work Breakdown Structure; every open item lives here
+├── PROJECT_INDEX.md             this file
+├── SECURITY.md                  vulnerability reporting
+├── LICENSE                      CERN-OHL-P v2
+├── docs/                        design analysis and every primary datasheet
+├── symbols/                     shared KiCad symbol + footprint libraries
+└── builds/<voltage>/<amperage>/<variant>/    one folder per build instance
+```
+
+## Root
+
+| File | What it is |
+| --- | --- |
+| `AGENTS.md` | Mandatory rules: verified sources only, IEEE citations in `REFERENCES.md`, no fabricated values, `UNVERIFIED` markers, design-decision rationale, pre-merge checklist. |
+| `README.md` | Project overview; the voltage / amperage / protocol / control / EMI axes a build is instantiated from. |
+| `REFERENCES.md` | Every standard, datasheet and regulation cited anywhere in the repo, with URL, section/page and access date, or an explicit note on why a field is unverifiable. |
+| `TODO.md` | Formal WBS. §1 governance, §2 requirements, §12 per-build instances, §13 MCU swap. |
+| `SECURITY.md`, `LICENSE`, `.gitignore`, `.markdownlint-cli2.jsonc`, `.yamllint.yml` | Housekeeping and lint configuration. |
+| `.github/workflows/` | CI: markdown lint, YAML lint, link checking. |
+
+## docs/
+
+| Path | What it is |
+| --- | --- |
+| `decision-matrix.xlsx` | The workbook every build's BOM is walked from, one sheet per axis: Voltage, Amperage, Motor, Shaft Sensor, Protocol, Control, EMI Hardening. Human-editable source of truth. |
+| `decision-matrix.json` | Generated export of the workbook for scripting — rows keyed by slug, with a status legend and a workbook hash for staleness detection. Do not hand-edit; re-run the exporter. |
+| `tools/add_motor_and_shaft_sensor_sheets.py` | Adds the Motor and Shaft Sensor axis sheets (idempotent, backs up first). |
+| `tools/decision_matrix_to_json.py` | Exports the workbook to JSON; `--check` fails if the JSON is stale. |
+| `solutions/` | Documented learnings, organized by category with YAML frontmatter (`module`, `tags`, `problem_type`). |
+| `secure-element-architecture.md` | OPTIGA Trust M rationale, security-monitor budget, cryptographic assessment, open findings C-01..C-07 / O-04..O-05. |
+| `security-mcu-comparison.md` | Eight-candidate survey of security MCUs; the document the MCU swap overturns. |
+| `HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md` | Plan and verified facts for the S32K144 → MSPM0G3518-Q1 swap (`TODO.md` §13). |
+| `cern-ohl-p-v2-howto-guide.pdf` | Licence guidance. |
+| `datasheets/` | 38 primary PDFs. These are the sources `REFERENCES.md` marks `VERIFIED`; entries without a local copy here are secondary-sourced only. |
+
+## symbols/ — shared across all builds
+
+| Path | What it is |
+| --- | --- |
+| `README.md` | Per-component pin-map status, the footprint table, and the workflow for adding a part. |
+| `specs/<PART>.json` | The citable pin spec. **Source of truth** — symbols are generated from it, never hand-edited. |
+| `<PART>.kicad_sym` | Generated symbol, one component per file. |
+| `Open_Secure_ESC_Generic.kicad_sym` | Generic R / C / C_Polarized / Conn_01x02-04 / PWR_FLAG authored by `genlib.py`. This repo's own parts, **not** KiCad's `Device:`/`Connector_Generic:`/`power:` symbols — the pin geometry differs. |
+| `footprints/Open_Secure_ESC.pretty/` | Land patterns for packages KiCad 9.0 does not ship: OPTIGA `PG-USON-10-2,-4`, TI `DGS0028A`, TI `RTA0040B` (DRV8353S), Würth `WE-SHC 3670375` frame. |
+| `footprints/Open_Secure_ESC.3dshapes/` | STEP models for the above. |
+| `tools/gen_kicad_symbol.py` | JSON spec → `.kicad_sym`. |
+| `tools/gen_*_footprint.py` | One generator per hand-authored footprint: DRV8353S `RTA0040B`, Toshiba `2-5W1A`, Würth `WE-SHC 3670209`/`3670375`, and the SMD solder-pad strips. Each docstring names the drawing every dimension came from and flags which numbers are derivations rather than manufacturer values. |
+| `tools/gen_optiga_uson10_3dmodel.py` | STEP model generator. |
+
+## builds/6s/50A/CAN_485_faraday/
+
+The only build instantiated so far: 6S, 50 A, CAN-FD **and** RS-485
+concurrently, Faraday EMI tier.
+
+| Path | What it is |
+| --- | --- |
+| `README.md` | The build's BOM with per-line citation and verification status, the Faraday-tier field-strength derivation, and the open design questions. |
+| `kicad/README.md` → "Hand-placement guide" | The constraints that must survive manual placement of the 30 × 60 respin, and the U5-thermal-via short trap. |
+| `kicad/README.md` | Exact state of the schematic and PCB, including what is still open. |
+| `kicad/*.kicad_sch` | Single-sheet schematic, A0. |
+| `kicad/*.kicad_pcb` | 4-layer board: F.Cu, In1.Cu GND plane, In2.Cu VM/GND, B.Cu. |
+| `kicad/*.kicad_pro`, `*.kicad_prl` | Project settings; net classes live here, not in the board. |
+| `kicad/sym-lib-table`, `fp-lib-table` | Project-relative library tables pointing at `symbols/`. |
+| `gerbers/` | Fabrication output. Empty — see `TODO.md` §12.4.k/l before generating. |
+
+### builds/.../kicad/tools/
+
+Generators and checkers. Re-run these rather than hand-editing the generated
+`.kicad_sch` / `.kicad_pcb`.
+
+| Script | What it does |
+| --- | --- |
+| `genlib.py` | Shared symbol/layout helpers for the generators below. |
+| `gen_schematic.py` | Original schematic generator. **Carries a divergence warning** — it is no longer the sole author of the committed sheet; running it as-is drops later work. |
+| `gen_pcb.py` | Superseded by `build_pcb.py`. |
+| `build_pcb.py` | Builds the PCB from the exported netlist: loads real footprints, nets every pad, draws the outline, sets the 4-layer stack, pours the planes, and adds the isolation keepout. |
+| `finish_annotate_and_footprints.py` | Annotates every symbol, assigns the remaining footprints, and marks off-board parts. |
+| `finish_erc_fixes.py` | The three real electrical fixes: the missing SDO pull-up, the gate driver's thermal-pad pin, and the four disconnected isolated-supply power flags. |
+| `fix_generic_symbol_libs.py` | Moves the generic stand-in symbols into `Open_Secure_ESC_Generic.kicad_sym`. |
+| `add_power_connectors.py` | Adds the battery input (J5) and moves both power connectors off 2.54 mm headers. |
+| `set_netclasses.py` | Writes the Power / Sense / Isolated net classes into the project file. |
+| `autoroute.py` | FreeRouting round trip: DSN export → route → SES import → re-pour → report. |
+| `snap_to_grid.py` | **Refuses to run without `--force`.** Documents why a global grid snap shorts this sheet. |
+| `check_shorts.py` | Finds collinear overlapping wire segments on different nets — a short KiCad's ERC reads as one net. |
+| `trace_nets.py` | Net tracing helper. |
+
+## Conventions worth knowing before editing
+
+- **`specs/*.json` is the source of truth** for pin maps; `.kicad_sym` files
+  are generated from it.
+- **Never assert a value you have not read from a primary source.** Mark it
+  `UNVERIFIED — needs primary source (see TODO.md)` instead (`AGENTS.md` §3).
+- **Engineering defaults must say so.** Several values in this build — the
+  10 kΩ pull-ups, the power-connector choice, the gate-driver thermal-pad net,
+  the shield hole plating, every conductor width — are judgment calls recorded
+  per `AGENTS.md` §4, not datasheet or standards results.
+- **Citation tags are never renumbered or repurposed** (`AGENTS.md` §2.5).

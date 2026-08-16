@@ -1637,4 +1637,152 @@ which was pointless under the earlier blanket block. That re-attempt has
 **not** been made yet; those entries remain secondary-sourced only and
 must not be cited as verified until it is. Tracked in `TODO.md` 1.10.
 
+**[46]** IPC, *Standard for Determining Current Carrying Capacity in
+Printed Board Design*, IPC-2152, IPC, Bannockburn, IL, USA, August 2009.
+Developed by the Current Carrying Capacity Task Group (1-10b) of the Printed
+Board Design Committee (1-10) of IPC. [Online]. Available:
+https://www.ipc.org/TOC/IPC-2152.pdf
+**Partially verified — front matter and full Table of Contents only.** The
+linked PDF was fetched directly on 2026-08-15 (HTTP 200, 5 pp.) and read; it
+is IPC's own published front matter and carries the title, document number,
+issuing committee, publisher address and issue date quoted above, plus the
+complete section listing. The STANDARD BODY IS PAYWALLED and has **not** been
+read: `https://shop.ipc.org/ipc-2152-english-d` returned HTTP 403 on the same
+date. A local copy is therefore **not** held in `docs/datasheets/`.
+Section/page: the following section numbers and page numbers are read
+directly from the verified Table of Contents and are the sections this repo
+relies on — §4 "Conductor Sizing Design Guidelines" (p. 2); §5 "Conductor
+Sizing Charts" (p. 3); §5.1 "Conductor Sizing Charts for Still Air
+Environments" (p. 6), with §5.1.1 imperial (p. 6) and §5.1.2 SI/metric
+(p. 9); Appendix A §A.3.4 "Vias" (p. 26); §A.4.3 "Copper Weight" (p. 28);
+§A.4.6 "Copper Planes" (p. 29), with §A.4.6.1 "Single Plane" (p. 29).
+**No chart value, derating factor, temperature-rise figure or conductor
+width from this standard is quoted anywhere in this repository**, because the
+charts themselves are in the paywalled body. Per `AGENTS.md` §1.3, every
+conductor width in
+`builds/6s/50A/CAN_485_faraday/kicad/tools/set_netclasses.py` and every
+plane/pour geometry in `.../tools/build_pcb.py` is recorded as an
+`ENGINEERING DEFAULT`, not as an IPC-2152 result. This entry exists so that
+the standard that governs those numbers is named and locatable, not so that
+the numbers can be presented as verified. Closing that gap requires
+purchasing the standard — tracked in `TODO.md` §12.1.
+
+**[47]** Vimdrones, *Vimdrones ESC S50 DroneCAN — Specification and Test
+Report*, product documentation, Vimdrones, 2026. [Online]. Available:
+https://dev.vimdrones.com/products/vimdrones_esc_s50/
+Fetched directly 2026-08-15 (HTTP 200) and read; the linked test-report images
+`vimdrones_esc_s50_continuous_load_test.png` and
+`vimdrones_esc_s50_62_50C_100C_battery_test.png` were fetched from the same
+host (HTTP 200) and read.
+Section/page: product page "Specification" table — Power supply 2S–6S; MCU ST
+STM32L431KCU6; MOSFET **Toshiba TPHR8504PL**; **Continuous current 50 A
+(cooling required above 30 A)**; CAN termination 120 Ω with **Solder PAD**
+switch; **CAN Port Connector: Solder PAD**; **Board outline 40 mm × 17 mm**;
+firmware AM32. "Test Report / 50A Continuous Test" figure — instrumented
+continuous-load run: current 10.39 / 20.74 / 31.09 / 40.62 / **50.18 A**
+against board temperature 54.7 / 64.2 / 73.6 / 88.3 / **103 °C**, push force
+672–2108 g, RPM 12 760–22 220; setup stated as Wanptek KPS3060D at 25.2 V
+(voltage spike < 27.5 V), AM32 2.18 DroneCAN, XQ QF3748 90 mm 1450 kV EDF
+load, FLIR One Pro thermal camera, Mayatech MT5 force meter, **63 V 470 µF
+external capacitance**, **air cooling from EDF airflow**, ambient 29 °C.
+**WHAT THIS IS AND IS NOT.** This is a manufacturer's own documentation of a
+shipping product, with named instruments and stated conditions — it is primary
+for facts *about the S50*. It is **not** a standard, and nothing in this
+repository may derive a conductor width, a creepage figure, or any other
+design value from it. It is cited for three things only: an existence proof
+that 6S/50 A fits in 40 × 17 mm; the measured thermal reality of that rating;
+and construction techniques (mask-free solder-reinforced copper, solder-pad
+connectors) visible in its published board photographs.
+**ORIGIN WARNING.** The S50's gate driver is a **Fortior FD62880** (read from
+the product's own board photograph), and Fortior Technology is Shenzhen, PRC.
+Under the repo owner's 2026-08-15 constraint that no IC may originate in the
+PRC or other restricted countries, that part **must not** be adopted here.
+This project's gate driver remains the TI DRV8353S [21]. Mine this reference
+for technique, not for parts.
+
+**[48]** Texas Instruments Incorporated, *CSD19532Q5B 100 V N-Channel NexFET™
+Power MOSFET*, SLPS414B, Dallas, TX, USA, Dec. 2013, rev. May 2017. [Online].
+Available: https://www.ti.com/lit/ds/symlink/csd19532q5b.pdf
+Local verified copy: `docs/datasheets/csd19532q5b.pdf` — fetched directly
+2026-08-15 (HTTP 200, 934 kB) and read.
+Section/page: title page and §3 Description — 100 V, 4 mΩ, SON 5 mm × 6 mm;
+§4 Pin Configuration and Functions — pins 1/2/3 = S, 4 = G, 5/6/7/8 = D;
+§6 — V_DS 100 V, continuous drain current 100 A (package limited), I_DM 400 A,
+P_D 195 W at T_C = 25 °C, R_θJC 0.8 °C/W, R_θJA 50 °C/W; §7.1 Q5B Package
+Dimensions; §7.2 Recommended PCB Pattern; §7.3 Recommended Stencil Pattern.
+**EVALUATED 2026-08-15, NOT ADOPTED.** Selected first as the SMD replacement
+for the IRFB4110PBF [20] because it preserved that part's 100 V rating
+exactly. The repo owner chose the Toshiba TPHR8504PL [49] instead, accepting a
+reduction in voltage margin (3.97× → 1.59× over a 6S pack) for a 5.7×
+improvement in conduction loss (10 W → 1.75 W per device at 50 A). This entry
+and its local datasheet are retained as the documented alternative, in the
+same spirit as [26]–[29]; no symbol or footprint for it remains in the tree.
+
+**[49]** Toshiba Electronic Devices & Storage Corporation, *TPHR8504PL — MOSFETs
+Silicon N-channel MOS (U-MOS-H)*, datasheet, rev. 5.0.A, Japan, 2026-04-14.
+Local verified copy: `docs/datasheets/TPHR8504PL_datasheet_en_20191024.pdf`
+(10 pp.) — supplied by the repo owner 2026-08-15 and read in full.
+[Online]. Available: https://toshiba.semicon-storage.com/ap-en/semiconductor/product/mosfets/detail.TPHR8504PL.html
+(a direct fetch of the PDF returned HTTP 403; the local copy is the source
+relied on.)
+Section/page: §2 Features — R_DS(ON) 0.7 mΩ typ. at V_GS = 10 V, Q_SW 23 nC
+typ., Q_oss 85.4 nC typ., V_th 1.4–2.4 V; §3 Packaging and Internal Circuit —
+pins 1/2/3 = Source, 4 = Gate, 5/6/7/8 = Drain, and **two packages offered
+under one part number**, 2-5Q1S "SOP Advance" (p. 8) and 2-5W1A "SOP
+Advance(N)" (p. 9); §4 Absolute Maximum Ratings — V_DSS **40 V**, V_GSS ±20 V,
+I_D 150 A (DC, T_c = 25 °C, package limited), 340 A silicon limit, I_DP 500 A,
+P_D 170 W, E_AS 336 mJ, I_AS 120 A, T_ch 175 °C; §5 Thermal — R_th(ch-c)
+0.88 °C/W, R_th(ch-a) 50 °C/W on glass-epoxy board (a).
+**NO LAND PATTERN IN THIS DOCUMENT.** All 10 pages were searched: the words
+"land", "mounting" and "recommend" do not appear. The land pattern is
+published separately in the product catalog — see [50]. An IPC-7351-style
+derivation made before [50] was located proved 46 % short on drain-land area
+and 86 % short on lead-pad area, and was replaced.
+**Related documents also held locally, not separately tagged** because nothing
+in this repository cites them yet: 15 Toshiba application notes under
+`docs/datasheets/TPHR8504PL_application_note_*.pdf`, supplied by the repo
+owner 2026-08-15/16.
+
+**[50]** Toshiba Electronic Devices & Storage Corporation, *MOSFET Product
+Catalog*, ALQ00024, Japan, 2026-07-06. Local verified copy:
+`docs/datasheets/TPHR8504PL_catalog_20260706_ALQ00024.pdf` (52 pp.) — supplied
+by the repo owner 2026-08-16 and read.
+Section/page: **p. 46 "Surface Mount Type"** — package dimensions and
+"Land pattern example" published side by side for the whole surface-mount
+family (DSOP Advance(WF)L/M, SOP Advance, SOP Advance(N), SOP Advance(E),
+SOP Advance(EWF)). The **SOP Advance(N) (4.9 × 6.1)** cell gives the land used
+by `symbols/tools/gen_tphr8504pl_footprint.py`: overall width 4.7; pad width
+0.85; pitch 1.27; drain land 4.8 total height with a 1.05 castellated depth
+over a 3.75 solid body; gap to lead pads 0.7; lead pad height 1.45 — total
+land 4.7 × 6.95 mm.
+**This is the reference to use for ANY Toshiba MOSFET package this project
+adopts.** Toshiba does not put land patterns in its part datasheets; p. 46 is
+where they live.
+
+**[51]** Würth Elektronik eiSos GmbH & Co. KG, *WE-SHC Two-piece Seamless
+Shielding Cabinet — FRAME*, order code 3670209, Waldenburg, Germany.
+Local verified copy: `docs/datasheets/3670209.pdf` — read directly.
+Section/page: p. 1 "Dimensions: [mm]" — inner 20.5 ± 0.2 × 14.9 ± 0.2, outer
+20.9 ± 0.2 × 15.3 ± 0.2 (wall 0.2 mm), height 1.7 ± 0.2 mm; p. 1 "Recommended
+Land Pattern: [mm]" — outer 22.2 × 16.6, ring width 1.5, outer corner R 2.15,
+0.5 mm recommended tin paste mask layer. The land drawing shows **no board
+holes**; the "4× ⌀0.6" callout on the same page belongs to the frame's own
+Dimensions drawing, a feature of the metal part.
+Cross-check: ring centreline from the land ((22.2−1.5)/2 = 10.35,
+(16.6−1.5)/2 = 7.55) equals wall centreline from the body ((20.9+20.5)/4 =
+10.35, (15.3+14.9)/4 = 7.55) exactly — the same two-way check that validated
+[30]. Adopted 2026-08-16 in place of [30] for the 30 × 60 mm respin, saving
+812 mm². **Height caution:** at 1.7 mm this frame clears the DRV8353S
+(0.8 mm) and 0805 ceramics but cannot cover the MOSFETs.
+
+**[52]** Würth Elektronik eiSos GmbH & Co. KG, *WE-SHC Two-piece Seamless
+Shielding Cabinet — COVER*, order code 3671209, Waldenburg, Germany.
+Local verified copy: `docs/datasheets/3671209.pdf` — read directly.
+Section/page: p. 1 "Dimensions: [mm]" — inner 20.9 ± 0.2 × 15.3 ± 0.2, outer
+21.3 ± 0.2 × 15.7 ± 0.2, height 1.7 mm ref.; "Assembly with Frame:
+Frame(3670209), Cover(3671209)".
+As with [19]/[30], the cover has **no land pattern** because nothing about it
+is soldered — it clips onto the frame [51]. It is carried in the BOM and
+marked "exclude from board".
+
 Track resolution of these items in `TODO.md`.

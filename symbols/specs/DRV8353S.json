@@ -1,55 +1,258 @@
 {
   "name": "DRV8353S",
   "reference": "U",
-  "footprint": "",
+  "footprint": "Open_Secure_ESC:TI_RTA0040B_WQFN-40_6x6mm_P0.5mm_EP4.15x4.15mm",
   "datasheet": "docs/datasheets/drv8353.pdf",
   "description": "TI DRV8353S 9-75V three-phase smart gate driver (SPI configuration variant) -- candidate gate driver for the power stage, all amperage tiers (TODO.md 5.1).",
   "citation": "[21]",
-  "verification": "VERIFIED -- full 40-pin map read directly from the local copy of [21] (TI SLVSDY6A, AUGUST 2018, REVISED JUNE 2019), Sec. 6 'Pin Configuration and Functions', 'DRV8353S RTA Package, 40-Pin WQFN With Exposed Thermal Pad, Top View' and the accompanying 'Pin Functions -- 40-Pin DRV8353 Devices' table (which lists both the DRV8353H hardware-config and DRV8353S SPI-config pinouts side by side; only the DRV8353S column is used here). Sec. 5 'Device Comparison Table' confirms DRV8353S = 3 integrated shunt amplifiers, no buck regulator, SPI interface -- correct target part for this repo. The DRV8353H-only pins (GAIN, IDRIVE, MODE, VDS -- resistor-set config pins replaced by SPI registers on the S variant) are correctly absent from this pin map; the previous UNVERIFIED placeholder's guess that a 6x-PWM INHx/INLx pin set would apply is confirmed correct in spirit, though the previous placeholder's total pin count (26, sequential 1-26) and every individual pin number were wrong -- this device is a 40-pin WQFN (RTA package), not a 26-pin part. The datasheet's 'Exposed Thermal Pad' is not represented as a symbol pin, consistent with how this repo's other QFN/LQFP parts (MSPM0G3507, SLB9672) are modeled -- it is a footprint-level thermal/ground connection, not a schematic net requiring its own pin. Package (mechanical drawing, p.98, doc 4219112/A): RTA0040B, WQFN, 6.1x5.9mm body max / 5.9x... min (dual-tolerance box read as 6.1/5.9mm), 0.5mm pitch, ~4.15x4.15mm exposed thermal pad. `footprint` left blank rather than guessing a specific KiCad library footprint name -- no existing KiCad standard footprint was confirmed to match RTA0040B exactly; size a custom footprint from this drawing before fab.",
+  "verification": "VERIFIED -- full 40-pin map read directly from the local copy of [21] (TI SLVSDY6A, AUGUST 2018, REVISED JUNE 2019), Sec. 6 'Pin Configuration and Functions', 'DRV8353S RTA Package, 40-Pin WQFN With Exposed Thermal Pad, Top View' and the accompanying 'Pin Functions -- 40-Pin DRV8353 Devices' table (which lists both the DRV8353H hardware-config and DRV8353S SPI-config pinouts side by side; only the DRV8353S column is used here). Sec. 5 'Device Comparison Table' confirms DRV8353S = 3 integrated shunt amplifiers, no buck regulator, SPI interface -- correct target part for this repo. The DRV8353H-only pins (GAIN, IDRIVE, MODE, VDS -- resistor-set config pins replaced by SPI registers on the S variant) are correctly absent from this pin map; the previous UNVERIFIED placeholder's guess that a 6x-PWM INHx/INLx pin set would apply is confirmed correct in spirit, though the previous placeholder's total pin count (26, sequential 1-26) and every individual pin number were wrong -- this device is a 40-pin WQFN (RTA package), not a 26-pin part. UPDATED 2026-08-15: the exposed thermal pad IS now a symbol pin (41, 'PAD', passive) and is tied to GND. The earlier treatment -- pad modelled at footprint level only -- would have imported an isolated copper island under a part dissipating gate-drive power, because a pad with no matching symbol pin gets no net. The pad's net assignment is an engineering default, not a datasheet value; see this pin's 'func' field. Package (mechanical drawing, p.98, doc 4219112/A): RTA0040B, WQFN, 6.1x5.9mm body max / 5.9x... min (dual-tolerance box read as 6.1/5.9mm), 0.5mm pitch, ~4.15x4.15mm exposed thermal pad. FOOTPRINT RESOLVED 2026-08-15: no KiCad 9.0 standard footprint matches RTA0040B, so one was generated from TI's own EXAMPLE BOARD LAYOUT and EXAMPLE STENCIL DESIGN sheets (drawing 4219112/A) by symbols/tools/gen_drv8353s_rta0040b_footprint.py. Copper, mask and paste are manufacturer-recommended values, not an IPC derivation.",
   "pins": [
-    {"num": "3",  "name": "VM",      "etype": "power_in",  "side": "top"},
-    {"num": "4",  "name": "VDRAIN",  "etype": "input",     "side": "top"},
-    {"num": "5",  "name": "VCP",     "etype": "power_out", "side": "top"},
-    {"num": "2",  "name": "CPH",     "etype": "passive",   "side": "top"},
-    {"num": "1",  "name": "CPL",     "etype": "passive",   "side": "top"},
-    {"num": "24", "name": "VREF",    "etype": "power_in",  "side": "top"},
-    {"num": "25", "name": "AGND",    "etype": "power_in",  "side": "top"},
-    {"num": "38", "name": "DVDD",    "etype": "power_out", "side": "top"},
-    {"num": "39", "name": "GND",     "etype": "power_in",  "side": "top"},
-    {"num": "40", "name": "VGLS",    "etype": "power_out", "side": "top"},
-
-    {"num": "29", "name": "SCLK",    "etype": "input",          "side": "left"},
-    {"num": "28", "name": "SDI",     "etype": "input",          "side": "left"},
-    {"num": "27", "name": "SDO",     "etype": "open_collector", "side": "left"},
-    {"num": "30", "name": "nSCS",    "etype": "input",          "side": "left"},
-    {"num": "31", "name": "ENABLE",  "etype": "input",          "side": "left"},
-    {"num": "26", "name": "nFAULT",  "etype": "open_collector", "side": "left"},
-
-    {"num": "32", "name": "INHA", "etype": "input", "side": "left"},
-    {"num": "33", "name": "INLA", "etype": "input", "side": "left"},
-    {"num": "34", "name": "INHB", "etype": "input", "side": "left"},
-    {"num": "35", "name": "INLB", "etype": "input", "side": "left"},
-    {"num": "36", "name": "INHC", "etype": "input", "side": "left"},
-    {"num": "37", "name": "INLC", "etype": "input", "side": "left"},
-
-    {"num": "6",  "name": "GHA", "etype": "output", "side": "right"},
-    {"num": "7",  "name": "SHA", "etype": "input",  "side": "right"},
-    {"num": "8",  "name": "GLA", "etype": "output", "side": "right"},
-    {"num": "15", "name": "GHB", "etype": "output", "side": "right"},
-    {"num": "14", "name": "SHB", "etype": "input",  "side": "right"},
-    {"num": "13", "name": "GLB", "etype": "output", "side": "right"},
-    {"num": "16", "name": "GHC", "etype": "output", "side": "right"},
-    {"num": "17", "name": "SHC", "etype": "input",  "side": "right"},
-    {"num": "18", "name": "GLC", "etype": "output", "side": "right"},
-
-    {"num": "9",  "name": "SPA", "etype": "input",  "side": "bottom"},
-    {"num": "10", "name": "SNA", "etype": "input",  "side": "bottom"},
-    {"num": "12", "name": "SPB", "etype": "input",  "side": "bottom"},
-    {"num": "11", "name": "SNB", "etype": "input",  "side": "bottom"},
-    {"num": "19", "name": "SPC", "etype": "input",  "side": "bottom"},
-    {"num": "20", "name": "SNC", "etype": "input",  "side": "bottom"},
-    {"num": "23", "name": "SOA", "etype": "output", "side": "bottom"},
-    {"num": "22", "name": "SOB", "etype": "output", "side": "bottom"},
-    {"num": "21", "name": "SOC", "etype": "output", "side": "bottom"}
+    {
+      "num": "3",
+      "name": "VM",
+      "etype": "power_in",
+      "side": "top"
+    },
+    {
+      "num": "4",
+      "name": "VDRAIN",
+      "etype": "input",
+      "side": "top"
+    },
+    {
+      "num": "5",
+      "name": "VCP",
+      "etype": "power_out",
+      "side": "top"
+    },
+    {
+      "num": "2",
+      "name": "CPH",
+      "etype": "passive",
+      "side": "top"
+    },
+    {
+      "num": "1",
+      "name": "CPL",
+      "etype": "passive",
+      "side": "top"
+    },
+    {
+      "num": "24",
+      "name": "VREF",
+      "etype": "power_in",
+      "side": "top"
+    },
+    {
+      "num": "25",
+      "name": "AGND",
+      "etype": "power_in",
+      "side": "top"
+    },
+    {
+      "num": "38",
+      "name": "DVDD",
+      "etype": "power_out",
+      "side": "top"
+    },
+    {
+      "num": "39",
+      "name": "GND",
+      "etype": "power_in",
+      "side": "top"
+    },
+    {
+      "num": "40",
+      "name": "VGLS",
+      "etype": "power_out",
+      "side": "top"
+    },
+    {
+      "num": "29",
+      "name": "SCLK",
+      "etype": "input",
+      "side": "left"
+    },
+    {
+      "num": "28",
+      "name": "SDI",
+      "etype": "input",
+      "side": "left"
+    },
+    {
+      "num": "27",
+      "name": "SDO",
+      "etype": "open_collector",
+      "side": "left"
+    },
+    {
+      "num": "30",
+      "name": "nSCS",
+      "etype": "input",
+      "side": "left"
+    },
+    {
+      "num": "31",
+      "name": "ENABLE",
+      "etype": "input",
+      "side": "left"
+    },
+    {
+      "num": "26",
+      "name": "nFAULT",
+      "etype": "open_collector",
+      "side": "left"
+    },
+    {
+      "num": "32",
+      "name": "INHA",
+      "etype": "input",
+      "side": "left"
+    },
+    {
+      "num": "33",
+      "name": "INLA",
+      "etype": "input",
+      "side": "left"
+    },
+    {
+      "num": "34",
+      "name": "INHB",
+      "etype": "input",
+      "side": "left"
+    },
+    {
+      "num": "35",
+      "name": "INLB",
+      "etype": "input",
+      "side": "left"
+    },
+    {
+      "num": "36",
+      "name": "INHC",
+      "etype": "input",
+      "side": "left"
+    },
+    {
+      "num": "37",
+      "name": "INLC",
+      "etype": "input",
+      "side": "left"
+    },
+    {
+      "num": "6",
+      "name": "GHA",
+      "etype": "output",
+      "side": "right"
+    },
+    {
+      "num": "7",
+      "name": "SHA",
+      "etype": "input",
+      "side": "right"
+    },
+    {
+      "num": "8",
+      "name": "GLA",
+      "etype": "output",
+      "side": "right"
+    },
+    {
+      "num": "15",
+      "name": "GHB",
+      "etype": "output",
+      "side": "right"
+    },
+    {
+      "num": "14",
+      "name": "SHB",
+      "etype": "input",
+      "side": "right"
+    },
+    {
+      "num": "13",
+      "name": "GLB",
+      "etype": "output",
+      "side": "right"
+    },
+    {
+      "num": "16",
+      "name": "GHC",
+      "etype": "output",
+      "side": "right"
+    },
+    {
+      "num": "17",
+      "name": "SHC",
+      "etype": "input",
+      "side": "right"
+    },
+    {
+      "num": "18",
+      "name": "GLC",
+      "etype": "output",
+      "side": "right"
+    },
+    {
+      "num": "9",
+      "name": "SPA",
+      "etype": "input",
+      "side": "bottom"
+    },
+    {
+      "num": "10",
+      "name": "SNA",
+      "etype": "input",
+      "side": "bottom"
+    },
+    {
+      "num": "12",
+      "name": "SPB",
+      "etype": "input",
+      "side": "bottom"
+    },
+    {
+      "num": "11",
+      "name": "SNB",
+      "etype": "input",
+      "side": "bottom"
+    },
+    {
+      "num": "19",
+      "name": "SPC",
+      "etype": "input",
+      "side": "bottom"
+    },
+    {
+      "num": "20",
+      "name": "SNC",
+      "etype": "input",
+      "side": "bottom"
+    },
+    {
+      "num": "23",
+      "name": "SOA",
+      "etype": "output",
+      "side": "bottom"
+    },
+    {
+      "num": "22",
+      "name": "SOB",
+      "etype": "output",
+      "side": "bottom"
+    },
+    {
+      "num": "21",
+      "name": "SOC",
+      "etype": "output",
+      "side": "bottom"
+    },
+    {
+      "num": "41",
+      "name": "PAD",
+      "etype": "passive",
+      "side": "left",
+      "func": "exposed thermal pad. [21] RTA0040B drawing note 3: 'The package thermal pad must be soldered to the printed circuit board for optimal thermal and mechanical performance.' Tied to GND in this build as an ENGINEERING DEFAULT (AGENTS.md Sec.4) -- [21] mandates soldering the pad and Sec. 11.1 requires a ground-plane connection at the GND pin, but does not state that the pad is internally common with GND. See TODO.md."
+    }
   ]
 }
