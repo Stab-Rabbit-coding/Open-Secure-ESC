@@ -568,6 +568,60 @@ detail belongs in design docs, not here.
         the via field then becomes the narrowest point. **Option 1
         recommended:** 2 and 3 both pay for a layer change the geometry does
         not require. REFERRED TO USER.
+  - [~] 12.5.y **Front/back re-placement by the repo owner (2026-08-17).**
+        Front now carries power (pack -> FETs -> phase terminals), back
+        carries control and comms (U1/U2, U3/U4, J2/J3), comms and pack input
+        at the same end. **This opened the F.Cu corridor U3/U4 used to block**
+        -- the structural fix for 12.5.t. `tools/fix_after_replacement.py`
+        applied the four mechanical consequences: swapped J4A<->J4C (they were
+        crossed -- J4A sat at x 21.6 with its FETs at x 2.2-6.0, a 19.4 mm
+        span with two 50 A nets having to cross; now 3.8 mm each), pulled 5
+        footprints off the board edge, removed 400 stale FreeRouting items,
+        and rebuilt the 3 phase pours + the F.Cu VM pour from the pads they
+        actually have to reach. DRC 713 -> 63 violations; 0 shorts, 0
+        clearance, 0 edge-clearance. Remaining: 43 silkscreen (12.5.u), 12
+        drill (12.5.x), 8 starved_thermal on GND.
+  - [ ] 12.5.z **(BLOCKING, electrical) The isolation keepout now sits on top
+        of the phase terminals.** It is a 4-layer no-copper-pour rule area at
+        x 0.85..24.65, y 50.60..59.30 -- placed when the isolated parts were
+        at the bottom. They are now at y 0.19..22.77 on the back, so the
+        keepout protects nothing and instead blocks the phase pours from
+        their own terminals: PH_B is cut clean at y 50.60, and PH_A/PH_C only
+        get past through a **0.30 mm strip** along the board edge (x 0.55..0.85
+        and 24.65..24.95) that does not even reach the pads. All three phases
+        still read 1 unconnected each. **The phase gap is NOT closed until
+        this moves.**
+        Moving it is not mechanical. The pack input is now at the top
+        (y 1.10..8.62) and the FETs are in the middle (y 23.35..44.35), so VM
+        has to traverse the band a relocated keepout would occupy. Barrier
+        geometry measured 2026-08-17: U3 isolated pins x 1.98 / non-isolated
+        x 11.28; U4 isolated x 14.45 / non-isolated x 23.75; both y
+        10.38..21.82. A keepout as two narrow edge bands (rather than one
+        full-width rectangle) would clear the middle for VM -- but that
+        depends on 12.5.aa. REFERRED TO USER.
+  - [ ] 12.5.aa **(BLOCKING, electrical) J2 is on the wrong side of U3 --
+        the CAN channel's isolation is defeated.** Measured 2026-08-17:
+        U3's isolated pins sit at x 1.98, but J2's pads are at x 11.33..13.87,
+        on the far side of U3's own NON-isolated row (x 11.28). The isolated
+        CAN conductors therefore run **9.35 mm and 11.89 mm in x**, straight
+        across the U3 package and past its non-isolated pins. J3/U4 is fine by
+        contrast (0.58 and 3.12 mm, directly adjacent to U4's isolated row).
+        Fix is either mirroring U3 so its isolated row faces J2, or moving J2
+        to the left edge beside U3's isolated pins. Which one is chosen sets
+        the keepout shape in 12.5.z, so decide these two together.
+        REFERRED TO USER.
+  - [ ] 12.5.ab **(High, electrical) Two constraints regressed in the
+        re-placement.** Measured before -> after:
+        **shunt to sense amp 1.2/2.6/2.6 mm -> 28.0/22.0/28.0 mm** (millivolt
+        differential taps across a 0.5 mOhm shunt, now running the length of
+        the board past three switching nodes -- the README constraint was
+        "each sense amp under its own shunt"); and **C1 to high-side drain
+        4.1/7.1/9.7 mm -> 17.6/23.6/24.0 mm**, the commutation loop the 40 V
+        FET choice on a 25.2 V pack depends on. Per the README's own table a
+        ~20 nH loop leaves only IDRIVE <= 300 mA under 40 V, and that lands at
+        38.2 V -- under 5% margin. Gate loops also stretched to 3.8-13.9 mm
+        (Q3 worst) from U5 sitting directly under the array. All three are
+        placement calls. REFERRED TO USER.
   - [ ] 12.5.u **(Medium) Silkscreen cleanup, deferred by the repo owner
         until after routing** ("silkscreen can wait till after routing",
         2026-08-16). Routing has now run, so this is unblocked. Outstanding:
@@ -581,12 +635,17 @@ detail belongs in design docs, not here.
         bottom-side taps, 9 GND stitches, 38 ordinary signal nets. Re-run with
         more passes or finish by hand -- but re-run
         `tools/strip_high_current_tracks.py` afterwards every time.
-  - [ ] 12.5.x **(Medium, fab) U5's 12 thermal vias are 0.20 mm drill.** That
-        matches this board's own `m_MinThroughDrill` (0.2 mm), so it is NOT a
-        rule violation -- but 0.3 mm is standard at many fabs and 0.2 mm is an
-        upcharge or a redesign at some. Confirm against the chosen vendor
-        before ordering. [21] RTA0040B note 5 makes the vias optional, so
-        enlarging or deleting them are both open options.
+  - [ ] 12.5.x **(High, fab) U5's 12 thermal vias are 0.20 mm drill and DO
+        violate this project's own rule.** `open_secure_esc_6s_50a_can485_faraday.kicad_pro`
+        sets `min_through_hole_diameter = 0.3`, and kicad-cli reports 12 x
+        `drill_out_of_range` against it. **Correction:** an earlier note in
+        this file claimed the opposite, on the strength of the board file's
+        cached `m_MinThroughDrill` (0.2 mm). The project file is what
+        kicad-cli enforces, and it is authoritative. Three fixes: enlarge the
+        vias to 0.3 mm, delete them ([21] RTA0040B note 5 makes them
+        optional), or lower the project rule to 0.2 mm and confirm the fab
+        supports it (0.3 mm is standard at many vendors; 0.2 mm is an
+        upcharge or a redesign at some).
   - [ ] 12.5.v **(Low) 5 `starved_thermal` and 2 `isolated_copper` DRC
         warnings** at the 25.4 mm placement. Fab-preference and pour-shape
         respectively; confirm each is intentional before generating gerbers.
