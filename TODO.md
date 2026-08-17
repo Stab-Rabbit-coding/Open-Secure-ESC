@@ -599,7 +599,12 @@ detail belongs in design docs, not here.
         10.38..21.82. A keepout as two narrow edge bands (rather than one
         full-width rectangle) would clear the middle for VM -- but that
         depends on 12.5.aa. REFERRED TO USER.
-  - [ ] 12.5.aa **(BLOCKING, electrical) J2 is on the wrong side of U3 --
+  - [x] 12.5.aa **J2/U3 isolation RESOLVED 2026-08-17** -- the repo owner
+        rotated U3 by 180 deg, putting its isolated row at x 11.28 facing J2.
+        The CAN runs are now **0.05 mm and 2.59 mm** (were 9.35 and 11.89).
+        U4/J3 was already correct at 0.58/3.12 mm. Original finding kept
+        below for the record.
+  - [x] 12.5.aa-orig **(was BLOCKING) J2 was on the wrong side of U3 --
         the CAN channel's isolation is defeated.** Measured 2026-08-17:
         U3's isolated pins sit at x 1.98, but J2's pads are at x 11.33..13.87,
         on the far side of U3's own NON-isolated row (x 11.28). The isolated
@@ -610,6 +615,62 @@ detail belongs in design docs, not here.
         to the left edge beside U3's isolated pins. Which one is chosen sets
         the keepout shape in 12.5.z, so decide these two together.
         REFERRED TO USER.
+  - [ ] 12.5.ac **(BLOCKING, electrical) ISOLATION CREEPAGE FAILS at 3.49 mm
+        against a 7.5 mm requirement.** [9] Table 6 (verified 2026-08-17 in
+        `docs/datasheets/analog-devices-adm2582e-adm2587e-datasheet.pdf` p.5)
+        specifies **7.5 mm minimum external air gap (clearance) AND 7.5 mm
+        creepage, measured input terminals to output terminals**, with
+        footnote 2: "Consideration must be given to pad layout to ensure the
+        minimum required distance for clearance is maintained." Measured on
+        the 2026-08-17 placement, closest isolated-to-non-isolated pads on a
+        shared layer, different parts:
+          U4.11 (isolated) <-> U2.10  **3.49 mm**
+          U4.11 (isolated) <-> U2.9     3.97 mm
+          U4.11 (isolated) <-> U1.1     4.58 mm
+        The board therefore undercuts the transceiver's own 5 kV rating --
+        the barrier is only as good as its weakest external gap. U1 (MCU) and
+        U2 (OPTIGA) need to move about 4 mm further from U4's isolated row,
+        or the transceivers need to move. PLACEMENT CALL. REFERRED TO USER.
+  - [ ] 12.5.ad **(High, EMC) The ADM2582E's recommended L1/L2 ferrites are
+        absent from the design.** [9] "PCB Layout and Electromagnetic
+        Interference (EMI)" (p.17) instructs: "filter both the GND2 pins
+        (Pin 11 and Pin 14) and VISOOUT signals of the integrated dc-to-dc
+        converter for high frequency currents. Use surface-mount ferrite
+        beads in series with the signals before routing back to the device",
+        impedance ~2 kOhm over 100 MHz-1 GHz, to suppress the 180 MHz
+        primary and 360 MHz secondary switching harmonics; Figure 35 is the
+        recommended layout. The board carries **no ferrites at all** --
+        reference designators present are only J, U, R, Q, C, SH. This is a
+        schematic/BOM gap, not a layout one, and it matters directly to the
+        Faraday EMI tier. Note the ADM3055E (CAN, [10] p.25) states the
+        opposite for itself: "Neither PCB stitching capacitance nor high
+        voltage surface-mounted technology (SMT) safety capacitors are
+        required" -- so this applies to the RS-485 part, U4.
+  - [ ] 12.5.ae **(Medium) The isolation keepout is not datasheet-driven and
+        should be replaced, not relocated.** The existing rule area is a
+        full-width, 4-layer no-copper-pour rectangle. [9] p.17 asks for the
+        **opposite** on a 4-layer board: "place an embedded stitching
+        capacitor between GND1 and GND2 using internal layers of the PCB
+        planes. An embedded PCB capacitor is created when two metal planes in
+        a PCB overlap each other and are separated by dielectric material.
+        This capacitor provides a return path for high frequency common-mode
+        noise currents across the isolation gap." The **only** keepout [9]
+        specifies is narrow and conditional: "there must not be a GND2 fill
+        on any layer below the L1 and L2 ferrites" -- i.e. a keepout of the
+        ISOLATED ground fill around ferrites this design does not yet have
+        (12.5.ad). So the full-width cut removes the plane overlap AD wants,
+        while the constraint that actually binds is creepage (12.5.ac).
+        Two options, both needing sign-off:
+        (a) delete the rule area and rely on creepage + the stitching-
+            capacitor plane overlap, per [9];
+        (b) keep a cut but shrink it to the U3/U4 package bodies between the
+            pin rows, and drop F.Cu from its layer set -- F.Cu is the far
+            face, 1.6 mm of FR4 from the B.Cu isolated pads, and it is the
+            layer VM must cross to get from the top-end pack to the
+            mid-board FETs.
+        Either way the current rectangle must go: it sits at y 50.60..59.30,
+        on top of the phase terminals, where it blocks all three phase pours
+        (12.5.z) and protects nothing.
   - [ ] 12.5.ab **(High, electrical) Two constraints regressed in the
         re-placement.** Measured before -> after:
         **shunt to sense amp 1.2/2.6/2.6 mm -> 28.0/22.0/28.0 mm** (millivolt
