@@ -40,6 +40,31 @@ Pad geometry below is a drafting choice sized for hand-soldering 26-30 AWG
 wire, NOT a value from any standard or datasheet. No IPC land-pattern rule
 governs a bare wire pad.
 
+THE 1.27 mm PROBE VARIANT (added 2026-08-17)
+---------------------------------------------
+`SolderPad_1x04_SMD_P1.27mm_Probe` exists for J1 (SWD) only, and it is a
+different kind of pad: a PROBE target, not a wire pad. J1 is the one connector
+on this board where that trade is safe, for the reason already given above --
+"For J1 (SWD) this is fine -- it is a bring-up/debug interface, not a flight
+connection." A debug probe lands on it during bring-up and nothing is soldered
+to it in service.
+
+1.27 mm is chosen because it is the pitch standard pogo-pin debug jigs use, so
+an off-the-shelf 4-pin inline fixture fits. Staying single-row keeps that
+fixture trivial; a 2x2 grid would be ~2.5 mm^2 smaller but needs a custom one.
+
+    2.54 mm wire variant   9.22 x 3.20 mm copper, 36.0 mm^2 with courtyard
+    1.27 mm probe variant  4.71 x 1.80 mm copper, 12.0 mm^2 with courtyard
+
+Pad-to-pad gap is 1.27 - 0.90 = 0.37 mm, comfortable for any fab. The pads
+remain hand-solderable with 30 AWG, just less forgiving. J2/J3 deliberately
+KEEP the 2.54 mm wire variant: they leave the board in service and their
+solder area is load-bearing in a way J1's is not (TODO.md 12.5.k).
+
+Rejected for J1: Tag-Connect TC2030, which looks like the compact answer but
+needs three through-board alignment holes. On a double-sided board those cost
+their area twice, making it a net loss here.
+
 Usage:
     python3 symbols/tools/gen_smd_solder_pad_footprints.py
 """
@@ -51,17 +76,17 @@ import uuid
 from pathlib import Path
 
 # Drafting choices, not sourced values.
-PAD_W = 1.60           # across the strip
-PAD_H = 3.20           # along the wire, long enough to hand-solder
-PITCH = 2.54           # matches the header pitch it replaces, so a pogo jig
-                       # or an existing cable pinout still lines up
 SILK_W = 0.12
 CRTYD_W = 0.05
 CRTYD_CLR = 0.25
 
+# name -> (pad count, pad width, pad height, pitch) in mm.
+#   2.54 mm variants: wire pads, sized for hand-soldering 26-30 AWG.
+#   1.27 mm variant:  probe target for J1 (SWD) -- see the docstring.
 VARIANTS = {
-    "SolderPad_1x02_SMD_P2.54mm": 2,
-    "SolderPad_1x04_SMD_P2.54mm": 4,
+    "SolderPad_1x02_SMD_P2.54mm": (2, 1.60, 3.20, 2.54),
+    "SolderPad_1x04_SMD_P2.54mm": (4, 1.60, 3.20, 2.54),
+    "SolderPad_1x04_SMD_P1.27mm_Probe": (4, 0.90, 1.80, 1.27),
 }
 
 DESCR_TMPL = (
@@ -74,27 +99,41 @@ DESCR_TMPL = (
     "Connector: Solder PAD'."
 )
 
+PROBE_DESCR_TMPL = (
+    "SMD PROBE-TARGET pad strip, {n} pads, {pitch} mm pitch, {pw} x {ph} mm "
+    "pads -- a debug-probe landing pattern, NOT a wire-solder pad. For J1 "
+    "(SWD) only: a bring-up/debug interface, not a flight connection, so it "
+    "trades solder area for board area. {pitch} mm is the pitch standard "
+    "pogo-pin debug jigs use, and the strip stays single-row so an "
+    "off-the-shelf inline fixture fits. Pad geometry is an ENGINEERING "
+    "DEFAULT (AGENTS.md Sec.4), not a datasheet or IPC value. Do NOT use for "
+    "J2/J3, which leave the board in service -- see "
+    "symbols/tools/gen_smd_solder_pad_footprints.py."
+)
+
 
 def u() -> str:
     """Fresh UUID for a footprint element."""
     return str(uuid.uuid4())
 
 
-def build(name: str, n: int) -> str:
-    """Emit one .kicad_mod for an n-pad solder strip."""
+def build(name: str, n: int, pad_w: float, pad_h: float,
+          pitch: float) -> str:
+    """Emit one .kicad_mod for an n-pad strip of the given geometry."""
     L: list[str] = []
     add = L.append
-    span = (n - 1) * PITCH
-    half_w = span / 2 + PAD_W / 2
-    half_h = PAD_H / 2
+    span = (n - 1) * pitch
+    half_w = span / 2 + pad_w / 2
+    half_h = pad_h / 2
 
     add(f'(footprint "{name}"')
     add("\t(version 20241229)")
     add('\t(generator "gen_smd_solder_pad_footprints.py")')
     add('\t(generator_version "9.0")')
     add('\t(layer "F.Cu")')
-    add(f'\t(descr "{DESCR_TMPL.format(n=n, pitch=PITCH, pw=PAD_W, ph=PAD_H)}")')
-    add(f'\t(tags "solder pad SMD wire connector 1x{n:02d} {PITCH}mm")')
+    tmpl = PROBE_DESCR_TMPL if "Probe" in name else DESCR_TMPL
+    add(f'\t(descr "{tmpl.format(n=n, pitch=pitch, pw=pad_w, ph=pad_h)}")')
+    add(f'\t(tags "solder pad SMD wire connector 1x{n:02d} {pitch}mm")')
     add("\t(attr smd)")
 
     add('\t(property "Reference" "J**"')
@@ -128,17 +167,17 @@ def build(name: str, n: int) -> str:
             )
     # Pin-1 marker outside the courtyard.
     add(
-        f"\t(fp_circle (center {-(cx + 0.4):.4f} {-half_h + PAD_H / 2:.4f}) "
-        f"(end {-(cx + 0.4) + 0.15:.4f} {-half_h + PAD_H / 2:.4f}) "
+        f"\t(fp_circle (center {-(cx + 0.4):.4f} {-half_h + pad_h / 2:.4f}) "
+        f"(end {-(cx + 0.4) + 0.15:.4f} {-half_h + pad_h / 2:.4f}) "
         f'(stroke (width {SILK_W}) (type solid)) (fill solid) '
         f'(layer "F.SilkS") (uuid "{u()}"))'
     )
 
     for i in range(n):
-        x = -span / 2 + i * PITCH
+        x = -span / 2 + i * pitch
         add(f'\t(pad "{i + 1}" smd roundrect')
         add(f"\t\t(at {x:.4f} 0)")
-        add(f"\t\t(size {PAD_W:.4f} {PAD_H:.4f})")
+        add(f"\t\t(size {pad_w:.4f} {pad_h:.4f})")
         add('\t\t(layers "F.Cu" "F.Paste" "F.Mask")')
         add("\t\t(roundrect_rratio 0.125)")
         add(f'\t\t(uuid "{u()}")')
@@ -154,9 +193,12 @@ def main() -> None:
     repo = Path(__file__).resolve().parents[2]
     out = repo / "symbols" / "footprints" / "Open_Secure_ESC.pretty"
     out.mkdir(parents=True, exist_ok=True)
-    for name, n in VARIANTS.items():
-        (out / f"{name}.kicad_mod").write_text(build(name, n), encoding="utf-8")
-        print(f"wrote {name}.kicad_mod  ({n} pads)")
+    for name, (n, pw, ph, pitch) in VARIANTS.items():
+        (out / f"{name}.kicad_mod").write_text(
+            build(name, n, pw, ph, pitch), encoding="utf-8")
+        span = (n - 1) * pitch + pw
+        print(f"wrote {name}.kicad_mod  ({n} pads, {pitch} mm pitch, "
+              f"{span:.2f} x {ph:.2f} mm copper)")
 
 
 if __name__ == "__main__":
