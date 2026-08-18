@@ -631,8 +631,60 @@ detail belongs in design docs, not here.
         the barrier is only as good as its weakest external gap. U1 (MCU) and
         U2 (OPTIGA) need to move about 4 mm further from U4's isolated row,
         or the transceivers need to move. PLACEMENT CALL. REFERRED TO USER.
-  - [ ] 12.5.ad **(High, EMC) The ADM2582E's recommended L1/L2 ferrites are
-        absent from the design.** [9] "PCB Layout and Electromagnetic
+  - [x] 12.5.ad **DONE 2026-08-17 -- isolated-supply ferrites fitted, and
+        they turned out to be fixing a BROKEN SUPPLY, not adding EMC polish.**
+        Reading [9] p.8 and [10] p.15 pin tables showed the isolated side of
+        both transceivers was simply unwired: `CAN_VISOOUT` reached only
+        U3.19, `CAN_VISOIN_OPEN` only U3.16, `RS485_VISOOUT` only U4.12,
+        `RS485_VISOIN_OPEN` only U4.19 -- all dangling. Both datasheets
+        require VISOOUT to feed VISOIN ([10]: "Connect this pin through a
+        ferrite bead and short the PCB trace to VISOIN **for operation**";
+        [9]: "This pin must be connected externally to VISOIN"). It did not,
+        so neither bus side had a supply at all. Both also had their isolated
+        grounds MERGED where the datasheets require a ferrite split, and [9]'s
+        pin-16 entry says outright "Ground, Bus Side. **Do not connect this
+        pin to Pin 14 and Pin 11**" -- the pre-existing net merged exactly
+        those pins.
+        Fitted four Murata BLM15HD182SN1D [53] (1800 Ohm @100 MHz / 2700 Ohm
+        @1 GHz, meeting [9] p.17's "approximately 2 kOhm between the 100 MHz
+        and 1 GHz frequency range"; the part [10] Table 12 names by number for
+        this role). `tools/add_isolated_supply_ferrites.py` (schematic) and
+        `tools/add_ferrites_to_pcb.py` (PCB). Resulting topology:
+          FB1  CAN_VISOOUT(U3.19)   -- CAN_VISOIN(U3.16)
+          FB2  CAN_GNDISO(U3.18,20) -- CAN_ISO_GND(U3.11,12,15)
+          FB3  RS485_VISOOUT(U4.12) -- RS485_VISOIN(U4.19)
+          FB4  RS485_GNDISO(U4.11,14) -- RS485_ISO_GND(U4.16,20)
+        **ERC 0 errors** (was 0, but `CAN_VISOOUT`/`RS485_VISOOUT` dangling
+        warnings are now gone); **DRC 0 electrical violations.** Current
+        rating checked, not assumed: [53] rates 200 mA / 2.2 Ohm max DCR, and
+        the beads carry only isolated-side transceiver current -- [9] Table 14
+        confirms the ADM2582E has "no current available externally on
+        VISOOUT". Correction recorded: an earlier note in this file claimed
+        the ADM3055E did not want ferrites. It does ([10] p.25, "filter both
+        the VISOOUT power supply pin and GNDISO power supply return pin ...
+        Use surface-mount ferrite beads in series"); what [10] says is NOT
+        required is stitching capacitance and HV safety capacitors.
+  - [ ] 12.5.af **(BLOCKING, placement) The isolated section has no room for
+        its own support components.** The four beads are on the board with
+        correct nets but are PARKED at x 19.4..24.9, y 24.5..28.6 -- the only
+        free back-side pocket -- 9.3 to 16.9 mm from the pins they serve,
+        against [10] p.15's "short the PCB trace to VISOIN". There is nowhere
+        closer: U3's isolated pin row is at x 11.28 and U4's at x 14.45,
+        facing each other across 3.17 mm, with the two courtyards (U3 to
+        12.59, U4 from 13.14) leaving a 0.55 mm channel. Everything else
+        adjacent is J2/J3 above and U1/U2 below.
+        Worse, the datasheets also require **eight capacitors** this board
+        does not have: [10] wants 0.22 uF + 10 uF on VISOOUT to GNDISO and
+        0.01 uF + 0.1 uF on VISOIN; [9] wants 10 uF + 0.1 uF on VISOOUT and
+        0.1 uF + 0.01 uF between pins 19 and 20 -- and [9] fixes their
+        position relative to the beads ("the C1 capacitor connects between
+        VISOOUT (Pin 12) and GND2 (Pin 11) on the device side of the L1 and L2
+        ferrites"). Twelve parts total need a channel along both isolated pin
+        rows. This compounds 12.5.ac (creepage 3.49 mm vs 7.5 mm required),
+        which also wants U1/U2 moved away from U4. Both are solved by the same
+        move. REFERRED TO USER.
+  - [x] 12.5.ad-orig **(was High, EMC) The ADM2582E's recommended L1/L2
+        ferrites are absent from the design.** [9] "PCB Layout and Electromagnetic
         Interference (EMI)" (p.17) instructs: "filter both the GND2 pins
         (Pin 11 and Pin 14) and VISOOUT signals of the integrated dc-to-dc
         converter for high frequency currents. Use surface-mount ferrite

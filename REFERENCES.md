@@ -1785,4 +1785,34 @@ As with [19]/[30], the cover has **no land pattern** because nothing about it
 is soldered — it clips onto the frame [51]. It is carried in the BOM and
 marked "exclude from board".
 
+**[53]** Murata Manufacturing Co., Ltd., *GHz Noise Suppression Chip Ferrite
+Bead for Consumer equipment & Industrial equipment — BLM15H□□□□SN1□ Reference
+Specification*, spec no. JENF243A_0024Q-01, Kyoto, Japan.
+Local verified copy: `docs/datasheets/ENFA0024.pdf` — read directly
+2026-08-17.
+Product page: https://www.murata.com/en-global/products/productdetail?partno=BLM15HD182SN1D
+Sections applied — §3 "Part Number and Rating" (BLM15HD182SN1D row): impedance
+1800 Ω ±25 % at 100 MHz and 2700 Ω ±40 % at 1 GHz, rated current 200 mA, DC
+resistance 2.2 Ω max initial / 2.3 Ω max after testing, remark "For high speed
+signal line"; operating and storage temperature −55 °C to +125 °C. §5
+"Appearance and Dimensions": 1.0 ± 0.05 mm × 0.5 ± 0.05 mm × 0.5 ± 0.05 mm,
+electrode band 0.25 ± 0.1 mm, unit mass 0.001 g typical, no polarity, no
+marking; equivalent circuit is L in series with R, "Resistance element becomes
+dominant at high frequencies". §7.1 impedance measured per Keysight 4291A at
+100 MHz / 1 GHz.
+Used for: the four isolated-supply filter beads on `U3` (ADM3055E, CAN) and
+`U4` (ADM2582E, RS-485) — see [10] p. 25 "Radiated Emissions and PCB Layout"
+and its Table 12, which names **BLM15HD182SN1** by part number as an example
+bead for exactly this role, and [9] p. 17, which specifies "approximately
+2 kΩ between the 100 MHz and 1 GHz frequency range". The 1800 Ω / 2700 Ω
+figures above satisfy that requirement across the band.
+Land pattern: **not authored** — this part uses KiCad 9's stock
+`Inductor_SMD:L_0402_1005Metric`, an IPC-7351-nominal 1005-metric land
+(pads 0.59 × 0.64 mm on a 0.97 mm centre pitch), verified against §5's body
+and electrode dimensions rather than assumed.
+**Verification caveat (AGENTS.md §3):** `ENFA0024.pdf` is headed "Reference
+Only" and is Murata's *reference* specification, not a delivery/product
+specification. Every value above is read directly from it, but the delivery
+spec must be obtained and re-checked before production release.
+
 Track resolution of these items in `TODO.md`.

@@ -55,6 +55,7 @@ Open-Secure-ESC/
 | --- | --- |
 | `README.md` | Per-component pin-map status, the footprint table, and the workflow for adding a part. |
 | `specs/<PART>.json` | The citable pin spec. **Source of truth** — symbols are generated from it, never hand-edited. |
+| `BLM15HD182SN1D.kicad_sym` + `specs/BLM15HD182SN1D.json` | Murata 0402 chip ferrite bead, REFERENCES.md [53]. The four isolated-supply filter beads on `U3`/`U4`. Uses KiCad's stock `Inductor_SMD:L_0402_1005Metric` land — no hand-authored footprint. |
 | `<PART>.kicad_sym` | Generated symbol, one component per file. |
 | `Open_Secure_ESC_Generic.kicad_sym` | Generic R / C / C_Polarized / Conn_01x02-04 / PWR_FLAG authored by `genlib.py`. This repo's own parts, **not** KiCad's `Device:`/`Connector_Generic:`/`power:` symbols — the pin geometry differs. |
 | `footprints/Open_Secure_ESC.pretty/` | Land patterns for packages KiCad 9.0 does not ship: OPTIGA `PG-USON-10-2,-4`, TI `DGS0028A`, TI `RTA0040B` (DRV8353S), Würth `WE-SHC 3670375` frame. |
@@ -96,6 +97,11 @@ Generators and checkers. Re-run these rather than hand-editing the generated
 | `add_power_connectors.py` | Adds the battery input (J5) and moves both power connectors off 2.54 mm headers. |
 | `set_netclasses.py` | Writes the Power / Sense / Isolated net classes into the project file. |
 | `autoroute.py` | FreeRouting round trip: DSN export → route → SES import → re-pour → report. |
+| `add_isolated_supply_ferrites.py` | Schematic side of the isolated-supply fix: splits the merged isolated grounds, closes the dangling VISOOUT→VISOIN path, adds FB1–FB4 and two PWR_FLAGs. |
+| `add_ferrites_to_pcb.py` | PCB side of the same change: re-nets the U3/U4 pads and places FB1–FB4. Placement is parked, not solved — see TODO.md 12.5.af. |
+| `fix_after_replacement.py` | Mechanical repairs after the 2026-08-17 front/back re-placement: J4A↔J4C swap, edge overhangs, stale routing, stale pours. |
+| `strip_high_current_tracks.py` | Deletes autorouter tracks on VM/PH_* so a 3 mm "power"-class trace cannot stand in for 50 A copper. |
+| `add_vm_top_pour.py` | Pours VM on F.Cu across the power-stage band and measures the resulting neck. |
 | `snap_to_grid.py` | **Refuses to run without `--force`.** Documents why a global grid snap shorts this sheet. |
 | `check_shorts.py` | Finds collinear overlapping wire segments on different nets — a short KiCad's ERC reads as one net. |
 | `trace_nets.py` | Net tracing helper. |

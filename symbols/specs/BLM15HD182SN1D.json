@@ -1,0 +1,13 @@
+{
+  "name": "BLM15HD182SN1D",
+  "reference": "FB",
+  "footprint": "Inductor_SMD:L_0402_1005Metric",
+  "datasheet": "docs/datasheets/ENFA0024.pdf",
+  "description": "Murata BLM15HD182SN1D GHz-noise-suppression chip ferrite bead, 0402 (1005 metric). Filters the isoPower isolated supply and return of the ADM3055E (U3, CAN) and ADM2582E (U4, RS-485), per those parts' own layout requirements. Named explicitly in ADM3055E [10] Table 12 as an example bead for this role.",
+  "citation": "[9], [10], [53]",
+  "verification": "VERIFIED from the local copy of [53] (Murata reference specification JENF243A_0024Q-01, marked 'Reference Only'). Section 3 'Part Number and Rating': impedance 1800 Ohm +/-25% at 100 MHz, 2700 Ohm +/-40% at 1 GHz, rated current 200 mA, DC resistance 2.2 Ohm max initial / 2.3 Ohm max after testing, 'For high speed signal line'; operating and storage temperature -55 C to +125 C. Section 5 'Appearance and Dimensions': 1.0 +/-0.05 mm x 0.5 +/-0.05 mm x 0.5 +/-0.05 mm, electrode band 0.25 +/-0.1 mm, unit mass 0.001 g typical, no polarity, equivalent circuit L in series with R (resistance dominant at high frequency), no marking. Pinout is the generic 2-terminal chip pinout (package-defined, not part-specific). NOTE: [53] is Murata's REFERENCE specification, not a full product specification -- confirm against the delivery spec before production.",
+  "pins": [
+    {"num": "1", "name": "~", "etype": "passive", "side": "left"},
+    {"num": "2", "name": "~", "etype": "passive", "side": "right"}
+  ]
+}
