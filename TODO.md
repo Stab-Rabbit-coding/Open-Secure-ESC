@@ -839,6 +839,38 @@ detail belongs in design docs, not here.
         Rejected: Tag-Connect TC2030 — its three through-board alignment holes
         cost their area on both sides, a net loss here. J2/J3 keep the 2.54 mm
         wire variant (12.5.k).
+  - [x] 12.5.ai **50 A RATING VALIDATED against the load it actually drives**
+        (2026-08-18). The airframe this build feeds — Serenity-UAV — turns
+        four XFly Galaxy X5 50 mm 12-blade 6S EDFs, two per nacelle, each
+        with its own ESC. Manufacturer figures [55]: **38 A draw, 843 W,
+        1240 g thrust, recommended ESC 50 A**, with the note "The controller
+        should be chosen 20% over rated due to the long lasting load."
+        38 A x 1.20 = 45.6 A, so **50 A is the manufacturer's own answer and
+        this build matches it at 1.32x the draw.** 843 W / 22.2 V = 38.0 A
+        confirms the figures are self-consistent. Four fans draw 152 A / 3372 W
+        from the pack in total.
+        This closes a spread that looked alarming: the Serenity archive
+        `docs-superseded/POWER_SYSTEM_Q.md` carries 55 A peak (L241) and
+        84 A peak / 55 A continuous (L248) for these fans, recommending 60 A
+        and 120 A ESCs. Those are superseded and do not match the fan's own
+        published 38 A. Every figure sized in this repo against 50 A — the
+        TPHR8504PL choice, the 0.5 mOhm shunts, the 7.5 mm phase pours, the
+        2 oz copper floor — stands.
+  - [ ] 12.5.aj **(Medium, cross-repo) Serenity-UAV's own ESC line is
+        under-spec and still names a different part.** `airframe/README.md`
+        L57 and `TODO.md` L546 specify **40 A BLHeli32** ESCs for these fans.
+        Against [55] that is 40/38 = **1.05x the draw**, well under the
+        manufacturer's own 20% margin rule, where this build's 50 A gives
+        1.32x. Two further notes for that repo, found while checking:
+        (a) the BOM specifies **BLHeli32**, whose control path is DShot —
+        replacing those units with Open-Secure-ESC moves command onto CAN-FD
+        or RS-485, and DShot is not on this project's protocol axis at all;
+        (b) `airframe/README.md` L57 budgets "battery + PDB + ESCs" at ~500 g
+        while its own §4.3 puts the two batteries alone at 1,180 g;
+        (c) [55] gives the EDF unit mass as **75 g**, not the 70 g in
+        `bom_revS.json` — 4 x 75 = 300 g, not 280 g, which bears on the
+        EDF-mass discrepancy already open in that repo's
+        `SPEC_VERIFICATION_0.6.1.md`. Raise upstream; not actionable here.
   - [ ] 12.5.u **(Medium) Silkscreen cleanup, deferred by the repo owner
         until after routing** ("silkscreen can wait till after routing",
         2026-08-16). Routing has now run, so this is unblocked. Outstanding:

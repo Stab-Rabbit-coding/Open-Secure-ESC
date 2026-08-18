@@ -1840,4 +1840,24 @@ Obtain from https://www.ti.com/ (product folder for MSPM0G3507, "Technical
 documentation") and re-cite by number and section before the lock policy is
 implemented.
 
+**[55]** XFly-Model, *EDF Ducted Fan XFly Galaxy X5 — 50 mm, 12 blades, 6S
+motor 3200 KV*, product specification page.
+URL: https://www.xfly-model.eu/en/edf-units/4833-edf-ducted-fan-xfly-galaxy-x5-xfly-model-50mm-12-blades-6s-motor-3200kv.html
+— read 2026-08-18.
+Figures as printed: thrust **1240 g**; current **38 A**; power **843 W**;
+battery **6S (22.2 V)**, 2200 mAh recommended; motor 3200 KV out-runner,
+26 mm diameter, 3 mm shaft; 12 blades; 50 mm class; weight **75 g**.
+**Recommended ESC: 50 A**, with the manufacturer's note "The controller
+should be chosen 20% over rated due to the long lasting load."
+Internal consistency check: 843 W / 22.2 V = 38.0 A, matching the printed
+current exactly.
+Used for: validating this repository's 50 A build rating (TODO.md 12.5.ai).
+38 A x 1.20 = 45.6 A required, so 50 A is the manufacturer's own answer and
+this build matches it at 1.32x the draw.
+**Verification caveat (AGENTS.md §3):** this is a distributor/manufacturer
+product page, not a datasheet PDF. No local copy exists in
+`docs/datasheets/`. Obtain a manufacturer datasheet and re-verify before
+production release; in particular the page states a single "current" figure
+without distinguishing continuous from peak.
+
 Track resolution of these items in `TODO.md`.
