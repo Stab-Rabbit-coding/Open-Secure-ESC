@@ -615,8 +615,48 @@ detail belongs in design docs, not here.
         to the left edge beside U3's isolated pins. Which one is chosen sets
         the keepout shape in 12.5.z, so decide these two together.
         REFERRED TO USER.
-  - [ ] 12.5.ac **(BLOCKING, electrical) ISOLATION CREEPAGE FAILS at 3.49 mm
-        against a 7.5 mm requirement.** [9] Table 6 (verified 2026-08-17 in
+  - [ ] 12.5.ac **(BLOCKING, electrical) ISOLATION CREEPAGE — the constraint
+        set is over-determined; growing the board is necessary but NOT
+        sufficient.** Repo owner's decision 2026-08-18: **do not weaken the
+        isolation.** Reason recorded verbatim, because it should not be
+        silently revisited — "the whole reason for isolation and an emi shield
+        is that this board is designed to survive harsh emi environments,
+        which is also why it has redundant control paths. so weakening its
+        design isn't the correct course." The IEC 60664-1 route (deriving a
+        smaller creepage from a lower system working voltage) is therefore
+        CLOSED. 7.5 mm per [9] Table 6 stands.
+        **Arithmetic established 2026-08-18, U1 half:** with U3/U4 rotated so
+        both isolated rows face the board edges (x 1.98 and x 23.75), the
+        7.5 mm exclusions leave only x 9.48..16.25 = 6.77 mm of legal
+        non-isolated width, and U1 is 13.45 mm wide -- so U1 cannot sit
+        beside the isolated section at any x and must clear it in y. Centred,
+        U1's top must reach y >= 27.63 (binding pad U3.11 at (1.98, 21.32),
+        dx 4.04), a 4.76 mm move down; SH1 cannot absorb it because it is
+        locked under the FETs. Rounded to 4.80 mm, the board goes
+        60.20 -> 65.00 mm. `tools/grow_board_for_creepage.py` implements this.
+        **NOT APPLIED, because it does not finish the job.** Running it and
+        re-measuring showed creepage still fails, now against the PACK
+        TERMINALS rather than U1:
+            J2.1  <-> J5A.1   4.35 mm
+            J3.2  <-> J5B.1   4.83 mm
+            U3.20 <-> J5A.1   6.35 mm
+            U4.11 <-> J5B.1   6.36 mm
+        The 50 A pack input and the isolated comms section both live at the
+        top of the board, overlapping in x (J5A spans x 0.73..9.28; U3's
+        isolated group must live at x ~2). They can only separate in y, and
+        J5A's bottom edge at y 8.62 would push the isolated section down to
+        y >= 16.12 -- about 7 mm, on top of U1's 4.8 mm. That is ~72 mm of
+        board, past the original 70 mm target.
+        **This is an architecture question, not a length question:** the pack
+        input and the isolated section cannot share the top end. Options:
+        (a) pack terminals move to the bottom beside the phase terminals --
+        VM then runs the board length, ~1.9 W at 50 A across the In2 plane at
+        full width, which is tolerable; (b) the isolated section moves to the
+        bottom -- gives up the same-end wiring convenience that motivated the
+        current arrangement; (c) accept ~72 mm of board length. REFERRED TO
+        USER.
+  - [x] 12.5.ac-orig **(was BLOCKING) creepage measured 3.49 mm against a
+        7.5 mm requirement.** [9] Table 6 (verified 2026-08-17 in
         `docs/datasheets/analog-devices-adm2582e-adm2587e-datasheet.pdf` p.5)
         specifies **7.5 mm minimum external air gap (clearance) AND 7.5 mm
         creepage, measured input terminals to output terminals**, with
