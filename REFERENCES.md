@@ -1815,4 +1815,29 @@ Only" and is Murata's *reference* specification, not a delivery/product
 specification. Every value above is read directly from it, but the delivery
 spec must be obtained and re-checked before production release.
 
+**[54]** Texas Instruments Incorporated, *MSPM0 G-Series 80MHz
+Microcontrollers Technical Reference Manual*.
+**NOT YET OBTAINED — `UNVERIFIED` per AGENTS.md §3.** No local copy exists in
+`docs/datasheets/`, and no document number is quoted here because the
+MSPM0G3507 datasheet [1] refers to it only by title (e.g. p. 73 §8.32, "see
+the debug chapter of the technical reference manual"), never by number.
+Guessing a SLAU number would be a fabricated citation.
+Needed for: the permanent debug/write lock in TODO.md 12.5.ag. [1] establishes
+that the mechanism exists and where its configuration lives, but defers every
+register-level detail to this manual.
+What [1] DOES verify locally (read 2026-08-18 from
+`docs/datasheets/mspm0g3507.pdf`):
+- §8.32 "Serial Wire Debug Interface", p. 73 — SWD is a two-wire Arm SW-DP;
+  full debug functionality is described only in the TRM.
+- §8.33 "Bootstrap Loader (BSL)", p. 73 — "Access to the device memory and
+  configuration through the BSL is protected by a 256-bit user-defined
+  password, and **it is possible to completely disable the BSL in the device
+  configuration, if desired**. The BSL is enabled by default from TI."
+- §7 memory map — the NONMAIN configuration NVM occupies
+  0x41C0.0000–0x41C0.0200 (512 bytes), separate from main flash. This is the
+  region that holds boot/debug configuration.
+Obtain from https://www.ti.com/ (product folder for MSPM0G3507, "Technical
+documentation") and re-cite by number and section before the lock policy is
+implemented.
+
 Track resolution of these items in `TODO.md`.

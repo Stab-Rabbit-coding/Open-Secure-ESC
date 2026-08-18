@@ -761,6 +761,44 @@ detail belongs in design docs, not here.
         38.2 V -- under 5% margin. Gate loops also stretched to 3.8-13.9 mm
         (Q3 worst) from U5 sitting directly under the array. All three are
         placement calls. REFERRED TO USER.
+  - [ ] 12.5.ag **(High, security) Permanent write/debug lock — use the MCU's
+        internal capability, NOT a board-level fuse** (repo owner's decision,
+        2026-08-18). The board keeps a plain 4-pad SWD probe pattern at J1
+        (12.5.ah); **no fusible link, solder-bridge or series fuse is added**.
+        Rationale: a board-level fusible link is re-bridgeable by anyone who
+        can solder, so it provides tamper-evidence rather than a seal. The
+        MSPM0G3507's own one-time configuration is the only irreversible
+        option, and it costs no board area.
+        **Verified locally from [1]** (`docs/datasheets/mspm0g3507.pdf`, read
+        2026-08-18): §8.33 p.73 — "Access to the device memory and
+        configuration through the BSL is protected by a 256-bit user-defined
+        password, and it is possible to completely disable the BSL in the
+        device configuration, if desired. The BSL is enabled by default from
+        TI." §7 memory map — the NONMAIN configuration NVM sits at
+        0x41C0.0000–0x41C0.0200 (512 bytes), separate from main flash, and is
+        where boot/debug configuration lives.
+        **NOT verified locally, and required before implementation:** the
+        register-level debug-disable mechanism. [1] §8.32 p.73 defers it
+        entirely — "For a complete description of the debug functionality
+        offered on MSPM0 devices, see the debug chapter of the technical
+        reference manual." That manual is [54] and **is not in
+        `docs/datasheets/`**. Obtain it, then specify: which NONMAIN field
+        sets the debug policy, whether the permanent state is genuinely
+        one-way, the interaction with the 256-bit BSL password, and the
+        production sequence (program → verify → seal), since sealing before a
+        verified image is unrecoverable.
+        Note the ordering constraint against 12.5.b/12.5.q: the lock must be
+        the LAST production step, after the IDRIVE bench measurement and any
+        firmware trim, or the board is bricked for tuning.
+  - [x] 12.5.ah **J1 shrunk to a 1.27 mm probe pattern** (2026-08-17),
+        `SolderPad_1x04_SMD_P1.27mm_Probe`: 9.22 x 3.20 mm / 36.0 mm^2 ->
+        4.71 x 1.80 mm / 12.0 mm^2. J1 is SWD only (SWDIO/SWCLK to U1.12/13
+        plus 3V3 and GND) and is a bring-up interface, not a flight
+        connection, so it does not need J2/J3's wire-solder pad area. 1.27 mm
+        is the standard pogo-jig pitch; single-row keeps the fixture trivial.
+        Rejected: Tag-Connect TC2030 — its three through-board alignment holes
+        cost their area on both sides, a net loss here. J2/J3 keep the 2.54 mm
+        wire variant (12.5.k).
   - [ ] 12.5.u **(Medium) Silkscreen cleanup, deferred by the repo owner
         until after routing** ("silkscreen can wait till after routing",
         2026-08-16). Routing has now run, so this is unblocked. Outstanding:
