@@ -664,7 +664,33 @@ detail belongs in design docs, not here.
         the VISOOUT power supply pin and GNDISO power supply return pin ...
         Use surface-mount ferrite beads in series"); what [10] says is NOT
         required is stitching capacitance and HV safety capacitors.
-  - [ ] 12.5.af **(BLOCKING, placement) The isolated section has no room for
+  - [~] 12.5.af **(placement, WITH THE REPO OWNER) The isolated section's
+        twelve support parts are on the board and PARKED OFF-BOARD for hand
+        placement** (2026-08-17, at the repo owner's request). All twelve now
+        exist and are netted: FB1-FB4 [53] in a staging column at x = 32 mm,
+        C11-C18 at x = 40 mm, both outside the 25.45 mm board outline.
+        **ERC 0 errors, DRC 0 electrical violations.** Capacitor values and
+        pin pairings are quoted, not chosen: [10] p.15 pin 19 "requires
+        0.22uF and 10uF capacitors to GNDISO" and pin 16 "requires 0.01uF and
+        0.1uF decoupling capacitors"; [9] p.17 "0.1 uF and 10 uF for VISOOUT
+        at Pin 11 and Pin 12 ... 0.01 uF and 0.1 uF ... for VISOIN at Pin 19
+        and Pin 20". Package (0805) and voltage rating are AGENTS.md Sec.4
+        engineering defaults matching C2..C10; no MPN is claimed for the
+        capacitors -- none has been selected.
+        **When placing, the two isolated grounds are NOT interchangeable:**
+        the VISOOUT reservoirs return to the dc-to-dc converter ground
+        (CAN_GNDISO / RS485_GNDISO), the VISOIN decouplers to the bus-side
+        ground (CAN_ISO_GND / RS485_ISO_GND), and the beads bridge the two.
+        Constraints to honour: [10] p.15 "short the PCB trace to VISOIN";
+        [9] p.17 "total lead length between both ends of the capacitor and
+        the input power supply pin should not exceed 10 mm"; and [9]'s
+        ordering "the C1 capacitor connects between VISOOUT (Pin 12) and GND2
+        (Pin 11) on the device side of the L1 and L2 ferrites".
+        Still needs room: U3's isolated pin row is at x 11.28 and U4's at
+        x 14.45, 3.17 mm apart with a 0.55 mm channel between courtyards,
+        J2/J3 above and U1/U2 below. The same move also fixes 12.5.ac
+        (creepage 3.49 mm against 7.5 mm required).
+  - [x] 12.5.af-orig **(was BLOCKING) The isolated section had no room for
         its own support components.** The four beads are on the board with
         correct nets but are PARKED at x 19.4..24.9, y 24.5..28.6 -- the only
         free back-side pocket -- 9.3 to 16.9 mm from the pins they serve,
