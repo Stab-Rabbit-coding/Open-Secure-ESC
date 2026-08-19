@@ -896,6 +896,27 @@ detail belongs in design docs, not here.
         `bom_revS.json` — 4 x 75 = 300 g, not 280 g, which bears on the
         EDF-mass discrepancy already open in that repo's
         `SPEC_VERIFICATION_0.6.1.md`. Raise upstream; not actionable here.
+  - [x] 12.5.ak **Two isolation placement rules encoded as harness checks**
+        (2026-08-19, repo owner's direction: "commit these details to the
+        harness for all future boards"). Both now pass/fail in
+        `tools/score_placement.py`, and written up in
+        `docs/solutions/architecture-patterns/isolation-geometry-sets-board-aspect.md`
+        because the harness is build-local and the doc is what reaches a
+        future board:
+        (a) **an isolating IC's pin rows must run ACROSS the board's long
+        axis**, so its isolated side faces a short edge. Isolated copper near
+        a long edge poisons that edge for the board's whole length on both
+        faces; rotating the transceivers 90 deg moved the nearest isolated
+        copper from 0.72-0.82 mm off the side edges to ~2.94 mm and relaxed
+        the required opposite-inset from 5.08 mm to 2.96 mm.
+        (b) **pack terminals must not share a copper layer with the isolated
+        section.** A through-hole terminal spans every layer and always makes
+        an in-plane creepage pair; SMD on the opposite face leaves only the
+        longer around-edge path -- worth 2.80 -> 4.64 mm on its own.
+        Both regression-tested by deliberate violation: (a) reports
+        "PARALLEL, rotate 90" per IC, (b) names the offending refs. Neither is
+        scored -- a violation is an arrangement that cannot be nudged into
+        compliance.
   - [ ] 12.5.u **(Medium) Silkscreen cleanup, deferred by the repo owner
         until after routing** ("silkscreen can wait till after routing",
         2026-08-16). Routing has now run, so this is unblocked. Outstanding:
@@ -1030,6 +1051,15 @@ grounding already exists and is the whole point of the skill:
 | `docs/decision-matrix.json` | 7 axes | the parameter space itself |
 | `builds/…/kicad/tools/*.py` | 24 scripts | the build steps, currently build-local |
 
+- [ ] 14.0 **(High) Promote `score_placement.py` to repo-level `tools/`.**
+      It is the measurement harness all the placement work runs on: creepage
+      (edge-to-edge, including the around-the-edge path for opposite-face
+      pairs), isolated lead length against [9]'s 10 mm, gate and commutation
+      loops, DRC electrical count, grid/row/column regularity, and the two
+      pass/fail isolation rules from 12.5.ak. It is generic apart from a
+      handful of named nets and part refs at the top, which 14.2's build
+      descriptor would supply. Every future build needs it BEFORE placement
+      starts, not after — that is the whole lesson of 12.5.ac.
 - [ ] 14.1 **Separate the generic build scripts from the build-specific ones.**
       The 24 scripts under `builds/6s/50A/CAN_485_faraday/kicad/tools/` are the
       raw material. Triage each into: **generic** (works for any build given
