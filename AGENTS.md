@@ -81,6 +81,24 @@ cited requirement or standard — not preference or convention. If a decision
 is a judgment call with no governing standard, say so explicitly rather than
 implying one exists.
 
+### 4.1 Prior decisions are already written down — read them first
+
+`docs/solutions/` holds documented learnings from earlier work: the reasoning
+behind decisions already made, the traps already hit, and the calculations
+already derived. Files carry YAML frontmatter (`problem_type`, `module`,
+`component`, `applies_when`, `tags`), so grepping `applies_when:` or `tags:`
+finds the relevant one without reading the tree.
+
+Consulting it is the cheapest step in any task that touches a documented area
+— it is written precisely so a decision is not re-derived from scratch, and so
+a trap is not hit twice. Runnable calculations that came out of those
+learnings live in `docs/tools/` (for example `conductor_sizing.py` for copper
+cross-section and `isolation_envelope.py` for the board width an isolation
+requirement forces).
+
+New learnings are added there as work produces them, so the store is expected
+to grow rather than stay fixed.
+
 ## 5. Review Checklist (apply before merging any change)
 
 - [ ] Every new technical claim traces to an authoritative source
@@ -89,3 +107,4 @@ implying one exists.
       accessed, or an explicit note on why a field is unverifiable
 - [ ] No invented document IDs, revisions, page numbers, or electrical values
 - [ ] Any gap is marked `UNVERIFIED` and logged in `TODO.md`, not guessed
+- [ ] Anything learned the hard way is written to `docs/solutions/` (§4.1)

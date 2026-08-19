@@ -979,3 +979,105 @@ detail belongs in design docs, not here.
         symbol, or the OPTIGA Trust M silently disconnects.
   - [ ] 13.1.h Update `docs/security-mcu-comparison.md` — its S32K144-vs-
         alternatives argument is the document this decision overturns.
+
+---
+
+## 14. Repo-Resident ESC Build Skill (planned — not yet started)
+
+**Goal.** One invocable skill that walks an agent from a chosen point on the
+decision matrix to a fabrication-ready build, grounded in artifacts this repo
+already holds rather than prose re-derived each session. The matrix admits
+5 × 7 × 2 × 4 × 11 × 3 × 4 = **36,960 combinations**, so the skill must be
+parameterised; enumerating builds is not an option.
+
+**Why now.** `builds/6s/50A/CAN_485_faraday` was taken from netless PCB to
+placed, poured and part-routed across many sessions. Roughly two thirds of
+that effort was rediscovery — traps, calculations and datasheet topology that
+are now written down but are not yet *reachable* from a cold start. The
+grounding already exists and is the whole point of the skill:
+
+| Artifact | Count | What it grounds |
+| --- | --- | --- |
+| `docs/solutions/` | 2 docs | traps and decisions already paid for |
+| `docs/tools/*.py` | 4 calculations | conductor sizing, isolation envelope, matrix export, sheet authoring |
+| `symbols/specs/*.json` | 17 | citable pin maps, source of truth for symbols |
+| `REFERENCES.md` | 55 entries | every value that may be asserted |
+| `docs/decision-matrix.json` | 7 axes | the parameter space itself |
+| `builds/…/kicad/tools/*.py` | 24 scripts | the build steps, currently build-local |
+
+- [ ] 14.1 **Separate the generic build scripts from the build-specific ones.**
+      The 24 scripts under `builds/6s/50A/CAN_485_faraday/kicad/tools/` are the
+      raw material. Triage each into: **generic** (works for any build given
+      parameters — `autoroute.py`, `set_netclasses.py`, `check_shorts.py`,
+      `strip_high_current_tracks.py`, `snap_to_grid.py`, `trace_nets.py`),
+      **generic-after-parameterisation** (`build_pcb.py`,
+      `finish_annotate_and_footprints.py`, `add_power_connectors.py`,
+      `add_vm_top_pour.py`, `fix_after_replacement.py`), and **one-off**
+      (`swap_s32k144_for_mspm0g3518.py`, `respin_30x70_schematic.py`,
+      `inject_optiga_secure_element.py` — history, not tooling). Promote the
+      first two classes to `tools/` at repo root; leave the one-offs where they
+      are. **Verification:** every promoted script runs against the existing
+      build and produces byte-identical output apart from UUIDs.
+- [ ] 14.2 **Give the skill a machine-readable build descriptor.** One JSON
+      per build — the seven axis choices plus envelope (width, length, layer
+      count, copper weight) and the mount constraint. `decision_matrix_to_json.py`
+      already exports the axes; this is the per-build selection against them.
+      The descriptor is what every promoted script takes instead of module-level
+      constants. **Verification:** a descriptor reconstructed from
+      `builds/6s/50A/CAN_485_faraday` reproduces its current net classes,
+      keepout and pour geometry.
+- [ ] 14.3 **Make the pre-placement calculations gate the build, not follow
+      it.** `docs/tools/isolation_envelope.py` and `conductor_sizing.py` must
+      run from the descriptor *before* placement and their results recorded in
+      the build README — that is the specific failure this whole exercise came
+      from (§12.5.ac). Add the missing third calculation: **component stack
+      height against the mount envelope**, which the nacelle annulus
+      (4.00–11.65 mm radial, 185.2 mm long) made binding on this build and
+      which nothing currently checks. **Verification:** running the gate
+      against the 25.4 mm envelope reports the creepage failure that cost this
+      build several re-placements.
+- [ ] 14.4 **Encode the datasheet-derived support topology as data, not
+      prose.** Each isolator, gate driver and sense amp brings required support
+      components with datasheet-fixed values, pin pairings and ordering — the
+      ADM2582E/ADM3055E ferrite-and-reservoir topology (§12.5.ad) is the worked
+      example, and it existed only because the pin tables were read line by
+      line. Extend `symbols/specs/<PART>.json` with a `support_topology` block
+      carrying required parts, values, which pins they bridge, and the
+      REFERENCES tag and section each came from. **Verification:** generating
+      U3/U4's support network from the spec reproduces FB1–FB4 and C11–C18 with
+      their current nets exactly.
+- [ ] 14.5 **Author the skill itself.** `SKILL.md` at repo root under the
+      project's skill convention, whose body is mostly *pointers*: read the
+      descriptor, run the §14.3 gates, consult `docs/solutions/` by
+      `applies_when`, generate from `symbols/specs/`, cite from
+      `REFERENCES.md`, then run the promoted scripts in order. It must assert
+      no electrical value of its own — every number comes from a cited
+      artifact, per `AGENTS.md` §1.3. **Verification:** a cold agent given only
+      the skill and a descriptor reaches ERC-clean on a new build without
+      re-deriving anything already in the repo.
+- [ ] 14.6 **Capture the remaining learnings first — the skill is only as good
+      as what it points at.** Three are known and uncaptured; each is a
+      separate `ce-compound` run: (a) **datasheet-derived support topology** —
+      reading a pin table found an isolated supply that was never wired and
+      grounds merged in the way the datasheet explicitly forbids; (b) **KiCad
+      scripting traps** — threshold-on-an-exact-edge (a part failed its own
+      test at 22879999 nm vs 22880000 nm), courtyard-vs-bounding-box,
+      through-hole parts blocking both sides, zones stretching instead of
+      translating; (c) **rating validation against the actual load** — the
+      manufacturer's own page resolved a 40/50/55/84/120 A spread in minutes
+      (§12.5.ai). This item gates 14.5, not 14.1–14.4.
+- [ ] 14.7 **(Low) Re-point the existing workflow doc.**
+      `docs/solutions/architecture-patterns/esc-build-instantiation-workflow.md`
+      treats placement as the starting point; it should defer to the §14.3
+      gates first. Candidate for `ce-compound-refresh`.
+
+**Sequencing.** 14.6 → 14.1 → 14.2 → 14.3 → 14.4 → 14.5, with 14.7 any time.
+14.1–14.4 are independent of each other once 14.2's descriptor shape is fixed.
+
+**Scope boundary.** The skill builds *supported* matrix options only. New axis
+options (a protocol the repo has never carried, an amperage tier with no
+verified FET) remain manual work that ends in a new `REFERENCES.md` entry —
+the skill must refuse rather than extrapolate, per `AGENTS.md` §1.3.
+
+**Deferred.** Firmware generation, gerber/CPL emission, and BOM sourcing are
+out of scope; the skill stops at a DRC-clean routed board.
