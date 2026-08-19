@@ -68,6 +68,7 @@ HERE = Path(__file__).resolve().parent
 PCB = HERE.parent / "open_secure_esc_6s_50a_can485_faraday.kicad_pcb"
 
 CREEPAGE_REQ_MM = 7.5      # [9] Table 6
+BOARD_T_MM = 1.6           # F.Cu-to-B.Cu, for the around-the-edge path
 ISO_LEAD_MAX_MM = 10.0     # [9] p.17
 TOL_MM = 0.02              # coordinates within this are "the same" row/column
 
@@ -145,13 +146,47 @@ def split_isolated(all_pads):
     return iso, non
 
 
-def nearest(a, group):
-    """Closest member of `group` to pad `a`, or None."""
+def edge_path(a, c, box):
+    """Creepage between conductors on OPPOSITE faces, around the board edge.
+
+    Two pads that share no copper layer still have a creepage path: over the
+    nearest board edge and down the other face. For a rectangular outline the
+    shortest such path is, for each of the four edges, this pad's inset plus
+    the board thickness plus the other pad's inset -- minimised over edges.
+
+    Without this, a design that moves a conductor to the opposite face looks
+    like it has infinite creepage when it may have three millimetres.
+    """
+    x0, x1, y0, y1 = box
+    best = None
+    for i, (ai, ci) in enumerate((
+            (a[6][0] - x0, c[6][0] - x0),      # left edge
+            (x1 - a[6][1], x1 - c[6][1]),      # right edge
+            (a[6][2] - y0, c[6][2] - y0),      # top edge
+            (y1 - a[6][3], y1 - c[6][3]))):    # bottom edge
+        p = max(0.0, ai) + BOARD_T_MM + max(0.0, ci)
+        if best is None or p < best:
+            best = p
+    return best
+
+
+def nearest(a, group, box=None):
+    """Closest member of `group` to pad `a`, or None.
+
+    Same-layer pairs use the in-plane edge-to-edge gap. Pairs sharing no
+    layer use the around-the-edge path when `box` is supplied; without it
+    they are skipped, which is the pre-2026-08-19 behaviour.
+    """
     best = None
     for c in group:
-        if c[0] == a[0] or not (a[4] & c[4]):
+        if c[0] == a[0]:
             continue
-        d = gap(a, c)
+        if a[4] & c[4]:
+            d = gap(a, c)
+        elif box is not None:
+            d = edge_path(a, c, box)
+        else:
+            continue
         if best is None or d < best[0]:
             best = (d, c)
     return best
@@ -246,8 +281,13 @@ def main() -> int:
     ap_ = pads(board, ox, oy)
     iso, non = split_isolated(ap_)
 
-    creep = min((nearest(x, non)[0] for x in iso
-                 if nearest(x, non) is not None), default=999.0)
+    ob = pcbnew.SHAPE_POLY_SET()
+    board.GetBoardPolygonOutlines(ob)
+    obb = ob.BBox()
+    box = (pcbnew.ToMM(obb.GetLeft() - ox), pcbnew.ToMM(obb.GetRight() - ox),
+           pcbnew.ToMM(obb.GetTop() - oy), pcbnew.ToMM(obb.GetBottom() - oy))
+    creep = min((nearest(x, non, box)[0] for x in iso
+                 if nearest(x, non, box) is not None), default=999.0)
     iso_lead, iso_who = net_pairs(ap_, ISO_SUPPORT, ISO_PARTS)
     gate, gate_who = net_pairs(ap_, {f"Q{n}" for n in range(1, 7)}, {"U5"})
     comm, comm_who = net_pairs(ap_, {"Q1", "Q3", "Q5"}, {"C1"})
