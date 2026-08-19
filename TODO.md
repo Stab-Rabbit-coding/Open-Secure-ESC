@@ -917,6 +917,23 @@ detail belongs in design docs, not here.
         "PARALLEL, rotate 90" per IC, (b) names the offending refs. Neither is
         scored -- a violation is an arrangement that cannot be nudged into
         compliance.
+  - [ ] 12.5.al **(High, before fab) Creepage passes at 7.51 mm but that is a
+        CEILING, not a margin.** The binding pair is now structural and
+        in-plane: **U3.20 (CAN_GNDISO) <-> U4.10 (GND) at 7.51 mm**, diagonally
+        across the 1.97 mm channel between the two packages. It cannot be
+        improved by nudging -- only by separating the two transceivers, and
+        they already span x 3.08..29.11 of a 30.90 mm usable width.
+        Worse, the two constraints now oppose each other. Moving the ICs
+        further apart improves that in-plane pair but shortens the
+        around-the-edge paths (the next binders sit at 7.58-7.83 mm), so 32 mm
+        width sits at roughly the balance point. **The board passes by 0.01 mm
+        and cannot do better at this width.**
+        0.01 mm is not a manufacturing margin -- it is a coincidence, smaller
+        than fab registration tolerance and fifty times smaller than the
+        0.5 mm grid the placement is otherwise snapped to. Any later move,
+        including a routine grid snap, breaks it. Estimate ~2 mm of additional
+        width (1 mm per side) to reach a defensible ~8.5 mm. REFERRED TO USER:
+        accept the ceiling and freeze placement, or widen to 34 mm.
   - [ ] 12.5.u **(Medium) Silkscreen cleanup, deferred by the repo owner
         until after routing** ("silkscreen can wait till after routing",
         2026-08-16). Routing has now run, so this is unblocked. Outstanding:
