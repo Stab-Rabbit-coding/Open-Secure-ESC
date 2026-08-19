@@ -615,9 +615,34 @@ detail belongs in design docs, not here.
         to the left edge beside U3's isolated pins. Which one is chosen sets
         the keepout shape in 12.5.z, so decide these two together.
         REFERRED TO USER.
-  - [ ] 12.5.ac **(BLOCKING, electrical) ISOLATION CREEPAGE — the constraint
-        set is over-determined; growing the board is necessary but NOT
-        sufficient.** Repo owner's decision 2026-08-18: **do not weaken the
+  - [~] 12.5.ac **(electrical) ISOLATION CREEPAGE — board widened to 32 mm
+        2026-08-19; the U1 half is CLOSED, the pack-versus-comms half is not.**
+        `tools/widen_board_to_32mm.py` took the board **25.40 -> 32.00 mm**
+        (length unchanged at 60.10). U1 is centred and U4 re-anchored to the
+        new right edge. **U1's closest approach to an isolated conductor went
+        4.27 mm -> 9.50 mm** (U3.11 <-> U1.48), clearing the 7.5 mm
+        requirement with 2.0 mm spare.
+        The power stage did not move and did not need to: SH1 is a Wurth
+        WE-SHC 3670209 [51] with a fixed 22.2 mm land that must sit under the
+        FETs, so the FET columns are capped at the shield width however wide
+        the board gets. Every added millimetre went to the isolated section
+        and U1 — which is what needed it.
+        **STILL OPEN — the pack terminals and the isolated comms share the top
+        end:**
+            J2.1  <-> J5A.1   4.35 mm
+            J3.2  <-> J5B.1   4.83 mm
+            U3.20 <-> J5A.1   6.35 mm
+        Widening cannot fix this: J5A spans x 1.10..8.10 and J5B x 17.60..24.60,
+        overlapping in x with where both isolated groups must live, so they can
+        only separate in Y. The options remain as recorded below — (a) pack
+        terminals to the bottom beside the phase terminals, (b) isolated
+        section to the bottom, (c) accept the added length. REFERRED TO USER.
+        **Also outstanding from this move:** U1's new centred position overlaps
+        J1 and several of the parked isolated capacitors (58 electrical DRC
+        violations). Those parts were already outside [9]'s 10 mm lead-length
+        limit and were always going to be re-placed — 12.5.af.
+  - [x] 12.5.ac-orig **(was BLOCKING) the constraint set was over-determined
+        at 25.4 mm width.** Repo owner's decision 2026-08-18: **do not weaken the
         isolation.** Reason recorded verbatim, because it should not be
         silently revisited — "the whole reason for isolation and an emi shield
         is that this board is designed to survive harsh emi environments,
