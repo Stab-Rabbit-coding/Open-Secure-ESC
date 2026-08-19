@@ -109,6 +109,7 @@ Generators and checkers. Re-run these rather than hand-editing the generated
 | `score_placement.py` | Measures placement: creepage, isolated-lead length, gate/commutation loops, grid regularity, and the two isolated-interface rules. Counts DRC violations **and** unconnected items — they live in separate kicad-cli arrays. |
 | `fix_u5_thermal_vias.py` | Resizes U5's 12 GND thermal vias to the board's own Default net class via (0.6/0.3 mm). Checks FET drain clearance first. |
 | `fix_starved_thermals.py` | Gives 11 single-spoke GND pads a solid zone connection. `--skip-passives` reverts the five 0805 parts if the board is hand-soldered. |
+| `prep_for_assembly.py` | Flags bare solder pads out of the BOM/position files, fixes footprint attributes, and adds fiducials for SMT optical alignment. |
 | `close_edge_orphans.py` | Extends the phase-terminal rule area past the board edge so pour cannot form orphan strips in the gap below it. |
 | `remove_vm_island.py` | Excludes the floating 4.3 mm² VM pocket trapped inside U5's thermal-via ring on In2.Cu. |
 | `tidy_silkscreen.py` | Moves colliding reference designators off pads, nearest-first. Driven by kicad-cli's DRC report, re-verified each round; reports what it cannot place rather than hiding it. |

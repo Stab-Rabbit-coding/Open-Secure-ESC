@@ -1008,7 +1008,13 @@ detail belongs in design docs, not here.
         effectiveness is set by the impedance of the ground bond — SH1 bonded
         through one narrow spoke is mostly inductance. Same repo precedent as
         `add_vm_top_pour.py`.
-        **Assembly trade, repo owner's call:** solid pads sink heat during
+        **DECIDED 2026-08-19 — repo owner specified professional reflow
+        assembly (JLCPCB or equivalent), so all 16 pads KEEP their solid
+        connections and `--skip-passives` is NOT to be used on this build.**
+        A controlled reflow profile handles a solid 0805 GND bond; the relief
+        was only ever worth it to protect hand-soldering and rework. The
+        original trade is kept below for the record.
+        **Assembly trade, as it stood before that decision:** solid pads sink heat during
         reflow. The 9 IC/shield pads (SH1 x4, U5.25, U6.1/.2, U8.1/.2) are
         low risk. The 5 two-terminal 0805 passives (**C7 C9 C10 R5 R10**) are
         the tombstoning-asymmetry case — 0805 is far more forgiving than
@@ -1055,6 +1061,32 @@ detail belongs in design docs, not here.
         polygons 18 -> 14. The three phase strips were never a problem (each
         connects through its own J4 pad), confirming the correction already
         recorded in 12.5.an.
+  - [~] 12.5.au **Assembly prep for professional reflow (JLCPCB or
+        equivalent), 2026-08-19. `tools/prep_for_assembly.py`.**
+        Three defects found and fixed:
+        (a) **J1, J2 and J3 would have reached the placement machine.** They
+        are bare wire/probe landing pads, like J4A/B/C and J5A/B — but unlike
+        those they were NOT flagged `exclude from BOM` / `exclude from
+        position files`, so they would have appeared as parts to buy and
+        place. Now flagged to match.
+        (b) J5A/J5B carried no SMD/THT attribute (leftover from
+        `convert_j5_to_smd.py`, which changed the pads but not the attribute).
+        Set to SMD.
+        (c) **No fiducials existed, on either side, on a DOUBLE-sided
+        assembly** (18 footprints F.Cu, 41 B.Cu) carrying a 0.5 mm pitch
+        WQFN-40 and a 0.5 mm pitch LQFP-64. Added 3 per side, non-collinear so
+        rotation is resolvable, at corner sites with a 2.2 mm clear radius;
+        excluded from BOM and position files. DRC unchanged at 17 warnings.
+        **OPEN — needs a verified source before ordering (AGENTS.md §3):**
+        the fiducial size/count/placement policy of JLCPCB has NOT been read
+        from a JLCPCB capability document. 3 × 1 mm copper with 2 mm mask
+        opening is ordinary industry practice, not a sourced requirement.
+        Check it and record it in REFERENCES.md with a validated URL.
+        **Also open for the fab order:** `docs/tools/conductor_sizing.py`
+        argues 2 oz copper minimum for the 50 A phase pours; the fab order
+        must specify that explicitly, and 4-layer 2 oz is a non-default
+        stackup option that needs confirming with the house.
+
   - [ ] 12.5.at **(Low) Two `isolated_copper` warnings remain, unexplained.**
         kicad-cli reports one on `Zone [VM] on In2.Cu` and one on
         `Zone [GND] on In2.Cu`, but neither zone fills as more than one
@@ -1124,14 +1156,27 @@ detail belongs in design docs, not here.
         added to `fix_starved_thermals.py` — the starvation belongs to the
         POSITION, not the part, so all three sense amps are now listed.
 
-  - [ ] 12.5.w **(Medium) Finish routing.** FreeRouting (2.2.4, 100 passes,
-        15 min 26 s) took the board 124 -> 56 unrouted, 381 segments, 48 vias.
-        After stripping its 29 VM tracks (12.5.s) and adding the VM pour, the
-        board stands at **352 segments, 48 vias, 57 open**. Of those: 3 phase
-        nets to terminals (BLOCKED on 12.5.t), 3 phase-to-U5 sense, 4 VM
-        bottom-side taps, 9 GND stitches, 38 ordinary signal nets. Re-run with
-        more passes or finish by hand -- but re-run
-        `tools/strip_high_current_tracks.py` afterwards every time.
+  - [ ] 12.5.w **(BLOCKER for fabrication) The board is NOT ROUTED. This
+        entry previously overstated the state and is corrected here.**
+        It claimed "352 segments, 48 vias, 57 open" from the FreeRouting run.
+        Measured 2026-08-19, the board carries **0 track segments, 2 vias and
+        157 unconnected items.**
+        Traced through history: commit `15eeaa4` ("Route the signal nets")
+        did have 352 segments and 49 vias. The very next commit, `8f4791a`
+        ("Repair the front/back re-placement"), dropped it to 0 segments and
+        1 via — `fix_after_replacement.py` removed ALL routing, not only the
+        stale segments its message described. The board has been fully
+        unrouted since, through every session that followed, while this entry
+        kept describing the pre-repair state.
+        Nothing on this board can be fabricated or assembled until this is
+        done. Everything else recorded as "ready" — creepage, symmetry,
+        thermals, fiducials, assembly attributes — is necessary and none of it
+        is sufficient.
+        The 157 count is what the copper pours do NOT already connect. Re-run
+        FreeRouting or route by hand, then re-run
+        `tools/strip_high_current_tracks.py` every time, so a 3 mm signal-class
+        trace never stands in for 50 A copper (12.5.s).
+
   - [x] 12.5.x **DONE 2026-08-19 — U5's 12 thermal vias resized to the
         board's own via spec.** `tools/fix_u5_thermal_vias.py` took them from
         0.400 mm pad / 0.200 mm drill to **0.600 / 0.300**, which is exactly

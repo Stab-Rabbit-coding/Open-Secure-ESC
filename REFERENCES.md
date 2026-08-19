@@ -1556,6 +1556,35 @@ Date accessed: 2026-08-09.
 
 ## Pending Verification — Not Yet Cited
 
+### JLCPCB assembly and fabrication capabilities — REQUIRES VERIFICATION
+
+Added 2026-08-19 when the repo owner specified professional reflow assembly at
+JLCPCB or an equivalent house. **No JLCPCB capability document has been read.**
+The following are needed before the fab/assembly order and must each be
+recorded here with a validated URL to the issuing page:
+
+- **Fiducial policy** — whether global fiducials are required, and the
+  accepted size, count and clearance. `tools/prep_for_assembly.py` placed
+  3 per side at 1 mm copper / 2 mm mask opening as ordinary industry
+  practice, explicitly NOT as a sourced requirement.
+- **4-layer 2 oz copper availability and stackup** — `docs/tools/
+  conductor_sizing.py` argues 2 oz minimum for the 50 A phase pours. 2 oz on
+  a 4-layer board is a non-default option; confirm it is offered, on which
+  layers, and what it does to the minimum trace/space.
+- **Minimum trace/space, drill, and annular ring for the chosen tier**, to
+  check against this board's measured minimums (0.300 mm drill, 0.150 mm
+  annular ring on U5's thermal vias — the board's tightest features).
+- **Double-sided assembly** — this board places 18 footprints on F.Cu and 41
+  on B.Cu; confirm both-side SMT is supported and what it implies for cost
+  and for parts that must survive two reflow passes.
+- **Shield frame WE-SHC 3670209 (SH1, 22.8 × 17.1 mm)** — confirm whether the
+  house will place a part this size, or whether it must be consigned or
+  fitted by hand after assembly.
+
+Until each is verified, no claim of JLCPCB compliance may appear in this
+repository. See TODO.md 12.5.au.
+
+
 The following items are named in `README.md` but currently have **no**
 authoritative published specification and MUST NOT be cited as conforming
 to a standard until one is located and verified (see `AGENTS.md` §1.3):
