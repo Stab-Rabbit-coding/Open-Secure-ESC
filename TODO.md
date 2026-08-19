@@ -917,7 +917,7 @@ detail belongs in design docs, not here.
         "PARALLEL, rotate 90" per IC, (b) names the offending refs. Neither is
         scored -- a violation is an arrangement that cannot be nudged into
         compliance.
-  - [x] 12.5.al **CORRECTED AND RESOLVED — creepage is 7.98 mm with 0.48 mm
+  - [x] 12.5.al **CORRECTED AND RESOLVED — creepage is 7.83 mm with 0.33 mm
         of margin. The "ceiling" was a bug in the harness, not the board.**
         The original entry claimed 7.51 mm was structural and could only be
         improved by widening the board. That rested on `edge_path()` computing
@@ -928,15 +928,30 @@ detail belongs in design docs, not here.
         `sqrt(along_edge_sep^2 + (insetA + T + insetB)^2)`.
         With that fixed the FETs stop being binders at all — every
         around-edge pair sits at 7.98 mm or better — and the only real
-        constraint is the in-plane U3.20 <-> U4.10 pair. Spreading the two
-        transceiver groups +/-1.0 mm takes creepage **7.51 -> 7.98 mm, DRC 0,
-        isolated lead unchanged at 9.76 mm**. It plateaus there (C15 <-> J5B
-        takes over) and breaks DRC at +/-2.5.
-        **Two claims in the original entry were wrong and are withdrawn:**
+        constraint is the in-plane U3.20 <-> U4.10 pair, which spreading the
+        two transceiver groups relieves. The size of the safe step was itself
+        overstated on the first pass and is corrected here:
+
+        | spread   | creepage | DRC-el | unconnected |
+        |----------|----------|--------|-------------|
+        | +/-0.00  | 7.51     | 0      | 159 (base)  |
+        | +/-0.25  | 7.66     | 0      | 159         |
+        | +/-0.50  | 7.83     | 0      | 159 APPLIED |
+        | +/-0.75  | 7.98     | 0      | 160         |
+        | +/-1.00  | 7.98     | 0      | 161         |
+
+        **+/-0.5 mm is the largest spread that costs nothing**: creepage
+        7.51 -> 7.83 mm, isolated lead unchanged at 9.76 mm, no new broken
+        nets. +/-0.75 and +/-1.0 buy a further 0.15 mm by SEVERING GND
+        connections — refilling the pour around the moved parts fragments the
+        B.Cu GND pour, and two of the casualties are on U5, which never moved.
+        Revisit that extra 0.15 mm only with deliberate GND stitching.
+        **Three claims in the original entry were wrong and are withdrawn:**
         that the FET columns must stay within SH1's 22.20 mm land (they
         already overhang it — Q1/Q2 by 0.75 mm, Q5/Q6 by 2.75 mm, with 5.30
-        and 6.30 mm of inter-column slack), and that more board width was the
-        only lever. Neither survived being checked.
+        and 6.30 mm of inter-column slack); that more board width was the only
+        lever; and that +/-1.0 mm was clean, which held only because the
+        harness was not counting broken connections. None survived checking.
   - [ ] 12.5.u **(Medium) Silkscreen cleanup, deferred by the repo owner
         until after routing** ("silkscreen can wait till after routing",
         2026-08-16). Routing has now run, so this is unblocked. Outstanding:
