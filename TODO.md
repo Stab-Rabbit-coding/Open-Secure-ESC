@@ -952,20 +952,28 @@ detail belongs in design docs, not here.
         and 6.30 mm of inter-column slack); that more board width was the only
         lever; and that +/-1.0 mm was clean, which held only because the
         harness was not counting broken connections. None survived checking.
-  - [ ] 12.5.am **(High, before fab) NOT ONE of the 59 footprints on this
-        board carries a courtyard.** Checked 2026-08-19 while investigating a
-        reported keepout overlap: 0 of 59 have any F.CrtYd/B.CrtYd geometry.
-        KiCad's `courtyards_overlap` and `malformed_courtyard` rules therefore
-        **cannot fire on this board at all**, and every "0 courtyard
-        violations" result this project has recorded is vacuous — it means the
-        rule found nothing to test, not that parts do not collide. This board
-        is described as tightly packed and has had heavy manual placement
-        churn, which is exactly the condition courtyards exist to police.
-        `score_placement.py` measures pad-edge gaps, which is a partial
-        substitute for copper but says nothing about package bodies.
-        Fix: restore courtyards on the footprints (they are standard in the
-        KiCad libraries these were drawn from), then re-run DRC and treat the
-        first real courtyard numbers as new information.
+  - [x] 12.5.am **WITHDRAWN — the claim was false and the board is fine.**
+        This item asserted that none of the 59 footprints carried a courtyard
+        and that every courtyard-clean DRC result was therefore vacuous. Both
+        halves were wrong, and the cause was a one-line bug in the check, not
+        anything on the board.
+        The check tested `"CrtYd" in board.GetLayerName(layer)`. In KiCad 9
+        `GetLayerName()` returns the **display** name, which is
+        `"F.Courtyard"` / `"B.Courtyard"` — the canonical `F.CrtYd` string
+        never appears in it, so the test could not match and reported 0 of 59.
+        Verified three ways 2026-08-19: comparing `GetLayer()` against the
+        `pcbnew.F_CrtYd`/`B_CrtYd` layer IDs gives **59 of 59**; the raw
+        `.kicad_pcb` contains 306 `CrtYd` lines; and all 16 distinct source
+        footprints (11 KiCad system, 5 `Open_Secure_ESC.pretty`) carry
+        courtyards.
+        The DRC rules are live, not suppressed: `.kicad_pro` sets
+        `courtyards_overlap` = **error** and `malformed_courtyard` = **error**,
+        and both report zero. (`missing_courtyard`, `pth_inside_courtyard` and
+        `npth_inside_courtyard` are set to `ignore`, which is worth a
+        deliberate decision but is not what this item claimed.)
+        Lesson for future checks: compare layers by **ID**, never by
+        substring of a display name. `tools/restore_courtyards.py` was written
+        against this false premise and has been deleted.
   - [ ] 12.5.an **(Medium) The sole rule area clips the phase pours off their
         own terminals.** The board has exactly one rule area — board-local
         x 0.85..31.25, y 56.60..65.30, all four copper layers — and it
