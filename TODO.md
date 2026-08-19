@@ -1009,7 +1009,7 @@ detail belongs in design docs, not here.
         through one narrow spoke is mostly inductance. Same repo precedent as
         `add_vm_top_pour.py`.
         **DECIDED 2026-08-19 — repo owner specified professional reflow
-        assembly (JLCPCB or equivalent), so all 16 pads KEEP their solid
+        assembly, so all 16 pads KEEP their solid
         connections and `--skip-passives` is NOT to be used on this build.**
         A controlled reflow profile handles a solid 0805 GND bond; the relief
         was only ever worth it to protect hand-soldering and rework. The
@@ -1061,8 +1061,11 @@ detail belongs in design docs, not here.
         polygons 18 -> 14. The three phase strips were never a problem (each
         connects through its own J4 pad), confirming the correction already
         recorded in 12.5.an.
-  - [~] 12.5.au **Assembly prep for professional reflow (JLCPCB or
-        equivalent), 2026-08-19. `tools/prep_for_assembly.py`.**
+  - [~] 12.5.au **Assembly prep for professional reflow, 2026-08-19.
+        `tools/prep_for_assembly.py`. NO VENDOR CHOSEN** — the repo owner
+        specified "JLCPCB or another similar manufacturer", so this build
+        targets the capability envelope mainstream prototype-assembly houses
+        have in common, not any one vendor's spec.
         Three defects found and fixed:
         (a) **J1, J2 and J3 would have reached the placement machine.** They
         are bare wire/probe landing pads, like J4A/B/C and J5A/B — but unlike
@@ -1078,14 +1081,17 @@ detail belongs in design docs, not here.
         rotation is resolvable, at corner sites with a 2.2 mm clear radius;
         excluded from BOM and position files. DRC unchanged at 17 warnings.
         **OPEN — needs a verified source before ordering (AGENTS.md §3):**
-        the fiducial size/count/placement policy of JLCPCB has NOT been read
-        from a JLCPCB capability document. 3 × 1 mm copper with 2 mm mask
-        opening is ordinary industry practice, not a sourced requirement.
-        Check it and record it in REFERENCES.md with a validated URL.
+        no vendor capability document has been read, because no vendor has
+        been chosen. 3 × 1 mm copper with 2 mm mask opening is ordinary
+        industry practice, not a sourced requirement from any house. Once the
+        manufacturer is picked, check its published policy and record it in
+        REFERENCES.md with a validated URL.
         **Also open for the fab order:** `docs/tools/conductor_sizing.py`
-        argues 2 oz copper minimum for the 50 A phase pours; the fab order
-        must specify that explicitly, and 4-layer 2 oz is a non-default
-        stackup option that needs confirming with the house.
+        argues 2 oz copper minimum for the 50 A phase pours; the order must
+        specify that explicitly, and 4-layer 2 oz is a non-default stackup
+        that needs confirming with whichever house is chosen. REFERENCES.md
+        carries the board's tightest features as a table for checking against
+        any candidate vendor.
 
   - [ ] 12.5.at **(Low) Two `isolated_copper` warnings remain, unexplained.**
         kicad-cli reports one on `Zone [VM] on In2.Cu` and one on

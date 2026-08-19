@@ -1556,17 +1556,23 @@ Date accessed: 2026-08-09.
 
 ## Pending Verification — Not Yet Cited
 
-### JLCPCB assembly and fabrication capabilities — REQUIRES VERIFICATION
+### Assembly and fabrication capability envelope — REQUIRES VERIFICATION
 
 Added 2026-08-19 when the repo owner specified professional reflow assembly at
-JLCPCB or an equivalent house. **No JLCPCB capability document has been read.**
-The following are needed before the fab/assembly order and must each be
-recorded here with a validated URL to the issuing page:
+"JLCPCB or another similar manufacturer" — **no vendor has been chosen**, and
+no vendor capability document has been read.
+
+Because the house is not selected, this build should stay inside the envelope
+that mainstream prototype-assembly vendors have in common (JLCPCB, PCBWay,
+Aisler, Eurocircuits and similar) rather than being tuned to any one of them.
+The questions below must be answered against whichever house is finally used,
+and each answer recorded here with a validated URL to that vendor's own
+published capability page:
 
 - **Fiducial policy** — whether global fiducials are required, and the
   accepted size, count and clearance. `tools/prep_for_assembly.py` placed
   3 per side at 1 mm copper / 2 mm mask opening as ordinary industry
-  practice, explicitly NOT as a sourced requirement.
+  practice, explicitly NOT as a sourced requirement from any vendor.
 - **4-layer 2 oz copper availability and stackup** — `docs/tools/
   conductor_sizing.py` argues 2 oz minimum for the 50 A phase pours. 2 oz on
   a 4-layer board is a non-default option; confirm it is offered, on which
@@ -1579,10 +1585,31 @@ recorded here with a validated URL to the issuing page:
   and for parts that must survive two reflow passes.
 - **Shield frame WE-SHC 3670209 (SH1, 22.8 × 17.1 mm)** — confirm whether the
   house will place a part this size, or whether it must be consigned or
-  fitted by hand after assembly.
+  fitted by hand after assembly. This is the item most likely to differ
+  between vendors, so it is worth asking before choosing one.
+- **Part availability** — a vendor-stocked library (e.g. JLCPCB's) will not
+  carry every part here; anything not stocked must be consigned. That answer
+  differs per house and may drive the choice.
 
-Until each is verified, no claim of JLCPCB compliance may appear in this
-repository. See TODO.md 12.5.au.
+**This board's tightest features, for checking against any candidate vendor:**
+
+| Feature | This board | Where |
+|---|---|---|
+| Min drill | 0.300 mm | U5.41 thermal vias |
+| Min annular ring | 0.150 mm | U5.41 thermal vias |
+| Min pad pitch | 0.500 mm | U5 WQFN-40, U1 LQFP-64 |
+| Board outline | 32.00 × 66.10 mm, 4 layer, 1.6 mm | — |
+| Largest part | 22.8 × 17.1 mm | SH1 shield frame |
+| Assembly sides | both (18 F.Cu, 41 B.Cu) | — |
+| Copper weight sought | 2 oz | `docs/tools/conductor_sizing.py` |
+
+Trace and space are not listed because the board is **not yet routed**
+(TODO.md 12.5.w) — the routing that eventually lands will set them, and it
+should be routed to the common envelope, not to one vendor's floor.
+
+Until each item is verified against the chosen house, no claim of compliance
+with any specific manufacturer may appear in this repository. See
+TODO.md 12.5.au.
 
 
 The following items are named in `README.md` but currently have **no**

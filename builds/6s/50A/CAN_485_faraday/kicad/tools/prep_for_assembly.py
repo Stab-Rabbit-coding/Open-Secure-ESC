@@ -2,7 +2,15 @@
 """Make the board safe to hand to an SMT assembler.
 
 Governed by AGENTS.md. TODO.md 12.5.au. Written after the repo owner
-specified professional reflow assembly at JLCPCB or an equivalent house.
+specified professional reflow assembly at "JLCPCB or another similar
+manufacturer".
+
+NO VENDOR IS CHOSEN, and nothing here is tuned to one. Everything this script
+does is common to mainstream prototype-assembly houses: flagging non-parts out
+of the BOM and position files, giving every footprint a real attribute, and
+providing optical alignment targets. Where a genuine vendor policy is needed
+-- fiducial size and count being the obvious one -- this script says so rather
+than adopting a number from a particular house's page.
 
 WHAT REFLOW ASSEMBLY SETTLES, AND WHAT IT DOES NOT
 ---------------------------------------------------
@@ -48,13 +56,12 @@ rotation as well as translation, placed at the corner-most sites with a
 2.2 mm clear radius. Excluded from BOM and position files -- a fiducial is
 board artwork, not a part to place.
 
-**Unverified, and flagged as such per AGENTS.md Sec.3:** the specific
-fiducial policy of JLCPCB (whether they are required, and at what size and
-count) has NOT been read from a JLCPCB capability document. Three 1 mm
+**Unverified, and flagged as such per AGENTS.md Sec.3:** no vendor capability
+document has been read, because no vendor has been chosen. Three 1 mm
 fiducials with 2 mm mask openings is ordinary industry practice, and is what
-this places, but before the order goes out that policy should be checked and
-recorded in REFERENCES.md with a validated URL. Do not treat this script's
-choice as a sourced requirement.
+this places, but it is NOT a sourced requirement from any manufacturer. Once
+the house is picked, check its published policy and record it in
+REFERENCES.md with a validated URL.
 
 WHAT THIS SCRIPT DOES NOT TOUCH -- AND THE REAL BLOCKER
 --------------------------------------------------------
