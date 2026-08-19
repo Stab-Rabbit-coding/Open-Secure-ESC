@@ -952,6 +952,33 @@ detail belongs in design docs, not here.
         and 6.30 mm of inter-column slack); that more board width was the only
         lever; and that +/-1.0 mm was clean, which held only because the
         harness was not counting broken connections. None survived checking.
+  - [ ] 12.5.am **(High, before fab) NOT ONE of the 59 footprints on this
+        board carries a courtyard.** Checked 2026-08-19 while investigating a
+        reported keepout overlap: 0 of 59 have any F.CrtYd/B.CrtYd geometry.
+        KiCad's `courtyards_overlap` and `malformed_courtyard` rules therefore
+        **cannot fire on this board at all**, and every "0 courtyard
+        violations" result this project has recorded is vacuous — it means the
+        rule found nothing to test, not that parts do not collide. This board
+        is described as tightly packed and has had heavy manual placement
+        churn, which is exactly the condition courtyards exist to police.
+        `score_placement.py` measures pad-edge gaps, which is a partial
+        substitute for copper but says nothing about package bodies.
+        Fix: restore courtyards on the footprints (they are standard in the
+        KiCad libraries these were drawn from), then re-run DRC and treat the
+        first real courtyard numbers as new information.
+  - [ ] 12.5.an **(Medium) The sole rule area clips the phase pours off their
+        own terminals.** The board has exactly one rule area — board-local
+        x 0.85..31.25, y 56.60..65.30, all four copper layers — and it
+        prohibits `copperpour` only (tracks, vias, pads, footprints allowed).
+        Measured effect: PH_A/PH_B/PH_C fills all stop at y 56.60, while the
+        J4A/J4B/J4C terminal pads span y 55.60..65.60. The pour meets each pad
+        over only the first 1.00 mm of the pad's 10 mm length, and a detached
+        0.3 mm copper sliver is left stranded past y 65.30 — the source of the
+        2 standing `isolated_copper` violations. The pad itself is the
+        conductor over its own length so this is not necessarily a bottleneck,
+        but it was never a deliberate decision on record. Confirm the rule
+        area is intended, and clear the stranded slivers either way.
+
   - [ ] 12.5.u **(Medium) Silkscreen cleanup, deferred by the repo owner
         until after routing** ("silkscreen can wait till after routing",
         2026-08-16). Routing has now run, so this is unblocked. Outstanding:
