@@ -14771,7 +14771,7 @@
 		(layer "Edge.Cuts")
 		(uuid "c42eceb7-dfd0-4889-8f5c-354e65518d78")
 	)
-	(gr_text "Open Secure ESC\n50A 6S Shielded CAN + RS485\nGriffing Tech LLC \nCERN-OHL-P 2.0  2026\n"
+	(gr_text "Open Secure ESC\n50A 6S Shielded CAN + RS485\nGriffing Technology LLC \nCERN-OHL-P 2.0  2026\n"
 		(at 36.5 40 0)
 		(layer "F.SilkS")
 		(uuid "145ce28d-b6e3-4dbe-a9fb-1acc9c6d2102")

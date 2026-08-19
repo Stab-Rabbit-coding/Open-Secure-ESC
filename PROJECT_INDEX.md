@@ -102,6 +102,11 @@ Generators and checkers. Re-run these rather than hand-editing the generated
 | `fix_after_replacement.py` | Mechanical repairs after the 2026-08-17 front/back re-placement: J4A↔J4C swap, edge overhangs, stale routing, stale pours. |
 | `strip_high_current_tracks.py` | Deletes autorouter tracks on VM/PH_* so a 3 mm "power"-class trace cannot stand in for 50 A copper. |
 | `add_vm_top_pour.py` | Pours VM on F.Cu across the power-stage band and measures the resulting neck. |
+| `score_placement.py` | Measures placement: creepage, isolated-lead length, gate/commutation loops, grid regularity, and the two isolated-interface rules. Counts DRC violations **and** unconnected items — they live in separate kicad-cli arrays. |
+| `fix_u5_thermal_vias.py` | Resizes U5's 12 GND thermal vias to the board's own Default net class via (0.6/0.3 mm). Checks FET drain clearance first. |
+| `fix_starved_thermals.py` | Gives 11 single-spoke GND pads a solid zone connection. `--skip-passives` reverts the five 0805 parts if the board is hand-soldered. |
+| `remove_vm_island.py` | Excludes the floating 4.3 mm² VM pocket trapped inside U5's thermal-via ring on In2.Cu. |
+| `tidy_silkscreen.py` | Moves colliding reference designators off pads, nearest-first. Driven by kicad-cli's DRC report, re-verified each round; reports what it cannot place rather than hiding it. |
 | `snap_to_grid.py` | **Refuses to run without `--force`.** Documents why a global grid snap shorts this sheet. |
 | `check_shorts.py` | Finds collinear overlapping wire segments on different nets — a short KiCad's ERC reads as one net. |
 | `trace_nets.py` | Net tracing helper. |
