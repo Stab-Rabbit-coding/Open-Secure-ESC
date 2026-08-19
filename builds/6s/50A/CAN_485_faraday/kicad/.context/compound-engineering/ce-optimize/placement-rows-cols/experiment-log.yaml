@@ -48,8 +48,28 @@ experiments:
       distinct_cols: 26
       drc_electrical: 0
     learnings: "Took two corrections to land. C12 and C18 sat at rot 0/180 (2.90 mm wide) while every other part in those columns is at rot 90 (1.44 mm); moving them into the column at their original rotation pushed copper past the 0.55 mm edge window. Rotating to match the column fixed it. C12 then overlapped FB1's courtyard by 0.05 mm and needed 0.6 mm more clearance. Column membership is rotation plus position, not position alone."
+  - iteration: 4
+    hypothesis: "Snap every footprint to a 0.5 mm grid. A generator emits grid coordinates, so a board already on-grid is one a generator can reproduce, and near-shared coordinates collapse into true rows and columns."
+    category: parameter-tuning
+    outcome: kept
+    metrics:
+      grid_frac_0p5: 1.0
+      distinct_rows: 30
+      distinct_cols: 23
+      alignment_frac: 0.78
+      iso_lead_max_mm: 8.73
+      drc_electrical: 0
+    learnings: "13 footprints moved, largest 0.25 mm, and the snap alone collapsed 4 rows and 3 columns. Two courtyard collisions followed, both the same shape: FB4's 1.14 mm courtyard cannot fit the 1.10 mm gap between C17 and C18, so no nudge within the gap could work and C18 had to move to open it. When a part will not fit between two others, measure the COURTYARD gap, not the pad gap -- they differ by 0.5 mm here, which was the entire margin."
 best:
-  iteration: 3
+  iteration: 4
   creepage_min_mm: 3.98
-  iso_lead_max_mm: 8.49
+  iso_lead_max_mm: 8.73
   drc_electrical: 0
+  grid_frac_0p5: 1.0
+final:
+  summary: "402 -> 0 electrical DRC; grid 81.4% -> 100%; rows 34 -> 30; cols 28 -> 23; alignment 69.5% -> 78.0%; isolated lead 9.94 -> 8.73 mm; creepage 2.74 -> 3.98 mm, still short of 7.5."
+  constraints_held: true
+  remaining:
+    - "creepage_min_mm 3.98 against 7.5 required. J1 2.74, R7 3.98, U1 5.70, J5B 6.23, C4 6.40, R12 7.17 all sit inside an isolated exclusion zone. Structural, not alignment - TODO.md 12.5.ac."
+    - "gate_loop_max_mm 22.32 and commutation_max_mm 17.41 measured but untouched; power-stage placement was outside this run's scope."
+
