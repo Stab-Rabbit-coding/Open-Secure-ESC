@@ -1019,6 +1019,63 @@ detail belongs in design docs, not here.
         changed the pour around it enough to drop it from two spokes to one.
         Zone fills are coupled, so this class of fix is iterated to a fixed
         point. `starved_thermal` 11 -> 0.
+  - [x] 12.5.ap **DONE 2026-08-19 — rows and phase columns aligned.**
+        `tools/align_rows_columns.py`. Every target is a position the board
+        already used; a part >0.6 mm off its group is read as intent, not
+        slip, and left alone. Each move is applied, refilled, scored and
+        REVERTED unless DRC electrical stays 0, unconnected does not rise,
+        creepage does not fall, and gate/commutation loops do not grow.
+        **The majority row is not automatically the right row.** The first
+        version snapped outliers to whatever position most of the group
+        shared; on the high-side FETs that moved Q1 up to join Q3/Q5, pulling
+        it away from U5 and lengthening the worst gate loop 16.49 -> 16.74,
+        so the guard reverted it and the row stayed crooked. The right move
+        was the opposite — bring Q3/Q5 DOWN to Q1 — which aligns all six FETs
+        AND shortens the commutation loop 19.60 -> 19.40. The tool now scores
+        every distinct position a group occupies, not just the popular one.
+  - [x] 12.5.aq **DONE 2026-08-19 — board made left/right symmetric.**
+        `tools/symmetrize.py`. Centreline is **x = 16.000** from the true
+        outline polygon; `GetBoardEdgesBoundingBox()` says 32.100 because it
+        measures the outer edge of the 0.05 mm Edge.Cuts stroke, which would
+        have put the centreline at 16.050 and every pair 0.05 mm off-grid.
+        Both halves of a pair shift by the same delta, so separations set by
+        hand survive exactly and only the midpoint moves.
+        **Result: 12/12 mirror pairs symmetric, phase pitch 10.500/10.500,
+        phase B exactly on the centreline, 0 parts off the 0.5 mm grid in x.**
+        Two bugs caught in the tool before it ran: `group_x` used the mean, so
+        R2's deliberate +0.5 offset would have parked phase B at 15.900 and
+        called it centred (now median); and deltas were snapshotted up front,
+        so the "R2 alone" job would have used a stale number after phase B
+        moved (now recomputed per move).
+        **Symmetry and grid conflict unless a pair's separation is a whole
+        millimetre** — centring splits it in half, so 8.500 apart becomes
+        +/-4.250. Centring alone dropped grid adherence 83.1% -> 44.1%.
+        Fixed by rounding each half-separation to 0.5 mm, preferring the
+        SAFE direction: pack terminals went outward 8.500 -> 9.000 (more
+        pack+/pack- clearance, not less). "iso caps outer" outward pushed the
+        isolated lead to 10.03 mm, over the limit, so the guard took inward
+        instead — which improved the lead to 9.76 mm.
+        **Refused and left off-centre:** U5+SH1 and U1, both needing +0.950 mm
+        (DRC electrical 1 and 28). They were grid-snapped 0.05 mm instead.
+        The left and right stacks are different circuits, not a mirrored pair.
+  - [x] 12.5.ar **DONE 2026-08-19 — U7/U8 swapped onto their own phases.**
+        Found while mapping parts to phases for 12.5.aq: every part sat on its
+        own phase column except the two sense amplifiers. U8 stood in the
+        phase-B column carrying `ISENSE_C_HI`; U7 stood in phase C carrying
+        `ISENSE_B_HI`. FETs and shunts were all consistent (Q2/R1 = A,
+        Q4/R2 = B, Q6/R3 = C) — only the amps were crossed.
+        Not merely untidy: this is a millivolt-scale shunt signal running
+        beside half-bridge nodes slewing 25.2 V, and crossed placement forced
+        each pair across a phase column to reach its own shunt — longer
+        differential loop, more pickup from the node being measured.
+        `tools/swap_u7_u8.py` exchanges the two positions. Nets NOT edited —
+        the parts move to match the wiring, so the schematic stays
+        authoritative. Cost measured at zero: unconnected, creepage, both
+        loops and DRC all unchanged (they were not yet routed).
+        Follow-on: U7 then inherited the starved-thermal position and was
+        added to `fix_starved_thermals.py` — the starvation belongs to the
+        POSITION, not the part, so all three sense amps are now listed.
+
   - [ ] 12.5.w **(Medium) Finish routing.** FreeRouting (2.2.4, 100 passes,
         15 min 26 s) took the board 124 -> 56 unrouted, 381 segments, 48 vias.
         After stripping its 29 VM tracks (12.5.s) and adding the VM pour, the
