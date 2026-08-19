@@ -41,6 +41,34 @@ visual_order
   alignment_frac        fraction of footprints sharing an x or y with at least
                         one other footprint.
 
+rules                   two placement rules for any board carrying an isolated
+                        interface, both learned on this build at real cost.
+                        Reported pass/fail, not scored, because a violation is
+                        a structural mistake rather than a number to optimise.
+
+  iso_ic_perpendicular  every isolating IC's pin rows must run ACROSS the
+                        board's long axis, so its isolated side faces a short
+                        edge. Creepage to an opposite-face conductor runs
+                        around the board edge -- insetA + thickness + insetB --
+                        so isolated copper close to a LONG edge poisons that
+                        edge for the board's whole length. On this build the
+                        support columns sat 0.72-0.82 mm from the side edges
+                        and forced a 5.08 mm inset on everything opposite them,
+                        anywhere. Rotating the ICs perpendicular put their own
+                        bodies outboard at ~2.94 mm and dropped that to
+                        2.96 mm -- a 2.1 mm relaxation on both edges, which is
+                        what finally let creepage pass.
+
+  pack_layer_separated  the pack (high-current input) terminals must not share
+                        a copper layer with the isolated section. A through-
+                        hole terminal spans every layer and therefore always
+                        shares one; making it SMD on the face opposite the
+                        isolated parts removes the in-plane creepage pair
+                        entirely, leaving only the (longer) around-edge path.
+                        On this build that alone was worth 2.80 -> 4.64 mm.
+                        It costs the barrel's free layer transition and its
+                        mechanical retention -- both must then be designed in.
+
 The three groups are reported separately and deliberately not collapsed into a
 single figure: they trade against each other, and which one binds is a
 judgement the operator makes, not the harness.
@@ -80,6 +108,9 @@ ISO_NETS = {
 ISO_PARTS = {"U3", "U4"}
 ISO_PIN_RANGE = range(11, 21)
 ISO_SUPPORT = {"FB1", "FB2", "FB3", "FB4"} | {f"C{n}" for n in range(11, 19)}
+# High-current input terminals. Named rather than detected: "which pads are
+# the pack input" is a design fact, not something geometry reveals.
+PACK_REFS = {"J5A", "J5B"}
 ELECTRICAL_DRC = {"clearance", "shorting_items", "courtyards_overlap",
                   "hole_clearance", "copper_edge_clearance", "hole_to_hole",
                   "solder_mask_bridge"}
@@ -225,6 +256,48 @@ def drc_electrical():
                if v["type"] in ELECTRICAL_DRC)
 
 
+def check_rules(board, ox, oy, iso, non):
+    """The two structural rules for a board carrying an isolated interface.
+
+    Both are pass/fail rather than scored: a violation is not a number to
+    improve, it is an arrangement that cannot be made to pass creepage by
+    nudging. See the module docstring for what each cost to learn.
+    """
+    box = board.GetBoardEdgesBoundingBox()
+    long_axis = "y" if box.GetHeight() >= box.GetWidth() else "x"
+
+    perp, detail = True, []
+    for ref in sorted({a[0] for a in iso} & {c[0] for c in non}):
+        f = next((q for q in board.Footprints()
+                  if q.GetReference() == ref), None)
+        if f is None:
+            continue
+        pins = [p for p in f.Pads() if p.GetNetname()]
+        if len(pins) < 8:
+            continue                      # not a multi-pin isolator
+        xs = {round(pcbnew.ToMM(p.GetPosition().x - ox), 2) for p in pins}
+        ys = {round(pcbnew.ToMM(p.GetPosition().y - oy), 2) for p in pins}
+        rows_along = "x" if len(xs) > len(ys) else "y"
+        ok = rows_along != long_axis      # rows must run ACROSS the long axis
+        perp &= ok
+        detail.append(f"{ref}: rows along {rows_along}, "
+                      f"board long axis {long_axis} -> "
+                      f"{'ok' if ok else 'PARALLEL, rotate 90'}")
+
+    iso_layers = set()
+    for a in iso:
+        iso_layers |= a[4]
+    shared = [c[0] for c in non
+              if c[0] in PACK_REFS and (c[4] & iso_layers)]
+    return {
+        "board_long_axis": long_axis,
+        "iso_ic_perpendicular": perp,
+        "iso_ic_detail": detail,
+        "pack_layer_separated": not shared,
+        "pack_sharing_layers": sorted(set(shared)),
+    }
+
+
 def regularity(board, ox, oy):
     """Grid alignment, shared row/column counts, and off-row residual."""
     xs, ys, on = [], [], collections.Counter()
@@ -306,6 +379,7 @@ def main() -> int:
             "drc_electrical": drc_electrical(),
         },
         "regularity": regularity(board, ox, oy),
+        "rules": check_rules(board, ox, oy, iso, non),
     }
 
     if not a.json:
@@ -333,6 +407,17 @@ def main() -> int:
               file=sys.stderr)
         print(f"   sharing a row/col  {r['alignment_frac']:6.1%}",
               file=sys.stderr)
+        k = score["rules"]
+        print("RULES (isolated-interface boards)", file=sys.stderr)
+        print(f"   isolator perpendicular to the long axis: "
+              f"{'PASS' if k['iso_ic_perpendicular'] else 'FAIL'}",
+              file=sys.stderr)
+        for d in k["iso_ic_detail"]:
+            print(f"      {d}", file=sys.stderr)
+        print(f"   pack terminals off the isolated layer:   "
+              f"{'PASS' if k['pack_layer_separated'] else 'FAIL'}"
+              + (f"  shares with {k['pack_sharing_layers']}"
+                 if k["pack_sharing_layers"] else ""), file=sys.stderr)
 
     if a.baseline and Path(a.baseline).is_file():
         base = json.loads(Path(a.baseline).read_text())

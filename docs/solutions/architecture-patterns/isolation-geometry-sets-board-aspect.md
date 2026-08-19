@@ -159,6 +159,43 @@ conductor and produced confident, wrong minimum distances. Classify by pin
 number for the isolator itself (pins 11–20 are the isolated side on both these
 20-pin parts) and by an explicit net set for everything else.
 
+## Two rules that fall out of this, for any isolated-interface board
+
+Both were paid for on `builds/6s/50A/CAN_485_faraday` and are now enforced as
+pass/fail checks by that build's `tools/score_placement.py` (`rules` section).
+They are pass/fail rather than scored because a violation is not a number to
+improve — it is an arrangement that cannot be made to pass creepage by nudging.
+
+**1. The isolating IC's pin rows must run ACROSS the board's long axis.**
+
+Creepage between conductors on opposite faces runs around the board edge:
+`insetA + board thickness + insetB`. So isolated copper sitting close to a
+*long* edge poisons that edge for the whole length of the board, on both
+faces. On this build the isolated support columns sat 0.72–0.82 mm from the
+side edges, which forced a 5.08 mm inset on every non-isolated conductor
+opposite them — anywhere, at any y. Every fix just promoted the next offender.
+
+Rotating both transceivers 90° so their isolated rows faced a *short* edge put
+their own package bodies outboard at ~2.94 mm instead, dropping the
+requirement to 2.96 mm. That 2.1 mm relaxation on both edges is what finally
+let creepage pass, after four other approaches had failed.
+
+**2. The pack terminals must not share a copper layer with the isolated
+section.**
+
+A through-hole terminal spans every layer, so it always shares one and always
+produces an in-plane creepage pair. Making it SMD on the face opposite the
+isolated parts removes that pair entirely, leaving only the longer
+around-the-edge path. On this build that single change was worth
+2.80 → 4.64 mm.
+
+It is not free: the barrel was doing two other jobs — tying the terminal to
+the inner plane for free, and keying the wire mechanically. Both have to be
+designed back in (a via field placed clear of the isolated zone, and real
+strain relief). And the around-edge path still applies, so the pours on the
+opposite face must be notched away from the edges through the isolated band —
+a full-width pour measured 2.93 mm where 7.5 was needed.
+
 ## Related
 
 - `docs/solutions/architecture-patterns/esc-build-instantiation-workflow.md` —
