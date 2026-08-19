@@ -41,6 +41,33 @@ because the 2221 curves were found to be inaccurate. Quoting 2221's constants
 under a 2152 citation would be a fabricated citation under AGENTS.md Sec.1.3,
 so this project does neither: it derives from physics and leaves IPC-2152 open.
 
+RE-EXAMINED 2026-08-19, AND THE DISCREPANCY IS NOW QUANTIFIED. Both reference
+sets were read again at the repo owner's request. Neither contains IPC-2152:
+
+  * `pcb-engineer/references/design-rules.md` prints the k=0.048/0.024,
+    b=0.44, c=0.725 equation under the heading "the IPC-2152 formula". Those
+    are IPC-2221 Appendix A constants. Its own quick-reference table
+    disagrees with the formula it prints, and the error grows with current:
+    1.13x at 0.5 A, 1.27x at 1 A, 1.81x at 5 A, 2.22x at 10 A. This build
+    runs at 50 A -- five times past that table's last row, in the direction
+    where its self-disagreement is worst.
+  * `pcb-designer` has no 2152 chart data at all; its trace table ends at
+    "Power >1A -> copper pour" and says nothing at this current.
+  * Neither carries a WIRE ampacity or AWG table, so neither speaks to the
+    pack-lead question either. IPC-2152 governs PCB conductors, not wires.
+
+Run for information rather than citation, that 2221 equation asks for
+14.28 mm (40 C rise) to 33.12 mm (10 C rise) of external 2 oz conductor at
+50 A. This build's phase pours are 7.50 mm -- two to four times narrower.
+
+That is not proof the pours are wrong. The equation models an ISOLATED TRACE
+in still air; these pours are 2.93 squares, wide, and pressed against the In1
+and In2 planes, which is a different thermal problem entirely, and [47]
+measures a shipping 6S/50 A ESC at 103 C on a SMALLER board. But it is the
+size of the gap this design is carrying on unquantified plane spreading, and
+it is exactly the question IPC-2152's charts exist to settle. Treat 7.50 mm
+as unvalidated, not as validated-by-omission.
+
 THE THERMAL ANCHOR WE DO HAVE
 ------------------------------
 REFERENCES.md [47] is an instrumented continuous-load test of a shipping
