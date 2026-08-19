@@ -25,6 +25,9 @@ electrical
   gate_loop_max_mm      furthest FET gate pad from its gate-driver pin.
   commutation_max_mm    furthest high-side drain from the bulk capacitor.
   drc_electrical        clearance + shorting + courtyard + hole + edge count.
+  unconnected           broken connections, read from kicad-cli's SEPARATE
+                        "unconnected_items" array. Scored because a placement
+                        that buys creepage by severing a net is not a gain.
 
 scriptability
   grid_frac_0p5 / _1p0  fraction of footprints whose origin lands exactly on
@@ -254,16 +257,29 @@ def net_pairs(all_pads, refs, targets):
 
 
 def drc_electrical():
-    """Count DRC violations that are electrical rather than cosmetic."""
+    """Electrical DRC violations AND unconnected items, as (viol, unconn).
+
+    BOTH numbers are required. This function used to return only the
+    violation count, and that omission let a real regression through: a
+    placement change that scored "DRC electrical 0" had in fact broken two
+    GND pad-to-zone connections, because refilling the pour around the moved
+    parts fragmented it. kicad-cli reports that class of damage under
+    "unconnected_items", NOT under "violations", so a harness reading only
+    the violations array is blind to every broken connection on the board.
+
+    A placement that improves creepage while severing a ground connection is
+    not an improvement. Score both, or the number lies.
+    """
     out = Path("/tmp/claude-1000/score_drc.json")
     subprocess.run(["kicad-cli", "pcb", "drc", "--severity-all",
                     "--format", "json", "-o", str(out), str(PCB)],
                    capture_output=True, check=False)
     if not out.is_file():
-        return -1
+        return -1, -1
     d = json.loads(out.read_text())
-    return sum(1 for v in d.get("violations", [])
+    viol = sum(1 for v in d.get("violations", [])
                if v["type"] in ELECTRICAL_DRC)
+    return viol, len(d.get("unconnected_items", []))
 
 
 def check_rules(board, ox, oy, iso, non):
@@ -375,6 +391,7 @@ def main() -> int:
     gate, gate_who = net_pairs(ap_, {f"Q{n}" for n in range(1, 7)}, {"U5"})
     comm, comm_who = net_pairs(ap_, {"Q1", "Q3", "Q5"}, {"C1"})
 
+    _drc = drc_electrical()
     score = {
         "electrical": {
             "creepage_min_mm": round(creep, 2),
@@ -386,7 +403,8 @@ def main() -> int:
             "gate_loop_worst": gate_who,
             "commutation_max_mm": round(comm, 2),
             "commutation_worst": comm_who,
-            "drc_electrical": drc_electrical(),
+            "drc_electrical": _drc[0],
+            "unconnected": _drc[1],
         },
         "regularity": regularity(board, ox, oy),
         "rules": check_rules(board, ox, oy, iso, non),
@@ -407,6 +425,9 @@ def main() -> int:
         print(f"   commutation max    {e['commutation_max_mm']:6.2f} mm  "
               f"{e['commutation_worst']}", file=sys.stderr)
         print(f"   DRC electrical     {e['drc_electrical']:6d}", file=sys.stderr)
+        print(f"   unconnected        {e['unconnected']:6d}"
+              f"{'' if e['unconnected'] == 0 else '   <-- BROKEN NETS'}",
+              file=sys.stderr)
         print("REGULARITY", file=sys.stderr)
         print(f"   on 0.5 mm grid     {r['grid_frac_0p5']:6.1%}", file=sys.stderr)
         print(f"   on 1.0 mm grid     {r['grid_frac_1p0']:6.1%}", file=sys.stderr)
