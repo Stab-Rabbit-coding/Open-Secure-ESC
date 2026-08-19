@@ -180,25 +180,35 @@ def split_isolated(all_pads):
 def edge_path(a, c, box):
     """Creepage between conductors on OPPOSITE faces, around the board edge.
 
-    Two pads that share no copper layer still have a creepage path: over the
-    nearest board edge and down the other face. For a rectangular outline the
-    shortest such path is, for each of the four edges, this pad's inset plus
-    the board thickness plus the other pad's inset -- minimised over edges.
+    The path is the UNFOLDED surface distance: travel across this face to an
+    edge, over the edge, then across the other face. For a rectangular outline
+    and a given edge that is
 
-    Without this, a design that moves a conductor to the opposite face looks
-    like it has infinite creepage when it may have three millimetres.
+        sqrt( along_edge_separation^2 + (insetA + thickness + insetB)^2 )
+
+    minimised over the four edges.
+
+    The along-edge term matters enormously and an earlier version of this
+    function omitted it, effectively assuming both parts sat at the same
+    position along the edge. That made every opposite-face pair look like its
+    insets alone: U3 against Q2, 26 mm apart in y, measured 7.83 mm when the
+    real path is 27.15 mm. The result was a board reported as scraping past
+    7.5 mm when it was never close to failing -- conservative, but conservative
+    enough to drive real placement decisions the wrong way.
     """
+    ax1, ax2, ay1, ay2 = a[6]
+    bx1, bx2, by1, by2 = c[6]
     x0, x1, y0, y1 = box
-    best = None
-    for i, (ai, ci) in enumerate((
-            (a[6][0] - x0, c[6][0] - x0),      # left edge
-            (x1 - a[6][1], x1 - c[6][1]),      # right edge
-            (a[6][2] - y0, c[6][2] - y0),      # top edge
-            (y1 - a[6][3], y1 - c[6][3]))):    # bottom edge
-        p = max(0.0, ai) + BOARD_T_MM + max(0.0, ci)
-        if best is None or p < best:
-            best = p
-    return best
+
+    def unfold(ia, ib, sep):
+        return math.hypot(max(0.0, sep), max(0.0, ia) + BOARD_T_MM + max(0.0, ib))
+
+    dy = max(0.0, ay1 - by2, by1 - ay2)     # separation along a side edge
+    dx = max(0.0, ax1 - bx2, bx1 - ax2)     # separation along a top/bottom edge
+    return min(unfold(ax1 - x0, bx1 - x0, dy),      # left
+               unfold(x1 - ax2, x1 - bx2, dy),      # right
+               unfold(ay1 - y0, by1 - y0, dx),      # top
+               unfold(y1 - ay2, y1 - by2, dx))      # bottom
 
 
 def nearest(a, group, box=None):

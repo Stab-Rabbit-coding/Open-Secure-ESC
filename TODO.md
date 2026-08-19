@@ -917,23 +917,26 @@ detail belongs in design docs, not here.
         "PARALLEL, rotate 90" per IC, (b) names the offending refs. Neither is
         scored -- a violation is an arrangement that cannot be nudged into
         compliance.
-  - [ ] 12.5.al **(High, before fab) Creepage passes at 7.51 mm but that is a
-        CEILING, not a margin.** The binding pair is now structural and
-        in-plane: **U3.20 (CAN_GNDISO) <-> U4.10 (GND) at 7.51 mm**, diagonally
-        across the 1.97 mm channel between the two packages. It cannot be
-        improved by nudging -- only by separating the two transceivers, and
-        they already span x 3.08..29.11 of a 30.90 mm usable width.
-        Worse, the two constraints now oppose each other. Moving the ICs
-        further apart improves that in-plane pair but shortens the
-        around-the-edge paths (the next binders sit at 7.58-7.83 mm), so 32 mm
-        width sits at roughly the balance point. **The board passes by 0.01 mm
-        and cannot do better at this width.**
-        0.01 mm is not a manufacturing margin -- it is a coincidence, smaller
-        than fab registration tolerance and fifty times smaller than the
-        0.5 mm grid the placement is otherwise snapped to. Any later move,
-        including a routine grid snap, breaks it. Estimate ~2 mm of additional
-        width (1 mm per side) to reach a defensible ~8.5 mm. REFERRED TO USER:
-        accept the ceiling and freeze placement, or widen to 34 mm.
+  - [x] 12.5.al **CORRECTED AND RESOLVED — creepage is 7.98 mm with 0.48 mm
+        of margin. The "ceiling" was a bug in the harness, not the board.**
+        The original entry claimed 7.51 mm was structural and could only be
+        improved by widening the board. That rested on `edge_path()` computing
+        `insetA + thickness + insetB`, which assumes two opposite-face parts
+        sit at the same position ALONG the edge. They rarely do. U3 against Q2
+        are ~26 mm apart in y, so the true unfolded path is 27.15 mm, not the
+        7.83 mm being reported. Corrected to
+        `sqrt(along_edge_sep^2 + (insetA + T + insetB)^2)`.
+        With that fixed the FETs stop being binders at all — every
+        around-edge pair sits at 7.98 mm or better — and the only real
+        constraint is the in-plane U3.20 <-> U4.10 pair. Spreading the two
+        transceiver groups +/-1.0 mm takes creepage **7.51 -> 7.98 mm, DRC 0,
+        isolated lead unchanged at 9.76 mm**. It plateaus there (C15 <-> J5B
+        takes over) and breaks DRC at +/-2.5.
+        **Two claims in the original entry were wrong and are withdrawn:**
+        that the FET columns must stay within SH1's 22.20 mm land (they
+        already overhang it — Q1/Q2 by 0.75 mm, Q5/Q6 by 2.75 mm, with 5.30
+        and 6.30 mm of inter-column slack), and that more board width was the
+        only lever. Neither survived being checked.
   - [ ] 12.5.u **(Medium) Silkscreen cleanup, deferred by the repo owner
         until after routing** ("silkscreen can wait till after routing",
         2026-08-16). Routing has now run, so this is unblocked. Outstanding:
