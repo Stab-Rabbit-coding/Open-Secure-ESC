@@ -1,0 +1,55 @@
+spec: placement-rows-cols
+run_id: 2026-08-19-001
+started_at: "2026-08-19"
+target: builds/6s/50A/CAN_485_faraday/kicad/open_secure_esc_6s_50a_can485_faraday.kicad_pcb
+harness: builds/6s/50A/CAN_485_faraday/kicad/tools/score_placement.py
+constraints:
+  - "creepage_min_mm must not regress (>= baseline, ideally >= 7.5 per [9] Table 6)"
+  - "drc_electrical must not regress"
+  - "iso_lead_max_mm must stay <= 10.0 per [9] p.17"
+baseline:
+  electrical:
+    creepage_min_mm: 2.74
+    iso_lead_max_mm: 9.94
+    gate_loop_max_mm: 22.33
+    commutation_max_mm: 17.41
+    drc_electrical: 402
+  regularity:
+    grid_frac_0p5: 0.814
+    grid_frac_1p0: 0.068
+    distinct_rows: 34
+    distinct_cols: 28
+    row_residual_mm: 2.002
+    alignment_frac: 0.695
+experiments:
+  - iteration: 1
+    hypothesis: "Zones are stale after the owner's re-placement; refilling clears the clearance and mask-bridge violations without moving anything."
+    category: data-handling
+    outcome: kept
+    metrics:
+      drc_electrical: 0
+      creepage_min_mm: 2.74
+    learnings: "402 -> 0 electrical violations from a refill alone. Every one of the 210 clearance, 183 solder_mask_bridge and 9 hole_clearance findings was copper sitting where parts no longer are. Nothing moved. This is the third time this session that a large violation count turned out to be stale fill rather than a placement defect -- refill before diagnosing."
+  - iteration: 2
+    hypothesis: "FB4 is both the worst isolated lead (9.94 mm) and what J1/U1/R12 are too close to; moving it between the pins it bridges should improve both."
+    category: architecture
+    outcome: reverted
+    metrics:
+      iso_lead_max_mm: 6.75
+      drc_electrical: 2
+    learnings: "Best lead result of the run (6.75 mm) but it collided with C16. The outboard strip beside U4 is a single-file column -- there is no room for a part at an arbitrary y, only in the gaps between existing ones."
+  - iteration: 3
+    hypothesis: "Pull the three outliers (C12 at x=2.60, C18 at x=29.60, FB4) into the two support columns at x=1.60 / x=30.60 that the owner already established."
+    category: architecture
+    outcome: kept
+    metrics:
+      creepage_min_mm: 3.98
+      iso_lead_max_mm: 8.49
+      distinct_cols: 26
+      drc_electrical: 0
+    learnings: "Took two corrections to land. C12 and C18 sat at rot 0/180 (2.90 mm wide) while every other part in those columns is at rot 90 (1.44 mm); moving them into the column at their original rotation pushed copper past the 0.55 mm edge window. Rotating to match the column fixed it. C12 then overlapped FB1's courtyard by 0.05 mm and needed 0.6 mm more clearance. Column membership is rotation plus position, not position alone."
+best:
+  iteration: 3
+  creepage_min_mm: 3.98
+  iso_lead_max_mm: 8.49
+  drc_electrical: 0
