@@ -974,24 +974,51 @@ detail belongs in design docs, not here.
         Lesson for future checks: compare layers by **ID**, never by
         substring of a display name. `tools/restore_courtyards.py` was written
         against this false premise and has been deleted.
-  - [ ] 12.5.an **(Medium) The sole rule area clips the phase pours off their
-        own terminals.** The board has exactly one rule area — board-local
-        x 0.85..31.25, y 56.60..65.30, all four copper layers — and it
-        prohibits `copperpour` only (tracks, vias, pads, footprints allowed).
-        Measured effect: PH_A/PH_B/PH_C fills all stop at y 56.60, while the
-        J4A/J4B/J4C terminal pads span y 55.60..65.60. The pour meets each pad
-        over only the first 1.00 mm of the pad's 10 mm length, and a detached
-        0.3 mm copper sliver is left stranded past y 65.30 — the source of the
-        2 standing `isolated_copper` violations. The pad itself is the
-        conductor over its own length so this is not necessarily a bottleneck,
-        but it was never a deliberate decision on record. Confirm the rule
-        area is intended, and clear the stranded slivers either way.
-
-  - [ ] 12.5.u **(Medium) Silkscreen cleanup, deferred by the repo owner
-        until after routing** ("silkscreen can wait till after routing",
-        2026-08-16). Routing has now run, so this is unblocked. Outstanding:
-        32 `silk_over_copper`, 21 `silk_overlap`, 2 `silk_edge_clearance`.
-        None electrical; all block a clean fab package.
+  - [~] 12.5.an **PARTLY RESOLVED, and one claim in the original corrected.**
+        The board has exactly one *authored* rule area — board-local
+        x 0.85..31.25, y 56.60..65.30, all four copper layers — prohibiting
+        `copperpour` only. It does clip the phase pours: PH_A/B/C fills stop
+        at y 56.60 while the J4A/B/C pads span y 55.60..65.60, so pour meets
+        pad over 1.00 mm of a 10 mm pad, and a 0.3 mm strip of each phase
+        fills separately past y 65.30.
+        **Correction:** the original entry called those strips "stranded" and
+        blamed them for the 2 `isolated_copper` warnings. Wrong on both
+        counts — each strip is connected through its own J4 terminal pad, and
+        DRC never flagged them. The real isolated fill was a **4.313 mm² VM
+        pocket on In2.Cu** inside U5's thermal-via ring, fenced off by the
+        via clearance cutouts on three sides and the VM zone's own y = 40.60
+        lower boundary on the fourth, with nothing on net VM inside it —
+        a floating plate under a switching gate driver.
+        `tools/remove_vm_island.py` excludes it with a scoped In2.Cu rule
+        area. The zone's `island_removal_mode` was already `ALWAYS` and did
+        not remove it; a clean reload-fill-save cycle reproduced it, so this
+        was not the stale-fill trap. `isolated_copper` 2 -> 1.
+        **Still open:** confirm the authored rule area over the phase
+        terminals is intended, and identify the last remaining
+        `isolated_copper` (1, warning).
+  - [x] 12.5.ao **DONE 2026-08-19 — 11 starved GND thermals given solid zone
+        connections.** `.kicad_pro` sets `min_resolved_spokes = 2`; these pads
+        each resolved one, hanging off the GND pour by a single 0.5 mm neck.
+        `tools/fix_starved_thermals.py` set them solid. A spoke cannot be
+        conjured where the pour does not reach, so widening spokes or
+        shrinking the thermal gap would not have helped.
+        It is also the better design here rather than merely the expedient
+        one: this board carries galvanic isolation, redundant control paths
+        and a Faraday shield specifically to survive harsh EMI, and shield
+        effectiveness is set by the impedance of the ground bond — SH1 bonded
+        through one narrow spoke is mostly inductance. Same repo precedent as
+        `add_vm_top_pour.py`.
+        **Assembly trade, repo owner's call:** solid pads sink heat during
+        reflow. The 9 IC/shield pads (SH1 x4, U5.25, U6.1/.2, U8.1/.2) are
+        low risk. The 5 two-terminal 0805 passives (**C7 C9 C10 R5 R10**) are
+        the tombstoning-asymmetry case — 0805 is far more forgiving than
+        0402/0201, but if this board is to be hand-soldered or reworked, run
+        `tools/fix_starved_thermals.py --skip-passives` to leave those five
+        on thermal relief and accept their 5 warnings.
+        C7 only appeared on the second pass: solid-bonding the first ten
+        changed the pour around it enough to drop it from two spokes to one.
+        Zone fills are coupled, so this class of fix is iterated to a fixed
+        point. `starved_thermal` 11 -> 0.
   - [ ] 12.5.w **(Medium) Finish routing.** FreeRouting (2.2.4, 100 passes,
         15 min 26 s) took the board 124 -> 56 unrouted, 381 segments, 48 vias.
         After stripping its 29 VM tracks (12.5.s) and adding the VM pour, the
@@ -1000,17 +1027,20 @@ detail belongs in design docs, not here.
         bottom-side taps, 9 GND stitches, 38 ordinary signal nets. Re-run with
         more passes or finish by hand -- but re-run
         `tools/strip_high_current_tracks.py` afterwards every time.
-  - [ ] 12.5.x **(High, fab) U5's 12 thermal vias are 0.20 mm drill and DO
-        violate this project's own rule.** `open_secure_esc_6s_50a_can485_faraday.kicad_pro`
-        sets `min_through_hole_diameter = 0.3`, and kicad-cli reports 12 x
-        `drill_out_of_range` against it. **Correction:** an earlier note in
-        this file claimed the opposite, on the strength of the board file's
-        cached `m_MinThroughDrill` (0.2 mm). The project file is what
-        kicad-cli enforces, and it is authoritative. Three fixes: enlarge the
-        vias to 0.3 mm, delete them ([21] RTA0040B note 5 makes them
-        optional), or lower the project rule to 0.2 mm and confirm the fab
-        supports it (0.3 mm is standard at many vendors; 0.2 mm is an
-        upcharge or a redesign at some).
+  - [x] 12.5.x **DONE 2026-08-19 — U5's 12 thermal vias resized to the
+        board's own via spec.** `tools/fix_u5_thermal_vias.py` took them from
+        0.400 mm pad / 0.200 mm drill to **0.600 / 0.300**, which is exactly
+        the `Default` net class `via_diameter`/`via_drill` already in
+        `.kicad_pro` — no new number was chosen. Resulting geometry satisfies
+        all three governing rules by construction: drill 0.30 = the 0.30
+        `min_through_hole_diameter`; annular ring 0.150 vs 0.100 minimum;
+        hole-to-hole 1.15 pitch − 0.30 = 0.85 vs 0.25 minimum.
+        The GND-to-VM/phase short hazard that this stack-up has produced once
+        before was measured, not assumed, before growing the copper: the via
+        array spans y 58.275..61.725, Q3's pads end at y 56.750 and Q4's begin
+        at y 62.750, so the array sits in the ~6 mm gap between the FET rows
+        with 0.725 mm of clearance at the new radius. `drill_out_of_range`
+        12 -> 0.
   - [ ] 12.5.v **(Low) 5 `starved_thermal` and 2 `isolated_copper` DRC
         warnings** at the 25.4 mm placement. Fab-preference and pour-shape
         respectively; confirm each is intentional before generating gerbers.
