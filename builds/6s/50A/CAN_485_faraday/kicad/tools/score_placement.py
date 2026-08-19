@@ -92,17 +92,38 @@ def load():
 
 
 def pads(board, ox, oy):
-    """Every netted pad as (ref, pin, x, y, layerset)."""
+    """Every netted pad as (ref, pin, x, y, layerset, net, bbox).
+
+    The bbox is carried because creepage is an EDGE-to-edge measure, not a
+    centre-to-centre one. An earlier version of this file compared pad centres
+    and reported 7.68 mm where the true conductor gap was 6.79 -- optimistic by
+    roughly half a pad on each side, which is the whole margin on a 7.5 mm
+    requirement.
+    """
     out = []
     for f in board.Footprints():
         for p in f.Pads():
             if not p.GetNetname():
                 continue
+            bx = p.GetBoundingBox()
             out.append((f.GetReference(), p.GetNumber(),
                         pcbnew.ToMM(p.GetPosition().x - ox),
                         pcbnew.ToMM(p.GetPosition().y - oy),
-                        set(p.GetLayerSet().Seq()), p.GetNetname()))
+                        set(p.GetLayerSet().Seq()), p.GetNetname(),
+                        (pcbnew.ToMM(bx.GetLeft() - ox),
+                         pcbnew.ToMM(bx.GetRight() - ox),
+                         pcbnew.ToMM(bx.GetTop() - oy),
+                         pcbnew.ToMM(bx.GetBottom() - oy))))
     return out
+
+
+def gap(a, b):
+    """Edge-to-edge distance between two axis-aligned pad bounding boxes."""
+    ax1, ax2, ay1, ay2 = a[6]
+    bx1, bx2, by1, by2 = b[6]
+    dx = max(0.0, ax1 - bx2, bx1 - ax2)
+    dy = max(0.0, ay1 - by2, by1 - ay2)
+    return math.hypot(dx, dy)
 
 
 def split_isolated(all_pads):
@@ -113,14 +134,14 @@ def split_isolated(all_pads):
     substring check scored a SPI signal as an isolated conductor.
     """
     iso, non = [], []
-    for ref, pin, x, y, layers, net in all_pads:
+    for rec in all_pads:
+        ref, pin, net = rec[0], rec[1], rec[5]
         if ref in ISO_PARTS and pin.isdigit():
-            (iso if int(pin) in ISO_PIN_RANGE else non).append(
-                (ref, pin, x, y, layers))
+            (iso if int(pin) in ISO_PIN_RANGE else non).append(rec)
         elif net in ISO_NETS:
-            iso.append((ref, pin, x, y, layers))
+            iso.append(rec)
         else:
-            non.append((ref, pin, x, y, layers))
+            non.append(rec)
     return iso, non
 
 
@@ -130,7 +151,7 @@ def nearest(a, group):
     for c in group:
         if c[0] == a[0] or not (a[4] & c[4]):
             continue
-        d = math.hypot(a[2] - c[2], a[3] - c[3])
+        d = gap(a, c)
         if best is None or d < best[0]:
             best = (d, c)
     return best
@@ -139,10 +160,11 @@ def nearest(a, group):
 def net_pairs(all_pads, refs, targets):
     """Max distance from any pad of `refs` to the nearest same-net target."""
     by_net = collections.defaultdict(list)
-    for ref, pin, x, y, layers, net in all_pads:
-        by_net[net].append((ref, pin, x, y))
+    for rec in all_pads:
+        by_net[rec[5]].append((rec[0], rec[1], rec[2], rec[3]))
     worst = (0.0, None)
-    for ref, pin, x, y, layers, net in all_pads:
+    for rec in all_pads:
+        ref, pin, x, y, net = rec[0], rec[1], rec[2], rec[3], rec[5]
         if ref not in refs:
             continue
         cands = [(math.hypot(x - tx, y - ty), tr, tp)
