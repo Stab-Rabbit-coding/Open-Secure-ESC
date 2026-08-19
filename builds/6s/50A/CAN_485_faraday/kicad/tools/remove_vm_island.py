@@ -34,9 +34,9 @@ rule area over exactly that pocket, on In2.Cu only. It is visible in the
 editor, survives refills deterministically, is scoped to the one place it is
 meant to act, and states its own intent.
 
-The pocket lies wholly inside the via ring (vias span x 13.075..17.125,
-y 38.075..42.125 at the 0.30 mm copper radius set by
-`fix_u5_thermal_vias.py`), so no VM copper outside the ring is affected.
+The pocket lies wholly inside the via ring, so no VM copper outside the ring
+is affected. Its extent is recomputed from the via positions on every run --
+see the note on VIA_OWNER below for why that is not a hardcoded rectangle.
 
 Usage:
     python3 tools/remove_vm_island.py [--dry-run]
@@ -54,10 +54,23 @@ import pcbnew
 HERE = Path(__file__).resolve().parent
 PCB = HERE.parent / "open_secure_esc_6s_50a_can485_faraday.kicad_pcb"
 
-# Measured island bbox, board-local mm, plus a 0.15 mm margin so the pour is
-# excluded rather than merely trimmed to a hairline.
-ISLAND = (13.55, 38.55, 16.65, 40.75)
+# The pocket is DERIVED from U5's thermal-via ring, not hardcoded.
+#
+# It was hardcoded once, as the measured bbox (13.55, 38.55, 16.65, 40.75),
+# and that broke the first time the repo owner moved U5: the board owner
+# shifted U5 +1.000 mm to centre it, the via ring went with it, and the rule
+# area did not -- letting a 1.117 mm^2 sliver of VM plane escape through
+# exactly the millimetre the stale rectangle no longer covered. A constant
+# that describes another object's position is a constant that goes stale the
+# moment that object moves.
+#
+# Now the rectangle is computed from the actual via positions every run, so
+# it follows U5 wherever it goes. MARGIN_MM pads it past the via copper so
+# the pour is excluded rather than trimmed to a hairline.
 NAME = "VM island under U5 via ring"
+VIA_OWNER = "U5"
+VIA_PAD = "41"
+MARGIN_MM = 0.15
 
 
 def existing(board):
@@ -66,6 +79,26 @@ def existing(board):
         if zone.GetIsRuleArea() and zone.GetZoneName() == NAME:
             return zone
     return None
+
+
+def island_box(board):
+    """The dead pocket, derived from where U5's via ring actually is now."""
+    fp = next((f for f in board.Footprints()
+               if f.GetReference() == VIA_OWNER), None)
+    if fp is None:
+        raise SystemExit(f"{VIA_OWNER} not on board")
+    vias = [p for p in fp.Pads()
+            if p.GetNumber() == VIA_PAD and p.GetDrillSize().x > 0]
+    if not vias:
+        raise SystemExit(f"no through-hole {VIA_OWNER}.{VIA_PAD} vias")
+    xs, ys, r = [], [], 0
+    for v in vias:
+        pos = v.GetPosition()
+        xs.append(pos.x)
+        ys.append(pos.y)
+        r = max(r, v.GetSize().x // 2)
+    pad = r + pcbnew.FromMM(MARGIN_MM)
+    return (min(xs) - pad, min(ys) - pad, max(xs) + pad, max(ys) + pad)
 
 
 def vm_outlines(board):
@@ -86,14 +119,23 @@ def main():
     args = ap.parse_args()
 
     board = pcbnew.LoadBoard(str(PCB))
-    if existing(board) is not None:
-        print("rule area already present -- nothing to do")
-        return 0
+    x1, y1, x2, y2 = island_box(board)
+
+    old = existing(board)
+    if old is not None:
+        ob = old.GetBoundingBox()
+        if (abs(ob.GetLeft() - x1) < 1000 and abs(ob.GetRight() - x2) < 1000
+                and abs(ob.GetTop() - y1) < 1000
+                and abs(ob.GetBottom() - y2) < 1000):
+            print("rule area already present and correctly placed")
+            return 0
+        print(f"rule area is STALE: it sits at x "
+              f"{pcbnew.ToMM(ob.GetLeft()):.2f}..{pcbnew.ToMM(ob.GetRight()):.2f} "
+              f"but {VIA_OWNER}'s via ring now needs x "
+              f"{pcbnew.ToMM(x1):.2f}..{pcbnew.ToMM(x2):.2f} -- replacing")
+        board.Remove(old)
 
     print(f"In2.Cu VM plane fills as {vm_outlines(board)} polygons")
-
-    box = board.GetBoardEdgesBoundingBox()
-    ox, oy = box.GetLeft(), box.GetTop()
 
     zone = pcbnew.ZONE(board)
     zone.SetIsRuleArea(True)
@@ -107,18 +149,19 @@ def main():
     zone.SetDoNotAllowPads(False)
     zone.SetDoNotAllowFootprints(False)
 
-    x1, y1, x2, y2 = ISLAND
     outline = zone.Outline()
     outline.NewOutline()
     for x, y in ((x1, y1), (x2, y1), (x2, y2), (x1, y2)):
-        outline.Append(ox + pcbnew.FromMM(x), oy + pcbnew.FromMM(y))
+        outline.Append(x, y)
     board.Add(zone)
 
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     board.BuildConnectivity()
 
-    print(f"added rule area '{NAME}' on In2.Cu over "
-          f"x {x1}..{x2}, y {y1}..{y2} mm (copper pour only)")
+    print(f"rule area '{NAME}' on In2.Cu over x "
+          f"{pcbnew.ToMM(x1):.2f}..{pcbnew.ToMM(x2):.2f}, y "
+          f"{pcbnew.ToMM(y1):.2f}..{pcbnew.ToMM(y2):.2f} (copper pour only), "
+          f"derived from {VIA_OWNER}.{VIA_PAD}")
     print(f"In2.Cu VM plane now fills as {vm_outlines(board)} polygons")
 
     if args.dry_run:

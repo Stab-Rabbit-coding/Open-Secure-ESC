@@ -1019,6 +1019,54 @@ detail belongs in design docs, not here.
         changed the pour around it enough to drop it from two spokes to one.
         Zone fills are coupled, so this class of fix is iterated to a fixed
         point. `starved_thermal` 11 -> 0.
+  - [x] 12.5.as **DONE 2026-08-19 — U1, U5 and SH1 centred by the repo owner;
+        two follow-on defects found and fixed.** The owner moved U1 and U5
+        with their surrounding components +1.000 mm in x, putting U1, U5 and
+        SH1 all exactly on the centreline (x = 16.000). This is the move
+        `symmetrize.py` had REFUSED (DRC electrical 1 and 28) — the guard was
+        right about the tool's version, which moved the ICs *alone*; moving
+        each IC together with its supporting parts is a different move and it
+        passes cleanly.
+        As saved it showed 155 errors, **all of them stale zone fill**. After
+        a refill: 0 errors. (Same lesson as the J5B move — a GUI part move
+        leaves the fill stale; refill before judging.)
+        **Real cost, accepted by the owner:** the worst gate loop grew
+        16.53 -> 17.36 mm, because centring the driver moves it away from
+        phase A. Measured per-phase driver-pad-to-gate-pad distance is now
+        Q1 12.17 / Q2 13.73 / Q3 6.85 / Q4 5.89 / Q5 14.30 / Q6 14.86 mm —
+        note centring did **not** balance A against C (they still differ by
+        ~1.5 mm), because U5's gate pads are not symmetric on the package.
+        Worth revisiting if switching performance on phase C matters.
+        **Follow-on 1 — `remove_vm_island.py` had a stale hardcoded box.**
+        It carried the island extent as a literal rectangle measured once.
+        When U5 moved, the via ring went with it and the rule area did not,
+        letting a 1.117 mm² sliver of VM plane escape through exactly the
+        millimetre no longer covered. Now DERIVED from U5.41's actual via
+        positions every run, so it follows U5 anywhere. *A constant that
+        describes another object's position goes stale the moment that object
+        moves.*
+        **Follow-on 2 — `tools/close_edge_orphans.py` (new).** The authored
+        phase-terminal rule area stopped at y 85.20 while the board outline
+        runs to 86.05. Pour refilled that 0.85 mm gap and, cut off from
+        everything above by the rule area itself, formed orphan strips along
+        the bottom edge on every layer — including 8.747 mm² of GND on In2.Cu
+        running the full board width, a floating conductor on a board built to
+        survive harsh EMI. Rule area extended 0.5 mm past the edge; orphan
+        polygons 18 -> 14. The three phase strips were never a problem (each
+        connects through its own J4 pad), confirming the correction already
+        recorded in 12.5.an.
+  - [ ] 12.5.at **(Low) Two `isolated_copper` warnings remain, unexplained.**
+        kicad-cli reports one on `Zone [VM] on In2.Cu` and one on
+        `Zone [GND] on In2.Cu`, but neither zone fills as more than one
+        polygon — checked directly via `GetFilledPolysList().OutlineCount()`,
+        which returns 1 for both. So the polygon-count method that found and
+        fixed the earlier islands does not reproduce these, and the cause is
+        not yet understood. Both are warning severity with DRC electrical at
+        0, so this is not fab-blocking. Needs a look in the KiCad GUI, where
+        the violation can be selected and located directly. Do not guess at a
+        fix; the last two "obvious" island explanations on this board were
+        both wrong.
+
   - [x] 12.5.ap **DONE 2026-08-19 — rows and phase columns aligned.**
         `tools/align_rows_columns.py`. Every target is a position the board
         already used; a part >0.6 mm off its group is read as intent, not
