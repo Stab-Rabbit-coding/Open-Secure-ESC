@@ -17,7 +17,14 @@ resolves only one spoke, so each is hanging off the GND pour by a single
     SH1.1  x4   Faraday shield frame, bars up to 19.20 x 1.50 mm
     U5.25       DRV8353S GND, 0.60 x 0.22 mm
     U6.1/.2     SOIC-8 GND, 1.95 x 0.60 mm
+    U7.1/.2     SOIC-8 GND, 1.95 x 0.60 mm
     U8.1/.2     SOIC-8 GND, 1.95 x 0.60 mm
+
+U7 joined the list after the U7/U8 swap (tools/swap_u7_u8.py): the
+starvation belongs to the POSITION, not the part -- whichever sense amp
+stands in the phase-B column is the one the pour reaches from one side.
+All three sense amps are now listed so the set is stable under any
+further reshuffling of them.
     C9.2 C10.2  0805 capacitor GND
     R5.2 R10.2  0805 resistor GND
 
@@ -55,7 +62,7 @@ across a two-terminal part can tombston it.
 That risk is not uniform across these 11 pads, and this script does not
 pretend it is:
 
-  * SH1, U5, U6, U8 -- ICs and a shield frame, reflowed with a proper
+  * SH1, U5, U6, U7, U8 -- ICs and a shield frame, reflowed with a proper
     profile and with several pins each. Low risk; take the solid bond.
   * C7, C9, C10, R5, R10 -- two-terminal 0805 passives, where one solid end and
     one relieved end is exactly the asymmetry that tombstones parts. 0805 is
@@ -83,7 +90,8 @@ HERE = Path(__file__).resolve().parent
 PCB = HERE.parent / "open_secure_esc_6s_50a_can485_faraday.kicad_pcb"
 
 # ICs and the shield frame: solid bond is both the fix and the better design.
-STRUCTURAL = {"SH1": {"1"}, "U5": {"25"}, "U6": {"1", "2"}, "U8": {"1", "2"}}
+STRUCTURAL = {"SH1": {"1"}, "U5": {"25"},
+              "U6": {"1", "2"}, "U7": {"1", "2"}, "U8": {"1", "2"}}
 
 # Two-terminal 0805 passives: solid works, but carries the tombstoning trade
 # described above. Separated so they can be reverted independently.
