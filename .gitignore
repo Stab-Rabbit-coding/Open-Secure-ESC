@@ -45,3 +45,6 @@ fp-info-cache
 # Python bytecode from the symbol/schematic/PCB generator scripts
 __pycache__/
 *.py[cod]
+
+# Analyzer output (regenerable; the kicad skill caches runs here)
+builds/**/kicad/analysis/
