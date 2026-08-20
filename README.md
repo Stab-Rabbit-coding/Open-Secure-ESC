@@ -2,17 +2,19 @@
 
 All builds:
 
-MCU: NXP S32K144 [31]
-Message authentication: on-chip CSEc (Cryptographic Services Engine, SHE-compliant) security module built into the S32K144 [31] — no discrete TPM (the previously used Infineon SLB9672 [2] has been dropped from this design)
-Root of trust: Infineon OPTIGA™ Trust M V3 secure element [45] over I²C (schematic `U2`) — device identity (ECDSA over a fab-provisioned key + X.509 certificate) and ephemeral session-key agreement (ECDHE). This is a secure element, **not** a TPM: it supplies the asymmetric layer CSEc structurally lacks, while CSEc keeps the per-frame AES-128 CMAC hot path. The split, and the 5 s security-monitor budget that forces it, are documented in [`docs/secure-element-architecture.md`](docs/secure-element-architecture.md)
+MCU: NXP S32K144 [31] (historical) — active MCU is now TI MSPM0G3518-Q1 (see docs/HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md)
+Message authentication: on-chip CSEc (Cryptographic Services Engine, SHE-compliant) security module built into the MCU family — no discrete TPM (the previously used Infineon SLB9672 [2] has been dropped; OPTIGA™ Trust M used as asymmetric root of trust where required).
+Root of trust: Infineon OPTIGA™ Trust M V3 secure element [45] over I²C (schematic `U2`) — device identity (ECDSA over a fab-provisioned key + X.509 certificate) and ephemeral session-key agreement where needed.
 
 Build Options:
-
+* Motor speed sensor: ADC/DIO/SPI shaft sensor input (Hall / encoder / analog tach)
+* Motor type: Brushed / Brushless
 * Voltage: 2S, 4S, 6S, 8S, 12S
 * Amperage: 10A, 20A, 30A, 40A, 50A, 80A, 120A
 * Protocol: PWM, SBus, DBus, UART, TTL, SPI, RS-232 [3], RS-485 [4], CAN2.0 [5], CAN-FD [6], MIL-STD-1553B [7]
 * Control: Open, Closed-Diff, Closed-PID
 * EMI Hardening: None, Isolation, Grounding, Faraday
+* Ingress & environmental protection: IP ratings up to IP68 and NEMA equivalents up to NEMA 6P. Submersible variants MUST include cooling strategies that operate correctly in both air and water (see docs/design-submersible-cooling.md DRAFT).
 
 ## Repository layout
 
