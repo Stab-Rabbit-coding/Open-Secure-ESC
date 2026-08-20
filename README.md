@@ -7,6 +7,7 @@ Message authentication: on-chip CSEc (Cryptographic Services Engine, SHE-complia
 Root of trust: Infineon OPTIGA™ Trust M V3 secure element [45] over I²C (schematic `U2`) — device identity (ECDSA over a fab-provisioned key + X.509 certificate) and ephemeral session-key agreement where needed.
 
 Build Options:
+
 * Motor speed sensor: ADC/DIO/SPI shaft sensor input (Hall / encoder / analog tach)
 * Motor type: Brushed / Brushless
 * Voltage: 2S, 4S, 6S, 8S, 12S
