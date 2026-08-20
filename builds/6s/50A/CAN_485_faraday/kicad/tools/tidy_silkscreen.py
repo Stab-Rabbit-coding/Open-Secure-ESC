@@ -211,9 +211,7 @@ def relocate(board, wanted, offsets, edge):
             placed = None
             for dx, dy in offsets:
                 ref.SetPosition(pcbnew.VECTOR2I(start.x + dx, start.y + dy))
-                if not clashes(
-                    ref.GetBoundingBox(), pads, others, ref, edge
-                ):
+                if not clashes(ref.GetBoundingBox(), pads, others, ref, edge):
                     placed = (dx, dy)
                     break
             if placed is None:

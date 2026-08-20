@@ -106,8 +106,10 @@ MOTOR = {
             "area, and must be checked against [21] before adoption.",
             "2 (M+ / M-)",
             "1-2 (bridge-leg or in-line)",
-            ("None -- direction and magnitude set by bridge polarity and duty "
-            "cycle; no rotor position needed for basic operation"),
+            (
+                "None -- direction and magnitude set by bridge polarity and duty "
+                "cycle; no rotor position needed for basic operation"
+            ),
             "-",
             "Open / unresolved",
         ],

@@ -91,12 +91,15 @@ import json
 import math
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import pcbnew
 
 HERE = Path(__file__).resolve().parent
 PCB = HERE.parent / "open_secure_esc_6s_50a_can485_faraday.kicad_pcb"
+WORK_TMP = Path(tempfile.gettempdir()) / "open-secure-esc"
+WORK_TMP.mkdir(parents=True, exist_ok=True)
 
 CREEPAGE_REQ_MM = 7.5  # [9] Table 6
 BOARD_T_MM = 1.6  # F.Cu-to-B.Cu, for the around-the-edge path
@@ -298,7 +301,7 @@ def drc_electrical():
     A placement that improves creepage while severing a ground connection is
     not an improvement. Score both, or the number lies.
     """
-    out = Path("/tmp/claude-1000/score_drc.json")
+    out = WORK_TMP / "score_drc.json"
     subprocess.run(
         [
             "kicad-cli",

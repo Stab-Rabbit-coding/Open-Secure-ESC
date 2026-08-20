@@ -191,14 +191,14 @@ def unresolved_cells(db: dict) -> list[dict]:
                     flagged or col == axis["key_column"]
                 ):
                     out.append(
-                            {
-                                "axis": axis_key,
-                                "row": row_key,
-                                "column": col,
-                                "status": status,
-                                "reason": "explicit TBD" if flagged else status,
-                            }
-                        )
+                        {
+                            "axis": axis_key,
+                            "row": row_key,
+                            "column": col,
+                            "status": status,
+                            "reason": "explicit TBD" if flagged else status,
+                        }
+                    )
     return out
 
 

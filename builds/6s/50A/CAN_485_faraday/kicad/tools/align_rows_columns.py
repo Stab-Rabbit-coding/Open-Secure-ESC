@@ -90,6 +90,7 @@ import json
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import pcbnew
@@ -97,8 +98,10 @@ import pcbnew
 HERE = Path(__file__).resolve().parent
 PCB = HERE.parent / "open_secure_esc_6s_50a_can485_faraday.kicad_pcb"
 SCORE = HERE / "score_placement.py"
-BACKUP = Path("/tmp/claude-1000/align_revert.kicad_pcb")
-BEST = Path("/tmp/claude-1000/align_best.kicad_pcb")
+WORK_TMP = Path(tempfile.gettempdir()) / "open-secure-esc"
+WORK_TMP.mkdir(parents=True, exist_ok=True)
+BACKUP = WORK_TMP / "align_revert.kicad_pcb"
+BEST = WORK_TMP / "align_best.kicad_pcb"
 
 MAX_SNAP_MM = 0.60  # beyond this it is a decision, not a slip
 MIN_GROUP = 3  # two parts agreeing is a coincidence

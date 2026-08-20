@@ -66,7 +66,7 @@ jobs:
 
       - name: Run bandit
         if: steps.pyfiles.outputs.found == 'true'
-        run: bandit -r . -ll --exclude ./.git
+        run: bandit -r . -ll --exclude ./.git --exclude ./.venv --exclude ./.ruff_cache
 
   filesystem-scan:
     name: Vulnerability scan (trivy)

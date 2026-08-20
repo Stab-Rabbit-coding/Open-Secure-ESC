@@ -70,6 +70,7 @@ import json
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import pcbnew
@@ -77,7 +78,9 @@ import pcbnew
 HERE = Path(__file__).resolve().parent
 PCB = HERE.parent / "open_secure_esc_6s_50a_can485_faraday.kicad_pcb"
 SCORE = HERE / "score_placement.py"
-BACKUP = Path("/tmp/claude-1000/sym_revert.kicad_pcb")
+WORK_TMP = Path(tempfile.gettempdir()) / "open-secure-esc"
+WORK_TMP.mkdir(parents=True, exist_ok=True)
+BACKUP = WORK_TMP / "sym_revert.kicad_pcb"
 
 MAX_SHIFT_MM = 1.0  # beyond this it is a relayout, not a centring
 TOL_MM = 0.05
