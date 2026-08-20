@@ -115,6 +115,7 @@ Usage:
 # TODO.md 12.5. AI-generated; reviewed against the primary source named in the
 # docstring above. Not human-authored.
 
+import itertools
 import uuid
 from pathlib import Path
 
@@ -126,26 +127,26 @@ OVERALL_H = 6.10
 BODY_W = 4.90
 BODY_H = 5.75
 PITCH = 1.27
-LEAD_W = 0.40          # lead width, 0.4 +/-0.1
-LEAD_TOP_L = 0.56      # top (drain) lead contact length
-LEAD_BOT_L = 0.65      # bottom (source/gate) lead contact length
+LEAD_W = 0.40  # lead width, 0.4 +/-0.1
+LEAD_TOP_L = 0.56  # top (drain) lead contact length
+LEAD_BOT_L = 0.65  # bottom (source/gate) lead contact length
 DRAIN_W = 4.21
 DRAIN_H = 3.69
 
 # ---- Land pattern, Toshiba [50] p.46 SOP Advance(N) ----------------------
-LAND_W = 4.70          # overall land width
-PAD_W = 0.85           # lead and tab pad width
-DRAIN_TOTAL_H = 4.80   # drain land, castellations included
-DRAIN_TAB_H = 1.05     # castellated depth at the top
-DRAIN_BODY_H = 3.75    # solid part below the castellations
-GAP = 0.70             # drain land to lead pads
-LEAD_PAD_H = 1.45      # lead pad height
-LAND_H = DRAIN_TOTAL_H + GAP + LEAD_PAD_H              # 6.95
+LAND_W = 4.70  # overall land width
+PAD_W = 0.85  # lead and tab pad width
+DRAIN_TOTAL_H = 4.80  # drain land, castellations included
+DRAIN_TAB_H = 1.05  # castellated depth at the top
+DRAIN_BODY_H = 3.75  # solid part below the castellations
+GAP = 0.70  # drain land to lead pads
+LEAD_PAD_H = 1.45  # lead pad height
+LAND_H = DRAIN_TOTAL_H + GAP + LEAD_PAD_H  # 6.95
 
 # Land-centred coordinates, y down.
-DRAIN_TAB_CY = -LAND_H / 2 + DRAIN_TAB_H / 2                       # -2.950
-DRAIN_BODY_CY = -LAND_H / 2 + DRAIN_TAB_H + DRAIN_BODY_H / 2       # -0.550
-LEAD_CY = LAND_H / 2 - LEAD_PAD_H / 2                              # +2.750
+DRAIN_TAB_CY = -LAND_H / 2 + DRAIN_TAB_H / 2  # -2.950
+DRAIN_BODY_CY = -LAND_H / 2 + DRAIN_TAB_H + DRAIN_BODY_H / 2  # -0.550
+LEAD_CY = LAND_H / 2 - LEAD_PAD_H / 2  # +2.750
 
 # Paste over the large drain land is split so the aperture does not float the
 # part or trap voids. Coverage ~60%, a stencil convention, not a [50] value.
@@ -178,7 +179,7 @@ def u() -> str:
 
 def pad_columns() -> list[float]:
     """The four pad x centres, on the 1.27 mm pitch."""
-    return [-1.5 * PITCH + i * PITCH for i in range(4)]   # -1.905 .. +1.905
+    return [-1.5 * PITCH + i * PITCH for i in range(4)]  # -1.905 .. +1.905
 
 
 def build() -> str:
@@ -220,9 +221,15 @@ def build() -> str:
 
     # ---- F.Fab: package body, with a pin-1 chamfer ----------------------
     bx, by, ch = BODY_W / 2, BODY_H / 2, 0.6
-    fab = [(-bx, by - ch), (-bx + ch, by), (bx, by), (bx, -by),
-           (-bx, -by), (-bx, by - ch)]
-    for (x1, y1), (x2, y2) in zip(fab, fab[1:]):
+    fab = [
+        (-bx, by - ch),
+        (-bx + ch, by),
+        (bx, by),
+        (bx, -by),
+        (-bx, -by),
+        (-bx, by - ch),
+    ]
+    for (x1, y1), (x2, y2) in itertools.pairwise(fab):
         add(
             f"\t(fp_line (start {x1:.4f} {y1:.4f}) (end {x2:.4f} {y2:.4f}) "
             f'(stroke (width {FAB_W}) (type solid)) (layer "F.Fab") (uuid "{u()}"))'
@@ -232,7 +239,7 @@ def build() -> str:
     cx = max(OVERALL_W, LAND_W) / 2 + CRTYD_CLR
     cy = max(OVERALL_H, LAND_H) / 2 + CRTYD_CLR
     cyd = [(-cx, -cy), (cx, -cy), (cx, cy), (-cx, cy), (-cx, -cy)]
-    for (x1, y1), (x2, y2) in zip(cyd, cyd[1:]):
+    for (x1, y1), (x2, y2) in itertools.pairwise(cyd):
         add(
             f"\t(fp_line (start {x1:.4f} {y1:.4f}) (end {x2:.4f} {y2:.4f}) "
             f'(stroke (width {CRTYD_W}) (type solid)) (layer "F.CrtYd") (uuid "{u()}"))'
@@ -242,7 +249,7 @@ def build() -> str:
     add(
         f"\t(fp_circle (center {-(LAND_W / 2 + 0.55):.4f} {LEAD_CY:.4f}) "
         f"(end {-(LAND_W / 2 + 0.55) + 0.15:.4f} {LEAD_CY:.4f}) "
-        f'(stroke (width {SILK_W}) (type solid)) (fill solid) '
+        f"(stroke (width {SILK_W}) (type solid)) (fill solid) "
         f'(layer "F.SilkS") (uuid "{u()}"))'
     )
 
@@ -275,12 +282,14 @@ def build() -> str:
         add("\t)")
 
     # Segmented paste over the solid part of the drain land.
-    ap_w = LAND_W / PASTE_COLS * (PASTE_COVERAGE ** 0.5)
-    ap_h = DRAIN_BODY_H / PASTE_ROWS * (PASTE_COVERAGE ** 0.5)
+    ap_w = LAND_W / PASTE_COLS * (PASTE_COVERAGE**0.5)
+    ap_h = DRAIN_BODY_H / PASTE_ROWS * (PASTE_COVERAGE**0.5)
     for i in range(PASTE_COLS):
         for j in range(PASTE_ROWS):
             px = (i - (PASTE_COLS - 1) / 2) * (LAND_W / PASTE_COLS)
-            py = DRAIN_BODY_CY + (j - (PASTE_ROWS - 1) / 2) * (DRAIN_BODY_H / PASTE_ROWS)
+            py = DRAIN_BODY_CY + (j - (PASTE_ROWS - 1) / 2) * (
+                DRAIN_BODY_H / PASTE_ROWS
+            )
             add('\t(pad "5" smd rect')
             add(f"\t\t(at {px:.4f} {py:.4f})")
             add(f"\t\t(size {ap_w:.4f} {ap_h:.4f})")

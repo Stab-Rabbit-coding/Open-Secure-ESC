@@ -121,7 +121,7 @@ Usage:
 # TODO.md 12.4. AI-generated; reviewed against the primary sources named
 # in the docstring above. Not human-authored.
 
-
+import itertools
 import uuid
 from pathlib import Path
 
@@ -131,18 +131,18 @@ from pathlib import Path
 
 FOOTPRINT_NAME = "TI_RTA0040B_WQFN-40_6x6mm_P0.5mm_EP4.15x4.15mm"
 
-BODY = 6.0            # PACKAGE OUTLINE: 6.1 / 5.9 -> 6.0 nominal square
-PITCH = 0.5           # PACKAGE OUTLINE: 36X 0.5
+BODY = 6.0  # PACKAGE OUTLINE: 6.1 / 5.9 -> 6.0 nominal square
+PITCH = 0.5  # PACKAGE OUTLINE: 36X 0.5
 PINS_PER_SIDE = 10
-PAD_LEN = 0.6         # EXAMPLE BOARD LAYOUT: 40X (0.6)
-PAD_WID = 0.22        # EXAMPLE BOARD LAYOUT: 40X (0.22)
-ROW_CENTRES = 5.8     # EXAMPLE BOARD LAYOUT: 2X (5.8), centre to centre
-PAD_CENTRE = ROW_CENTRES / 2.0               # = 2.9 mm
-EP = 4.15             # PACKAGE OUTLINE: 4.15 +/-0.1 ; LAYOUT: (4.15)
-CORNER_R = 0.05       # EXAMPLE BOARD LAYOUT: (R0.05) TYP
-VIA_DRILL = 0.2       # EXAMPLE BOARD LAYOUT: 12X (0.2) VIA TYP
+PAD_LEN = 0.6  # EXAMPLE BOARD LAYOUT: 40X (0.6)
+PAD_WID = 0.22  # EXAMPLE BOARD LAYOUT: 40X (0.22)
+ROW_CENTRES = 5.8  # EXAMPLE BOARD LAYOUT: 2X (5.8), centre to centre
+PAD_CENTRE = ROW_CENTRES / 2.0  # = 2.9 mm
+EP = 4.15  # PACKAGE OUTLINE: 4.15 +/-0.1 ; LAYOUT: (4.15)
+CORNER_R = 0.05  # EXAMPLE BOARD LAYOUT: (R0.05) TYP
+VIA_DRILL = 0.2  # EXAMPLE BOARD LAYOUT: 12X (0.2) VIA TYP
 PASTE_APERTURE = 1.17  # EXAMPLE STENCIL DESIGN: 9X (1.17)
-PASTE_ARRAY = 3        # 3x3 = 9 apertures
+PASTE_ARRAY = 3  # 3x3 = 9 apertures
 
 # Silkscreen / courtyard are KiCad drafting conventions, not datasheet values.
 SILK_W = 0.12
@@ -152,9 +152,7 @@ CRTYD_W = 0.05
 # out than the 6.0 mm body.
 CRTYD_CLR = 0.25
 
-DATASHEET = (
-    "https://www.ti.com/lit/ds/symlink/drv8353.pdf"
-)
+DATASHEET = "https://www.ti.com/lit/ds/symlink/drv8353.pdf"
 DESCR = (
     "TI RTA0040B, WQFN-40, 6x6 mm body, 0.5 mm pitch, 4.15x4.15 mm exposed "
     "thermal pad. Land pattern and paste apertures are TI's own recommendation "
@@ -180,7 +178,7 @@ def pad_positions() -> list[tuple[int, float, float, float]]:
     """
     out: list[tuple[int, float, float, float]] = []
     # Offsets of the 10 pads along a side, centred on 0: -2.25 .. +2.25
-    span = (PINS_PER_SIDE - 1) * PITCH          # 4.5 mm, matches 2X (4.5)
+    span = (PINS_PER_SIDE - 1) * PITCH  # 4.5 mm, matches 2X (4.5)
     offs = [-span / 2.0 + i * PITCH for i in range(PINS_PER_SIDE)]
 
     n = 1
@@ -244,15 +242,19 @@ def build() -> str:
     # ---- F.Fab: body outline with a chamfered pin-1 corner ---------------
     h = BODY / 2.0
     ch = 0.6  # drafting convention, marks pin 1 on the fab layer
-    fab = [
-        (-h + ch, h), (h, h), (h, -h), (-h, -h), (-h, h - 0.0),
+    [
+        (-h + ch, h),
+        (h, h),
+        (h, -h),
+        (-h, -h),
+        (-h, h - 0.0),
     ]
     # Chamfer at bottom-left (pin-1 side, KiCad +Y is down = "bottom")
     # Chamfer marks pin 1, which sits at the TOP-left (KiCad +Y is down).
     fab_pts = [(-h, -h + ch), (-h + ch, -h), (h, -h), (h, h), (-h, h), (-h, -h + ch)]
-    for (x1, y1), (x2, y2) in zip(fab_pts, fab_pts[1:]):
+    for (x1, y1), (x2, y2) in itertools.pairwise(fab_pts):
         add(
-            f'\t(fp_line (start {x1:.4f} {y1:.4f}) (end {x2:.4f} {y2:.4f}) '
+            f"\t(fp_line (start {x1:.4f} {y1:.4f}) (end {x2:.4f} {y2:.4f}) "
             f'(stroke (width {FAB_W}) (type solid)) (layer "F.Fab") (uuid "{u()}"))'
         )
 
@@ -282,9 +284,9 @@ def build() -> str:
     # ---- F.CrtYd ---------------------------------------------------------
     c = PAD_CENTRE + PAD_LEN / 2 + CRTYD_CLR
     cy = [(-c, -c), (c, -c), (c, c), (-c, c), (-c, -c)]
-    for (x1, y1), (x2, y2) in zip(cy, cy[1:]):
+    for (x1, y1), (x2, y2) in itertools.pairwise(cy):
         add(
-            f'\t(fp_line (start {x1:.4f} {y1:.4f}) (end {x2:.4f} {y2:.4f}) '
+            f"\t(fp_line (start {x1:.4f} {y1:.4f}) (end {x2:.4f} {y2:.4f}) "
             f'(stroke (width {CRTYD_W}) (type solid)) (layer "F.CrtYd") (uuid "{u()}"))'
         )
 
@@ -345,7 +347,7 @@ def build() -> str:
         add(f"\t\t(size {VIA_DRILL + 0.2:.4f} {VIA_DRILL + 0.2:.4f})")
         add(f"\t\t(drill {VIA_DRILL:.4f})")
         add('\t\t(layers "*.Cu" "*.Mask")')
-        add('\t\t(remove_unused_layers no)')
+        add("\t\t(remove_unused_layers no)")
         add(f'\t\t(uuid "{u()}")')
         add("\t)")
 

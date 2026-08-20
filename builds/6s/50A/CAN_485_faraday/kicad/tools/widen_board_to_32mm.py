@@ -58,14 +58,14 @@ HERE = Path(__file__).resolve().parent
 PCB = HERE.parent / "open_secure_esc_6s_50a_can485_faraday.kicad_pcb"
 BACKUP = PCB.with_suffix(".kicad_pcb.pre-widen.bak")
 
-WIDEN = 6.60          # 25.40 -> 32.00 mm
-MIDLINE = 12.70       # outline points right of this move
+WIDEN = 6.60  # 25.40 -> 32.00 mm
+MIDLINE = 12.70  # outline points right of this move
 # J3 must NOT follow U4 rightward: J5B (the pack GND terminal, x 17.60..24.60)
 # already occupies the space U4 vacates. Moving J3 there put it 1.20 mm from
 # J5B.1, worse than the 4.83 mm it started at. Where J3 belongs is part of the
 # unresolved pack-versus-comms question in TODO.md 12.5.ac.
-MOVE_RIGHT = ["U4"]           # re-anchor to the new right edge
-CENTRE = ["U1"]               # re-centre in the widened board
+MOVE_RIGHT = ["U4"]  # re-anchor to the new right edge
+CENTRE = ["U1"]  # re-centre in the widened board
 USABLE_L = 0.55
 
 
@@ -91,7 +91,7 @@ def main() -> int:
     args = ap.parse_args()
 
     board = pcbnew.LoadBoard(str(PCB))
-    ox, oy = origin(board)
+    ox, _oy = origin(board)
     d = pcbnew.FromMM(WIDEN)
     mid = ox + pcbnew.FromMM(MIDLINE)
 
@@ -136,8 +136,10 @@ def main() -> int:
         p = f.GetPosition()
         f.SetPosition(pcbnew.VECTOR2I(p.x + d, p.y))
         after = pad_span_x(f, ox)
-        print(f"   {ref}: x {before[0]:.2f}..{before[1]:.2f} -> "
-              f"{after[0]:.2f}..{after[1]:.2f}")
+        print(
+            f"   {ref}: x {before[0]:.2f}..{before[1]:.2f} -> "
+            f"{after[0]:.2f}..{after[1]:.2f}"
+        )
 
     box = board.GetBoardEdgesBoundingBox()
     usable_w = pcbnew.ToMM(box.GetWidth()) - 2 * USABLE_L - 0.10
@@ -151,14 +153,18 @@ def main() -> int:
         p = f.GetPosition()
         f.SetPosition(pcbnew.VECTOR2I(p.x + dx, p.y))
         after = pad_span_x(f, ox)
-        print(f"   {ref}: {w:.2f} mm wide, x {span[0]:.2f}..{span[1]:.2f} -> "
-              f"{after[0]:.2f}..{after[1]:.2f}  ({pcbnew.ToMM(dx):+.2f} mm)")
+        print(
+            f"   {ref}: {w:.2f} mm wide, x {span[0]:.2f}..{span[1]:.2f} -> "
+            f"{after[0]:.2f}..{after[1]:.2f}  ({pcbnew.ToMM(dx):+.2f} mm)"
+        )
 
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     board.BuildConnectivity()
     nb = board.GetBoardEdgesBoundingBox()
-    print(f"\nboard now {pcbnew.ToMM(nb.GetWidth()) - 0.1:.2f} x "
-          f"{pcbnew.ToMM(nb.GetHeight()) - 0.1:.2f} mm")
+    print(
+        f"\nboard now {pcbnew.ToMM(nb.GetWidth()) - 0.1:.2f} x "
+        f"{pcbnew.ToMM(nb.GetHeight()) - 0.1:.2f} mm"
+    )
 
     if args.dry_run:
         print("--dry-run: nothing written")

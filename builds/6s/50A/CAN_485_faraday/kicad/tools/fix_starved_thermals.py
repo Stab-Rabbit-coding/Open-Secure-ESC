@@ -90,13 +90,17 @@ HERE = Path(__file__).resolve().parent
 PCB = HERE.parent / "open_secure_esc_6s_50a_can485_faraday.kicad_pcb"
 
 # ICs and the shield frame: solid bond is both the fix and the better design.
-STRUCTURAL = {"SH1": {"1"}, "U5": {"25"},
-              "U6": {"1", "2"}, "U7": {"1", "2"}, "U8": {"1", "2"}}
+STRUCTURAL = {
+    "SH1": {"1"},
+    "U5": {"25"},
+    "U6": {"1", "2"},
+    "U7": {"1", "2"},
+    "U8": {"1", "2"},
+}
 
 # Two-terminal 0805 passives: solid works, but carries the tombstoning trade
 # described above. Separated so they can be reverted independently.
-PASSIVES = {"C7": {"2"}, "C9": {"2"}, "C10": {"2"},
-            "R5": {"2"}, "R10": {"2"}}
+PASSIVES = {"C7": {"2"}, "C9": {"2"}, "C10": {"2"}, "R5": {"2"}, "R10": {"2"}}
 
 
 def apply(board, table):
@@ -119,12 +123,14 @@ def apply(board, table):
 def main():
     """Apply the solid connections and refill, reporting both groups."""
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--dry-run", action="store_true",
-                    help="report only, write nothing")
-    ap.add_argument("--skip-passives", action="store_true",
-                    help="leave the four 0805 passives on thermal relief, "
-                         "accepting their starved_thermal errors, in exchange "
-                         "for keeping their reflow behaviour unchanged")
+    ap.add_argument("--dry-run", action="store_true", help="report only, write nothing")
+    ap.add_argument(
+        "--skip-passives",
+        action="store_true",
+        help="leave the four 0805 passives on thermal relief, "
+        "accepting their starved_thermal errors, in exchange "
+        "for keeping their reflow behaviour unchanged",
+    )
     args = ap.parse_args()
 
     board = pcbnew.LoadBoard(str(PCB))
@@ -134,14 +140,20 @@ def main():
     print(f"   {' '.join(structural)}")
 
     if args.skip_passives:
-        print("\n0805 passives: LEFT on thermal relief (--skip-passives); "
-              "their starved_thermal errors remain")
+        print(
+            "\n0805 passives: LEFT on thermal relief (--skip-passives); "
+            "their starved_thermal errors remain"
+        )
     else:
         passives = apply(board, PASSIVES)
-        print(f"\nsolid GND bond, 0805 passives ({len(passives)} pads): "
-              f"{' '.join(passives)}")
-        print("   tombstoning trade accepted -- see this script's docstring "
-              "and TODO.md 12.5.ao")
+        print(
+            f"\nsolid GND bond, 0805 passives ({len(passives)} pads): "
+            f"{' '.join(passives)}"
+        )
+        print(
+            "   tombstoning trade accepted -- see this script's docstring "
+            "and TODO.md 12.5.ao"
+        )
 
     if args.dry_run:
         print("\n--dry-run: nothing written")

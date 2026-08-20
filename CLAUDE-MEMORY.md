@@ -31,6 +31,7 @@ NOT mean nobody else edited the file — when their save has already been swept
 into one of my commits, clean status means exactly the opposite.
 
 **How to apply:**
+
 - Before committing after any long tool sequence, re-run the verification
   against the file *as it is on disk now*, not the numbers measured earlier.
 - Check `pgrep -a kicad` and for `.lck` files before writing a board; if KiCad
@@ -67,6 +68,7 @@ copper and took a board from 29 DRC violations to 186 including 41 shorts
 (Open-Secure-ESC, 2026-08-19).
 
 **How to apply:**
+
 - Any pcbnew call returning a reference (`GetBoundingBox`, `Outline`,
   `GetFilledPolysList`, `Padstack`) gets its own local variable before a
   mutator or a second method call.
@@ -96,7 +98,7 @@ condition anywhere in the file. Keep every condition on one line.
 **2. Clause order in a two-item condition is not commutative.** Against a board
 with 48 known violations:
 
-```
+```text
 A.Type == 'Via'                                  -> 502 hits
 B.NetClass == 'Isolated'                         -> 499 hits
 A.Type == 'Via' && B.NetClass == 'Isolated'      ->   0 hits
@@ -110,6 +112,7 @@ that conductor spacing was enforced; the rules producing that silence had never
 executed. 79 real violations were hidden.
 
 **How to apply:**
+
 - **Every DRC rule needs a negative control before it is trusted**: a board
   known to violate it, on which the rule is *seen* to fire. Add the control
   procedure as a comment beside the rule.

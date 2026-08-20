@@ -48,7 +48,7 @@ Usage:
 
 import argparse
 import shutil
-from datetime import date
+from datetime import datetime, timezone
 from pathlib import Path
 
 import openpyxl
@@ -72,9 +72,15 @@ MOTOR = {
     "subtitle": "Build axis: Motor (Brushed / Brushless)",
     "widths": [18, 26, 14, 34, 24, 14, 34, 18, 22],
     "columns": [
-        "Motor Type", "Bridge Topology", "Switch Positions", "Gate Driver Part",
-        "Output Terminals", "Shunt Qty", "Commutation Requirement",
-        "REFERENCES.md Tags", "Status",
+        "Motor Type",
+        "Bridge Topology",
+        "Switch Positions",
+        "Gate Driver Part",
+        "Output Terminals",
+        "Shunt Qty",
+        "Commutation Requirement",
+        "REFERENCES.md Tags",
+        "Status",
     ],
     "rows": [
         [
@@ -84,8 +90,7 @@ MOTOR = {
             "TI DRV8353S, 3-phase smart gate driver, SPI variant [21]",
             "3 (PH_A / PH_B / PH_C)",
             "3 (one per phase, low-side)",
-            "Six-step trapezoidal or FOC; rotor position from the Shaft "
-            "Sensor axis",
+            "Six-step trapezoidal or FOC; rotor position from the Shaft Sensor axis",
             "[21]",
             "Verified (local PDF)",
         ],
@@ -101,8 +106,8 @@ MOTOR = {
             "area, and must be checked against [21] before adoption.",
             "2 (M+ / M-)",
             "1-2 (bridge-leg or in-line)",
-            "None -- direction and magnitude set by bridge polarity and duty "
-            "cycle; no rotor position needed for basic operation",
+            ("None -- direction and magnitude set by bridge polarity and duty "
+            "cycle; no rotor position needed for basic operation"),
             "-",
             "Open / unresolved",
         ],
@@ -113,71 +118,104 @@ MOTOR = {
 SHAFT = {
     "title": "Shaft Sensor Decision Matrix",
     "subtitle": "Build axis: Shaft Sensor (None-sensorless / Hall / "
-                "Quadrature encoder / Resolver)",
+    "Quadrature encoder / Resolver)",
     "widths": [22, 30, 22, 34, 22, 38, 18, 22],
     "columns": [
-        "Sensor Type", "Rotor Position Source", "MCU Pins Required",
-        "Additional BOM Component", "Connector",
-        "Firmware Workflow Steps", "REFERENCES.md Tags", "Status",
+        "Sensor Type",
+        "Rotor Position Source",
+        "MCU Pins Required",
+        "Additional BOM Component",
+        "Connector",
+        "Firmware Workflow Steps",
+        "REFERENCES.md Tags",
+        "Status",
     ],
     "rows": [
         [
             "None (sensorless)",
-            "Back-EMF / observer computed from phase voltages and currents; "
-            "same observer the Control sheet's closed-loop rows already use "
-            "(TI SLAAE96A [13])",
-            "3 ADC (one per phase voltage divider). Reuses the current-sense "
-            "ADC channels already allocated on the Amperage axis.",
-            "3 resistor dividers (6 R) plus filter capacitors, one per phase. "
-            "Generic passives, values sized against the pack voltage of the "
-            "chosen Voltage tier.",
+            (
+                "Back-EMF / observer computed from phase voltages and currents; "
+                "same observer the Control sheet's closed-loop rows already use "
+                "(TI SLAAE96A [13])"
+            ),
+            (
+                "3 ADC (one per phase voltage divider). Reuses the current-sense "
+                "ADC channels already allocated on the Amperage axis."
+            ),
+            (
+                "3 resistor dividers (6 R) plus filter capacitors, one per phase. "
+                "Generic passives, values sized against the pack voltage of the "
+                "chosen Voltage tier."
+            ),
             "None -- no sensor cable leaves the board",
-            "Implement the observer per [13]; handle open-loop startup ramp, "
-            "since back-EMF is unusable near zero speed.",
+            (
+                "Implement the observer per [13]; handle open-loop startup ramp, "
+                "since back-EMF is unusable near zero speed."
+            ),
             "[13]",
             "Candidate (unverified)",
         ],
         [
             "Hall effect (3-sensor, 120 deg)",
-            "Three digital Hall outputs giving six commutation states per "
-            "electrical revolution",
+            (
+                "Three digital Hall outputs giving six commutation states per "
+                "electrical revolution"
+            ),
             "3 digital in (interrupt-capable), plus a sensor supply rail",
-            "3 pull-up resistors plus ESD protection on the cable entry. "
-            "Sensor part: TI DRV5013 is carried from the Control sheet as a "
-            "fallback candidate, at that sheet's existing status -- it has "
-            "not been separately verified for this axis.",
+            (
+                "3 pull-up resistors plus ESD protection on the cable entry. "
+                "Sensor part: TI DRV5013 is carried from the Control sheet as a "
+                "fallback candidate, at that sheet's existing status -- it has "
+                "not been separately verified for this axis."
+            ),
             "5-pin (VCC, GND, HA, HB, HC)",
-            "Decode the 3-bit Hall state into a 6-step commutation table; "
-            "derive speed from state-transition timing.",
+            (
+                "Decode the 3-bit Hall state into a 6-step commutation table; "
+                "derive speed from state-transition timing."
+            ),
             "[1]",
             "Open / unresolved",
         ],
         [
             "Quadrature encoder (incremental)",
-            "Two phase-quadrature channels A/B, plus optional once-per-rev "
-            "index Z",
-            "2 digital in, or 3 with index. Prefer a timer with a hardware "
-            "quadrature decoder if the chosen MCU has one.",
-            "Pull-ups for an open-collector encoder, or a differential line "
-            "receiver for RS-422 encoders -- " + TBD,
+            "Two phase-quadrature channels A/B, plus optional once-per-rev index Z",
+            (
+                "2 digital in, or 3 with index. Prefer a timer with a hardware "
+                "quadrature decoder if the chosen MCU has one."
+            ),
+            (
+                "Pull-ups for an open-collector encoder, or a differential line "
+                "receiver for RS-422 encoders -- " + TBD
+            ),
             "4-pin (VCC, GND, A, B) or 6-pin with Z and shield",
-            "Configure the hardware quadrature decoder; establish a zero "
-            "reference from the index pulse or a homing routine.",
+            (
+                "Configure the hardware quadrature decoder; establish a zero "
+                "reference from the index pulse or a homing routine."
+            ),
             "-",
             "Open / unresolved",
         ],
         [
             "Resolver",
-            "Ratiometric SIN/COS windings excited by an AC reference; "
-            "absolute position within one electrical revolution",
-            "Depends on the converter: an SPI or parallel bus to a "
-            "resolver-to-digital converter, plus an excitation output",
-            "Resolver-to-digital converter IC and an excitation amplifier -- "
-            + TBD + ". This is the only shaft-sensor option that adds a whole "
-            "IC to the BOM.",
+            (
+                "Ratiometric SIN/COS windings excited by an AC reference; "
+                "absolute position within one electrical revolution"
+            ),
+            (
+                "Depends on the converter: an SPI or parallel bus to a "
+                "resolver-to-digital converter, plus an excitation output"
+            ),
+            (
+                "Resolver-to-digital converter IC and an excitation amplifier -- "
+                + TBD
+                + ". This is the only shaft-sensor option that adds a whole "
+                "IC to the BOM."
+            ),
             "6-pin (EXC+, EXC-, SIN+, SIN-, COS+, COS-), shielded",
-            "Drive the excitation reference; read absolute angle from the "
-            "converter; no startup ramp needed, unlike sensorless.",
+            (
+                "Drive the excitation reference; read absolute angle from the "
+                "converter; no startup ramp needed, unlike sensorless."
+            ),
             "-",
             "Open / unresolved",
         ],
@@ -220,11 +258,21 @@ def update_legend(wb) -> None:
     }
     row = ws.max_row + 1
     additions = [
-        ("Motor", "Brushed vs brushless: bridge topology, switch-position "
-                  "count, gate-driver part, shunt count. Changes the power "
-                  "stage, not just a setting."),
-        ("Shaft Sensor", "Sensorless / Hall / quadrature encoder / resolver: "
-                         "MCU pin budget, connector, and any added IC."),
+        (
+            "Motor",
+            (
+                "Brushed vs brushless: bridge topology, switch-position "
+                "count, gate-driver part, shunt count. Changes the power "
+                "stage, not just a setting."
+            ),
+        ),
+        (
+            "Shaft Sensor",
+            (
+                "Sensorless / Hall / quadrature encoder / resolver: "
+                "MCU pin budget, connector, and any added IC."
+            ),
+        ),
     ]
     for label, desc in additions:
         if label in existing:
@@ -234,11 +282,14 @@ def update_legend(wb) -> None:
         row += 1
     note_row = row + 1
     ws.cell(
-        row=note_row, column=1,
-        value=f"Amended {date.today().isoformat()}: added the Motor and Shaft "
-              f"Sensor axis sheets. Cells reading 'TBD -- requires "
-              f"primary-source verification' are genuinely unsourced, not "
-              f"placeholders to be filled in from memory (AGENTS.md Sec.1.3).",
+        row=note_row,
+        column=1,
+        value=(
+            f"Amended {datetime.now(timezone.utc).date().isoformat()}: added the Motor "
+            "and Shaft Sensor axis sheets. Cells reading 'TBD -- requires "
+            "primary-source verification' are genuinely unsourced, not "
+            "placeholders to be filled in from memory (AGENTS.md Sec.1.3)."
+        ),
     ).font = Font(size=10, italic=True)
 
 
@@ -256,8 +307,16 @@ def main() -> int:
     update_legend(wb)
 
     # Keep axis sheets in build-walk order, Legend first.
-    order = ["Legend", "Voltage", "Amperage", "Motor", "Shaft Sensor",
-             "Protocol", "Control", "EMI Hardening"]
+    order = [
+        "Legend",
+        "Voltage",
+        "Amperage",
+        "Motor",
+        "Shaft Sensor",
+        "Protocol",
+        "Control",
+        "EMI Hardening",
+    ]
     wb._sheets = [wb[n] for n in order if n in wb.sheetnames] + [
         wb[n] for n in wb.sheetnames if n not in order
     ]

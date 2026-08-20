@@ -1726,7 +1726,7 @@ published capability page:
 **This board's tightest features, for checking against any candidate vendor:**
 
 | Feature | This board | Where |
-|---|---|---|
+| ------- | ---------- | ----- |
 | Min drill | 0.300 mm | U5.41 thermal vias |
 | Min annular ring | 0.150 mm | U5.41 thermal vias |
 | Min pad pitch | 0.500 mm | U5 WQFN-40, U1 LQFP-64 |
@@ -1742,7 +1742,6 @@ should be routed to the common envelope, not to one vendor's floor.
 Until each item is verified against the chosen house, no claim of compliance
 with any specific manufacturer may appear in this repository. See
 TODO.md 12.5.au.
-
 
 The following items are named in `README.md` but currently have **no**
 authoritative published specification and MUST NOT be cited as conforming
@@ -2015,6 +2014,7 @@ that the mechanism exists and where its configuration lives, but defers every
 register-level detail to this manual.
 What [1] DOES verify locally (read 2026-08-18 from
 `docs/datasheets/mspm0g3507.pdf`):
+
 - §8.32 "Serial Wire Debug Interface", p. 73 — SWD is a two-wire Arm SW-DP;
   full debug functionality is described only in the TRM.
 - §8.33 "Bootstrap Loader (BSL)", p. 73 — "Access to the device memory and
@@ -2024,6 +2024,7 @@ What [1] DOES verify locally (read 2026-08-18 from
 - §7 memory map — the NONMAIN configuration NVM occupies
   0x41C0.0000–0x41C0.0200 (512 bytes), separate from main flash. This is the
   region that holds boot/debug configuration.
+
 Obtain from https://www.ti.com/ (product folder for MSPM0G3507, "Technical
 documentation") and re-cite by number and section before the lock policy is
 implemented.

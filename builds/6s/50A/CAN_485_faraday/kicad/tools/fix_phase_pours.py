@@ -66,8 +66,11 @@ NEW_TOP_MM = 55.25
 def main() -> int:
     """Grow each phase pour's top edge and re-fill."""
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--dry-run", action="store_true",
-                    help="report the change without writing the board")
+    ap.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="report the change without writing the board",
+    )
     args = ap.parse_args()
 
     board = pcbnew.LoadBoard(str(PCB))
@@ -93,9 +96,11 @@ def main() -> int:
             continue
         name = zone.GetNetname()
         outline = zone.Outline()
-        ys = [outline.Outline(i).CPoint(k).y
-              for i in range(outline.OutlineCount())
-              for k in range(outline.Outline(i).PointCount())]
+        ys = [
+            outline.Outline(i).CPoint(k).y
+            for i in range(outline.OutlineCount())
+            for k in range(outline.Outline(i).PointCount())
+        ]
         top = min(ys)
         if top <= new_top:
             print(f"  {name}: already at y {top / mm:.2f} mm -- no change")
@@ -110,8 +115,10 @@ def main() -> int:
                 if pt.y == top:
                     chain.SetPoint(k, pcbnew.VECTOR2I(pt.x, new_top))
         reach = src_bottom.get(name)
-        print(f"  {name}: top edge y {top / mm:.2f} -> {NEW_TOP_MM:.2f} mm"
-              + (f" (source pads end at y {reach / mm:.2f})" if reach else ""))
+        print(
+            f"  {name}: top edge y {top / mm:.2f} -> {NEW_TOP_MM:.2f} mm"
+            + (f" (source pads end at y {reach / mm:.2f})" if reach else "")
+        )
         changed += 1
 
     if not changed:

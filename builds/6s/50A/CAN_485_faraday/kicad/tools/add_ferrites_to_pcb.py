@@ -74,12 +74,12 @@ FERRITES = [
 ]
 # Pads whose net membership changes, per the datasheet pin tables.
 RENET = {
-    ("U3", "16"): "CAN_VISOIN",     # [10] VISOIN, fed from VISOOUT via FB1
-    ("U3", "18"): "CAN_GNDISO",     # [10] GNDISO, dc-dc converter ground
+    ("U3", "16"): "CAN_VISOIN",  # [10] VISOIN, fed from VISOOUT via FB1
+    ("U3", "18"): "CAN_GNDISO",  # [10] GNDISO, dc-dc converter ground
     ("U3", "20"): "CAN_GNDISO",
-    ("U4", "11"): "RS485_GNDISO",   # [9] GND2 converter side
+    ("U4", "11"): "RS485_GNDISO",  # [9] GND2 converter side
     ("U4", "14"): "RS485_GNDISO",
-    ("U4", "19"): "RS485_VISOIN",   # [9] VISOIN, fed from VISOOUT via FB3
+    ("U4", "19"): "RS485_VISOIN",  # [9] VISOIN, fed from VISOOUT via FB3
 }
 
 
@@ -135,9 +135,8 @@ def main() -> int:
         fp.SetReference(ref)
         fp.SetValue("BLM15HD182SN1D")
         board.Add(fp)
-        fp.SetPosition(pcbnew.VECTOR2I(ox + pcbnew.FromMM(x),
-                                       oy + pcbnew.FromMM(y)))
-        fp.Flip(fp.GetPosition(), False)      # isolated section is on B.Cu
+        fp.SetPosition(pcbnew.VECTOR2I(ox + pcbnew.FromMM(x), oy + pcbnew.FromMM(y)))
+        fp.Flip(fp.GetPosition(), False)  # isolated section is on B.Cu
         if rot:
             fp.SetOrientationDegrees(rot)
         for p in fp.Pads():
@@ -152,13 +151,20 @@ def main() -> int:
     for f in board.Footprints():
         for p in f.Pads():
             pads.setdefault(p.GetNetname(), []).append(
-                (f.GetReference(), p.GetNumber(), p.GetPosition()))
+                (f.GetReference(), p.GetNumber(), p.GetPosition())
+            )
     for ref, n1, n2, x, y, _ in FERRITES:
         here = pcbnew.VECTOR2I(ox + pcbnew.FromMM(x), oy + pcbnew.FromMM(y))
         for n in (n1, n2):
-            far = [(math.hypot(pcbnew.ToMM(p.x - here.x),
-                               pcbnew.ToMM(p.y - here.y)), r, pn)
-                   for r, pn, p in pads.get(n, []) if not r.startswith("FB")]
+            far = [
+                (
+                    math.hypot(pcbnew.ToMM(p.x - here.x), pcbnew.ToMM(p.y - here.y)),
+                    r,
+                    pn,
+                )
+                for r, pn, p in pads.get(n, [])
+                if not r.startswith("FB")
+            ]
             if far:
                 d, r, pn = min(far)
                 print(f"     {ref} -> {r}.{pn} ({n}): {d:5.1f} mm")

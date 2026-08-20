@@ -76,7 +76,6 @@ Usage:
 # TODO.md 12.4. AI-generated; reviewed against the primary sources named
 # in the docstring above. Not human-authored.
 
-
 import argparse
 import subprocess
 import sys
@@ -114,8 +113,10 @@ def check_symbol_pins(sch: Schematic) -> list[str]:
         for unit in lib.units:
             for pin in unit.pins:
                 if not (on_grid(pin.position.X) and on_grid(pin.position.Y)):
-                    bad.append(f"{lib.entryName} pin {pin.number} "
-                               f"@({pin.position.X}, {pin.position.Y})")
+                    bad.append(
+                        f"{lib.entryName} pin {pin.number} "
+                        f"@({pin.position.X}, {pin.position.Y})"
+                    )
     return bad
 
 
@@ -125,9 +126,16 @@ def walk_positions(sch: Schematic):
         yield sym.position
         for p in sym.properties:
             yield p.position
-    for group in (sch.graphicalItems, sch.junctions, sch.noConnects,
-                  sch.busEntries, sch.texts, sch.labels, sch.globalLabels,
-                  sch.hierarchicalLabels):
+    for group in (
+        sch.graphicalItems,
+        sch.junctions,
+        sch.noConnects,
+        sch.busEntries,
+        sch.texts,
+        sch.labels,
+        sch.globalLabels,
+        sch.hierarchicalLabels,
+    ):
         for item in group:
             pts = getattr(item, "points", None)
             if pts:
@@ -143,40 +151,52 @@ def export_netlist(path: Path, out: Path) -> str:
     """Export a netlist and return just its (nets ...) section."""
     subprocess.run(
         ["kicad-cli", "sch", "export", "netlist", "--output", str(out), str(path)],
-        check=True, capture_output=True,
+        check=True,
+        capture_output=True,
     )
     text = out.read_text(encoding="utf-8")
-    return text[text.index("(nets"):]
+    return text[text.index("(nets") :]
 
 
 def main() -> int:
     """Snap every sheet coordinate to the 1.27 mm grid."""
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--dry-run", action="store_true")
-    ap.add_argument("--verify-netlist", action="store_true",
-                    help="export the netlist before and after and require "
-                         "them to be identical (always on; kept for clarity)")
-    ap.add_argument("--force", action="store_true",
-                    help="actually attempt the snap. Without this the script "
-                         "only reports, because the snap is known to short "
-                         "this sheet -- see the module docstring.")
+    ap.add_argument(
+        "--verify-netlist",
+        action="store_true",
+        help="export the netlist before and after and require "
+        "them to be identical (always on; kept for clarity)",
+    )
+    ap.add_argument(
+        "--force",
+        action="store_true",
+        help="actually attempt the snap. Without this the script "
+        "only reports, because the snap is known to short "
+        "this sheet -- see the module docstring.",
+    )
     args = ap.parse_args()
-    args.verify_netlist = True      # never write this file unverified
+    args.verify_netlist = True  # never write this file unverified
 
     sch = Schematic().from_file(str(SCH))
 
     bad = check_symbol_pins(sch)
     if bad:
-        print("REFUSING TO SNAP -- these library symbols have off-grid pins, "
-              "so a global snap would detach them from their wires:",
-              file=sys.stderr)
+        print(
+            "REFUSING TO SNAP -- these library symbols have off-grid pins, "
+            "so a global snap would detach them from their wires:",
+            file=sys.stderr,
+        )
         for b in bad:
             print(f"  {b}", file=sys.stderr)
         return 1
 
     with tempfile.TemporaryDirectory() as td:
-        before = (export_netlist(SCH, Path(td) / "before.net")
-                  if args.verify_netlist else None)
+        before = (
+            export_netlist(SCH, Path(td) / "before.net")
+            if args.verify_netlist
+            else None
+        )
 
         moved = 0
         for pos in walk_positions(sch):
@@ -187,10 +207,12 @@ def main() -> int:
         print(f"snapped {moved} coordinates to the {GRID} mm grid")
 
         if args.dry_run or not args.force:
-            print("not written -- a global snap shorts this sheet "
-                  "(VM/GND, the six PWM lines, CPH/CPL). See the module "
-                  "docstring; pass --force only if the lane spacing has been "
-                  "fixed first.")
+            print(
+                "not written -- a global snap shorts this sheet "
+                "(VM/GND, the six PWM lines, CPH/CPL). See the module "
+                "docstring; pass --force only if the lane spacing has been "
+                "fixed first."
+            )
             return 0
 
         sch.to_file(str(SCH))
@@ -199,8 +221,11 @@ def main() -> int:
         if before is not None:
             after = export_netlist(SCH, Path(td) / "after.net")
             if before != after:
-                print("NETLIST CHANGED -- the snap altered connectivity. "
-                      "Restore from backup and investigate.", file=sys.stderr)
+                print(
+                    "NETLIST CHANGED -- the snap altered connectivity. "
+                    "Restore from backup and investigate.",
+                    file=sys.stderr,
+                )
                 return 1
             print("netlist verified identical before and after")
     return 0

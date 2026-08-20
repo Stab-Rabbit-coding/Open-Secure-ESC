@@ -68,7 +68,6 @@ Usage:
 # TODO.md 12.4. AI-generated; reviewed against the primary sources named
 # in the docstring above. Not human-authored.
 
-
 import json
 import re
 from pathlib import Path
@@ -97,8 +96,7 @@ CLASSES: dict[str, tuple[float, float, float, float, tuple[str, ...]]] = {
     # job. The net class keeps the width and via size, which are per-net and
     # meaningful; the clearance moves to where it can be stated correctly.
     "Power": (3.0, 0.2, 1.2, 0.6, ("VM", "GND", "PH_A", "PH_B", "PH_C")),
-    "Sense": (0.5, 0.2, 0.8, 0.4,
-              ("ISENSE_A_HI", "ISENSE_B_HI", "ISENSE_C_HI")),
+    "Sense": (0.5, 0.2, 0.8, 0.4, ("ISENSE_A_HI", "ISENSE_B_HI", "ISENSE_C_HI")),
     # 2026-08-19: the isolated net NAMES were re-spun by
     # tools/add_isolated_supply_ferrites.py and
     # tools/add_isolated_supply_caps.py -- the bead splits each isolated
@@ -107,13 +105,26 @@ CLASSES: dict[str, tuple[float, float, float, float, tuple[str, ...]]] = {
     # RS485_VISOIN_OPEN) no longer exist on the board, so those two
     # assignments silently matched nothing. Verified against the net table
     # in open_secure_esc_6s_50a_can485_faraday.kicad_pcb.
-    "Isolated": (0.4, 0.2, 0.8, 0.4,
-                 ("CAN_ISO_GND", "CAN_GNDISO",
-                  "CAN_VISOIN", "CAN_VISOOUT",
-                  "RS485_ISO_GND", "RS485_GNDISO",
-                  "RS485_VISOIN", "RS485_VISOOUT",
-                  "RS485_A", "RS485_B",
-                  "Net-(J2-Pin_1)", "Net-(J2-Pin_2)")),
+    "Isolated": (
+        0.4,
+        0.2,
+        0.8,
+        0.4,
+        (
+            "CAN_ISO_GND",
+            "CAN_GNDISO",
+            "CAN_VISOIN",
+            "CAN_VISOOUT",
+            "RS485_ISO_GND",
+            "RS485_GNDISO",
+            "RS485_VISOIN",
+            "RS485_VISOOUT",
+            "RS485_A",
+            "RS485_B",
+            "Net-(J2-Pin_1)",
+            "Net-(J2-Pin_2)",
+        ),
+    ),
     # FINE class REMOVED 2026-08-19 -- MEASURED, AND IT BOUGHT NOTHING.
     #
     # The class was 0.10 mm track at 0.09 mm clearance, sized so exactly one
@@ -145,17 +156,18 @@ def main() -> int:
     template = next((c for c in classes if c.get("name") == "Default"), {})
     keep = [c for c in classes if c.get("name") == "Default"]
 
-    for priority, (name, (width, clr, via_d, via_dr, _)) in enumerate(
-            CLASSES.items()):
+    for priority, (name, (width, clr, via_d, via_dr, _)) in enumerate(CLASSES.items()):
         entry = dict(template)
-        entry.update({
-            "name": name,
-            "track_width": width,
-            "clearance": clr,
-            "via_diameter": via_d,
-            "via_drill": via_dr,
-            "priority": priority,
-        })
+        entry.update(
+            {
+                "name": name,
+                "track_width": width,
+                "clearance": clr,
+                "via_diameter": via_d,
+                "via_drill": via_dr,
+                "priority": priority,
+            }
+        )
         keep.append(entry)
     net_settings["classes"] = keep
 
@@ -171,13 +183,15 @@ def main() -> int:
     # Check the names against the board and refuse rather than write a lie.
     pcb = PRO.with_suffix(".kicad_pcb")
     if pcb.is_file():
-        board_nets = set(re.findall(r'\(net \d+ "([^"]*)"\)',
-                                    pcb.read_text(encoding="utf-8")))
+        board_nets = set(
+            re.findall(r'\(net \d+ "([^"]*)"\)', pcb.read_text(encoding="utf-8"))
+        )
         missing = sorted(n for n in assignments if n not in board_nets)
         if missing:
             raise SystemExit(
                 "these nets are named here but do not exist on the board:\n  "
-                + "\n  ".join(missing))
+                + "\n  ".join(missing)
+            )
     net_settings["netclass_assignments"] = assignments
     # KiCad 8+ stores per-net overrides as netclass_patterns. 9.0.2 still
     # honours netclass_assignments, but writing both means a future KiCad
@@ -186,16 +200,16 @@ def main() -> int:
     # (the board was found with only "Default" defined, so the pack and
     # phase conductors would have auto-routed at the 0.2 mm signal width).
     net_settings["netclass_patterns"] = [
-        {"pattern": net, "netclass": cls}
-        for net, cls in assignments.items()
+        {"pattern": net, "netclass": cls} for net, cls in assignments.items()
     ]
 
     PRO.write_text(json.dumps(pro, indent=2) + "\n", encoding="utf-8")
     print(f"wrote {PRO}")
     for name, (width, clr, *_rest) in CLASSES.items():
         nets = CLASSES[name][4]
-        print(f"  {name:9} width {width:>4} mm  clearance {clr:>4} mm  "
-              f"{len(nets)} nets")
+        print(
+            f"  {name:9} width {width:>4} mm  clearance {clr:>4} mm  {len(nets)} nets"
+        )
     return 0
 
 

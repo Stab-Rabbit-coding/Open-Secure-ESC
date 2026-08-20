@@ -36,7 +36,6 @@ Usage:
 # TODO.md 12.4. AI-generated; reviewed against the primary sources named
 # in the docstring above. Not human-authored.
 
-
 import argparse
 import re
 import shutil
@@ -71,8 +70,13 @@ BACKUP = PCB.with_suffix(".kicad_pcb.pre-autoroute.bak")
 # comment describes. The failure mode did not change; only its cause did.
 # `assert_netclasses()` below turns that silent loss into a hard stop.
 NETCLASS_EXPECTED: dict[str, float] = {
-    "VM": 3.0, "GND": 3.0, "PH_A": 3.0, "PH_B": 3.0, "PH_C": 3.0,
-    "ISENSE_A_HI": 0.5, "CAN_ISO_GND": 0.4,
+    "VM": 3.0,
+    "GND": 3.0,
+    "PH_A": 3.0,
+    "PH_B": 3.0,
+    "PH_C": 3.0,
+    "ISENSE_A_HI": 0.5,
+    "CAN_ISO_GND": 0.4,
 }
 
 # Nets the router is NOT allowed to touch. Each is carried by a poured plane
@@ -91,7 +95,7 @@ PLANE_STUB_MAX_MM = 60.0
 
 # Inner layers that are poured planes, not routing space.
 PLANE_LAYERS: tuple[str, ...] = ("In1.Cu", "In2.Cu")
-EDGE_CLEARANCE_MM = 0.50        # .kicad_pro min_copper_edge_clearance
+EDGE_CLEARANCE_MM = 0.50  # .kicad_pro min_copper_edge_clearance
 
 # DSN coordinates are DECIMAL micrometres -- KiCad writes the board outline as
 # "50092.9 -19952.4", not as integers. An integer-only `-?\d+` regex splits
@@ -147,7 +151,8 @@ def assert_netclasses(board) -> None:
     if bad:
         raise SystemExit(
             "net classes are not in effect -- run tools/set_netclasses.py:\n  "
-            + "\n  ".join(bad))
+            + "\n  ".join(bad)
+        )
 
 
 def strip_pour_keepouts(dsn: Path, board) -> int:
@@ -174,8 +179,14 @@ def strip_pour_keepouts(dsn: Path, board) -> int:
         if z.GetDoNotAllowTracks() or z.GetDoNotAllowVias():
             continue
         bb = z.GetBoundingBox()
-        routable.append((bb.GetLeft() / MM, bb.GetRight() / MM,
-                         bb.GetTop() / MM, bb.GetBottom() / MM))
+        routable.append(
+            (
+                bb.GetLeft() / MM,
+                bb.GetRight() / MM,
+                bb.GetTop() / MM,
+                bb.GetBottom() / MM,
+            )
+        )
     if not routable:
         return 0
 
@@ -195,12 +206,16 @@ def strip_pour_keepouts(dsn: Path, board) -> int:
                 if depth == 0:
                     break
             j += 1
-        blk = text[k:j + 1]
+        blk = text[k : j + 1]
         nums = [float(v) / 1000.0 for v in re.findall(DSN_NUM, blk)[1:]]
         xs, ys = nums[0::2], [-v for v in nums[1::2]]
-        hit = any(abs(min(xs) - l) < 0.1 and abs(max(xs) - r) < 0.1
-                  and abs(min(ys) - t) < 0.1 and abs(max(ys) - b) < 0.1
-                  for l, r, t, b in routable)
+        hit = any(
+            abs(min(xs) - l) < 0.1
+            and abs(max(xs) - r) < 0.1
+            and abs(min(ys) - t) < 0.1
+            and abs(max(ys) - b) < 0.1
+            for l, r, t, b in routable
+        )
         out.append(text[i:k])
         if hit:
             removed += 1
@@ -318,13 +333,13 @@ def inset_boundary(dsn: Path, inset_mm: float, board) -> bool:
             if depth == 0:
                 break
         i += 1
-    block = text[start:i + 1]
+    block = text[start : i + 1]
     nums = [float(v) for v in re.findall(DSN_NUM, block)]
     if len(nums) < 6:
         return False
-    coords = nums[1:]                       # drop the leading path width 0
+    coords = nums[1:]  # drop the leading path width 0
     xs, ys = coords[0::2], coords[1::2]
-    d = inset_mm * 1000.0                   # DSN resolution is um
+    d = inset_mm * 1000.0  # DSN resolution is um
     left, right = min(xs) + d, max(xs) - d
     top, bottom = min(ys) + d, max(ys) - d
 
@@ -339,10 +354,12 @@ def inset_boundary(dsn: Path, inset_mm: float, board) -> bool:
             py0, py1 = -bb.GetBottom() / mm * 1000.0, -bb.GetTop() / mm * 1000.0
             left, right = min(left, px0), max(right, px1)
             top, bottom = min(top, py0), max(bottom, py1)
-    rect = (f"(boundary\n      (path pcb 0  {left:.1f} {top:.1f}"
-            f"  {right:.1f} {top:.1f}  {right:.1f} {bottom:.1f}"
-            f"  {left:.1f} {bottom:.1f}  {left:.1f} {top:.1f})\n    )")
-    dsn.write_text(text[:start] + rect + text[i + 1:], encoding="utf-8")
+    rect = (
+        f"(boundary\n      (path pcb 0  {left:.1f} {top:.1f}"
+        f"  {right:.1f} {top:.1f}  {right:.1f} {bottom:.1f}"
+        f"  {left:.1f} {bottom:.1f}  {left:.1f} {top:.1f})\n    )"
+    )
+    dsn.write_text(text[:start] + rect + text[i + 1 :], encoding="utf-8")
     return True
 
 
@@ -369,8 +386,11 @@ def relax_plane_class(dsn: Path) -> bool:
     anchor = text.find("(class Power ")
     if anchor < 0:
         return False
-    end = text.index("(class ", anchor + 1) if "(class " in text[anchor + 1:] \
+    end = (
+        text.index("(class ", anchor + 1)
+        if "(class " in text[anchor + 1 :]
         else len(text)
+    )
     block = text[anchor:end]
     fixed = re.sub(r"\(width \d+\)", f"(width {PLANE_STUB_WIDTH_UM})", block)
     if fixed == block:
@@ -395,8 +415,11 @@ def report_plane_tracks(board) -> list[str]:
         name = track.GetNetname()
         if name in PLANE_NETS:
             runs[name] = runs.get(name, 0.0) + track.GetLength() / mm
-    return [f"{n}: {L:.1f} mm of routed track" for n, L in sorted(runs.items())
-            if L > PLANE_STUB_MAX_MM]
+    return [
+        f"{n}: {L:.1f} mm of routed track"
+        for n, L in sorted(runs.items())
+        if L > PLANE_STUB_MAX_MM
+    ]
 
 
 def unrouted_count(board) -> int:
@@ -408,14 +431,19 @@ def unrouted_count(board) -> int:
 def main() -> int:
     """Export DSN, run FreeRouting, import SES, re-pour, report."""
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--passes", type=int, default=100,
-                    help="maximum router passes (default 100)")
+    ap.add_argument(
+        "--passes", type=int, default=100, help="maximum router passes (default 100)"
+    )
     ap.add_argument("--jar", default=None, help="path to freerouting jar")
-    ap.add_argument("--inset-boundary", action="store_true",
-                    help="re-enable the DSN boundary inset -- KNOWN TO HANG "
-                         "the router on this board, see inset_boundary()")
-    ap.add_argument("--timeout", type=int, default=3600,
-                    help="router wall-clock limit in seconds")
+    ap.add_argument(
+        "--inset-boundary",
+        action="store_true",
+        help="re-enable the DSN boundary inset -- KNOWN TO HANG "
+        "the router on this board, see inset_boundary()",
+    )
+    ap.add_argument(
+        "--timeout", type=int, default=3600, help="router wall-clock limit in seconds"
+    )
     args = ap.parse_args()
 
     jar = find_jar(args.jar)
@@ -451,22 +479,44 @@ def main() -> int:
         planes = restrict_plane_layers(dsn)
         # inset_boundary() is OFF by default -- read its docstring before
         # turning it on. It hung the router twice for a full time limit each.
-        inset = (inset_boundary(dsn, BOUNDARY_INSET_MM, board)
-                 if args.inset_boundary else False)
+        inset = (
+            inset_boundary(dsn, BOUNDARY_INSET_MM, board)
+            if args.inset_boundary
+            else False
+        )
         relaxed = relax_plane_class(dsn)
-        print(f"  {planes} inner layers marked non-routable; "
-              f"boundary inset: {inset} (see inset_boundary docstring)")
-        print(f"exported DSN ({dsn.stat().st_size // 1024} kB); "
-              f"{cut} pour-only keepouts removed; plane class "
-              f"{'relaxed to %d um' % PLANE_STUB_WIDTH_UM if relaxed else 'unchanged'}")
+        print(
+            f"  {planes} inner layers marked non-routable; "
+            f"boundary inset: {inset} (see inset_boundary docstring)"
+        )
+        print(
+            f"exported DSN ({dsn.stat().st_size // 1024} kB); "
+            f"{cut} pour-only keepouts removed; plane class "
+            f"{f'relaxed to {PLANE_STUB_WIDTH_UM} um' if relaxed else 'unchanged'}"
+        )
 
-        cmd = ["java", "-jar", str(jar),
-               "-de", str(dsn), "-do", str(ses),
-               "-mp", str(args.passes), "-dr", "0"]
+        cmd = [
+            "java",
+            "-jar",
+            str(jar),
+            "-de",
+            str(dsn),
+            "-do",
+            str(ses),
+            "-mp",
+            str(args.passes),
+            "-dr",
+            "0",
+        ]
         print("running:", " ".join(cmd[:3]), "...")
         try:
-            proc = subprocess.run(cmd, capture_output=True, text=True,
-                                  timeout=args.timeout)
+            proc = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=args.timeout,
+                check=False,
+            )
         except subprocess.TimeoutExpired:
             raise SystemExit(f"router exceeded {args.timeout}s")
         tail = (proc.stdout or "").strip().splitlines()[-6:]
@@ -480,8 +530,7 @@ def main() -> int:
         if not pcbnew.ImportSpecctraSES(routed, str(ses)):
             raise SystemExit("ImportSpecctraSES failed")
 
-    segs = sum(1 for t in routed.GetTracks()
-               if t.GetClass() == "PCB_TRACK")
+    segs = sum(1 for t in routed.GetTracks() if t.GetClass() == "PCB_TRACK")
     vias = sum(1 for t in routed.GetTracks() if t.GetClass() == "PCB_VIA")
 
     filler = pcbnew.ZONE_FILLER(routed)
@@ -494,8 +543,10 @@ def main() -> int:
     for line in report_plane_tracks(routed):
         print(f"CHECK: plane net carries more than a stub -- {line}")
     if after:
-        print("NOTE: remaining connections need manual routing or a "
-              "placement change -- see kicad/README.md")
+        print(
+            "NOTE: remaining connections need manual routing or a "
+            "placement change -- see kicad/README.md"
+        )
     return 0
 
 

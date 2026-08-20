@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Shared helpers: pin layout + generic (standard-library-style) symbol specs.
 
 Reuses the exact _layout() algorithm from symbols/tools/gen_kicad_symbol.py so

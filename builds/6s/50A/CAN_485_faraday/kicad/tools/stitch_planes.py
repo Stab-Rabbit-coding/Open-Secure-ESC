@@ -76,7 +76,7 @@ SCAN_MM = 0.5
 ARRAY_PITCH_MM = 2.0
 STITCH_VIA_MM = (0.80, 0.40)
 PACK_VIA_MM = (1.20, 0.60)
-CLEARANCE_MM = 0.40          # Power net class clearance
+CLEARANCE_MM = 0.40  # Power net class clearance
 
 # Minimum distance from any stitching via to any isolated-side conductor.
 # [9] Table 6 requires 7.5 mm input-terminal to output-terminal.
@@ -95,11 +95,20 @@ CLEARANCE_MM = 0.40          # Power net class clearance
 # isolated nets.
 ISOLATION_CLEARANCE_MM = 7.5
 ISOLATED_NETS = (
-    "CAN_ISO_GND", "CAN_GNDISO", "CAN_VISOIN", "CAN_VISOOUT",
-    "RS485_ISO_GND", "RS485_GNDISO", "RS485_VISOIN", "RS485_VISOOUT",
-    "RS485_A", "RS485_B", "Net-(J2-Pin_1)", "Net-(J2-Pin_2)",
+    "CAN_ISO_GND",
+    "CAN_GNDISO",
+    "CAN_VISOIN",
+    "CAN_VISOOUT",
+    "RS485_ISO_GND",
+    "RS485_GNDISO",
+    "RS485_VISOIN",
+    "RS485_VISOOUT",
+    "RS485_A",
+    "RS485_B",
+    "Net-(J2-Pin_1)",
+    "Net-(J2-Pin_2)",
 )
-EDGE_CLEARANCE_MM = 0.50     # .kicad_pro min_copper_edge_clearance
+EDGE_CLEARANCE_MM = 0.50  # .kicad_pro min_copper_edge_clearance
 
 # net -> (outer layers it is poured on, inner layers it must reach)
 STITCH_PAIRS = {
@@ -127,8 +136,7 @@ def covered(fills, net, lid, point) -> bool:
     return any(p.Contains(point) for p in fills.get((net, lid), []))
 
 
-def blocked(board, point, radius_iu, mm, point_net_hint=None,
-            ignore_pads=()) -> bool:
+def blocked(board, point, radius_iu, mm, point_net_hint=None, ignore_pads=()) -> bool:
     """True if a via of radius_iu at point would foul something.
 
     `point_net_hint` names nets the via may legally touch (its own net), so a
@@ -205,8 +213,7 @@ def blocked(board, point, radius_iu, mm, point_net_hint=None,
             if track.GetNetname() in (point_net_hint or ()):
                 continue
             seg = pcbnew.SEG(track.GetStart(), track.GetEnd())
-            if (seg.Distance(point)
-                    < keep + track.GetWidth() / 2):
+            if seg.Distance(point) < keep + track.GetWidth() / 2:
                 return True
     edge = board.GetBoardEdgesBoundingBox()
     edge.Inflate(-int(EDGE_CLEARANCE_MM * mm) - radius_iu)
@@ -236,15 +243,20 @@ def main() -> int:
     """Place the stitching grid and the two pack-terminal arrays."""
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--dry-run", action="store_true")
-    ap.add_argument("--pitch", type=float, default=GRID_PITCH_MM,
-                    help=f"minimum via-to-via spacing in mm (default {GRID_PITCH_MM})".format(GRID_PITCH_MM=GRID_PITCH_MM))
+    ap.add_argument(
+        "--pitch",
+        type=float,
+        default=GRID_PITCH_MM,
+        help=f"minimum via-to-via spacing in mm (default {GRID_PITCH_MM})".format(
+            GRID_PITCH_MM=GRID_PITCH_MM
+        ),
+    )
     args = ap.parse_args()
 
     board = pcbnew.LoadBoard(str(PCB))
     mm = pcbnew.pcbIUScale.IU_PER_MM
     fills = fills_by_layer(board)
-    lay = {n: board.GetLayerID(n) for n in
-           ("F.Cu", "B.Cu", "In1.Cu", "In2.Cu")}
+    lay = {n: board.GetLayerID(n) for n in ("F.Cu", "B.Cu", "In1.Cu", "In2.Cu")}
 
     existing = sum(1 for t in board.GetTracks() if t.GetClass() == "PCB_VIA")
     print(f"vias on the board before this run: {existing}")
@@ -271,19 +283,22 @@ def main() -> int:
         while x < bbox.GetRight():
             pt = pcbnew.VECTOR2I(x, y)
             for net_name, (outers, inners) in STITCH_PAIRS.items():
-                if any((p - pt).EuclideanNorm() < spacing
-                       for p in done[net_name]):
+                if any((p - pt).EuclideanNorm() < spacing for p in done[net_name]):
                     continue
-                if not any(covered(fills, net_name, lay[o], pt)
-                           for o in outers):
+                if not any(covered(fills, net_name, lay[o], pt) for o in outers):
                     continue
-                if not any(covered(fills, net_name, lay[i], pt)
-                           for i in inners):
+                if not any(covered(fills, net_name, lay[i], pt) for i in inners):
                     continue
                 if blocked(board, pt, r, mm, (net_name,)):
                     continue
-                add_via(board, pt, board.FindNet(net_name), STITCH_VIA_MM,
-                        lay["F.Cu"], lay["B.Cu"])
+                add_via(
+                    board,
+                    pt,
+                    board.FindNet(net_name),
+                    STITCH_VIA_MM,
+                    lay["F.Cu"],
+                    lay["B.Cu"],
+                )
                 done[net_name].append(pt)
                 placed[net_name] += 1
                 break
@@ -321,27 +336,31 @@ def main() -> int:
                     # view (TODO.md 12.5.ac), so an unchecked array drills VM
                     # and GND straight through the isolated CAN and RS-485
                     # conductors.
-                    if blocked(board, pt, r2, mm, (net_name,),
-                               ignore_pads=(pad,)):
+                    if blocked(board, pt, r2, mm, (net_name,), ignore_pads=(pad,)):
                         xx += apitch
                         continue
-                    add_via(board, pt, net, PACK_VIA_MM,
-                            lay["F.Cu"], lay["B.Cu"])
+                    add_via(board, pt, net, PACK_VIA_MM, lay["F.Cu"], lay["B.Cu"])
                     array[ref] += 1
                     xx += apitch
                 yy += apitch
 
     total = placed["GND"] + placed["VM"] + array["J5A"] + array["J5B"]
-    print(f"  GND stitching      : {placed['GND']:4} vias "
-          f"({STITCH_VIA_MM[0]}/{STITCH_VIA_MM[1]} mm, "
-          f"{args.pitch} mm min spacing)")
+    print(
+        f"  GND stitching      : {placed['GND']:4} vias "
+        f"({STITCH_VIA_MM[0]}/{STITCH_VIA_MM[1]} mm, "
+        f"{args.pitch} mm min spacing)"
+    )
     print(f"  VM  stitching      : {placed['VM']:4} vias")
-    print(f"  J5A (VM  pack +)   : {array['J5A']:4} vias "
-          f"({PACK_VIA_MM[0]}/{PACK_VIA_MM[1]} mm)  <- CHECK AGAINST A "
-          f"CURRENT DERATING TABLE")
-    print(f"  J5B (GND pack -)   : {array['J5B']:4} vias "
-          f"({PACK_VIA_MM[0]}/{PACK_VIA_MM[1]} mm)  <- CHECK AGAINST A "
-          f"CURRENT DERATING TABLE")
+    print(
+        f"  J5A (VM  pack +)   : {array['J5A']:4} vias "
+        f"({PACK_VIA_MM[0]}/{PACK_VIA_MM[1]} mm)  <- CHECK AGAINST A "
+        f"CURRENT DERATING TABLE"
+    )
+    print(
+        f"  J5B (GND pack -)   : {array['J5B']:4} vias "
+        f"({PACK_VIA_MM[0]}/{PACK_VIA_MM[1]} mm)  <- CHECK AGAINST A "
+        f"CURRENT DERATING TABLE"
+    )
     print(f"  total placed       : {total}")
 
     if args.dry_run:

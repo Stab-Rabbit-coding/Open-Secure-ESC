@@ -53,23 +53,25 @@ HIGH_CURRENT_NETS = ("VM", "PH_A", "PH_B", "PH_C")
 def main() -> int:
     """Strip high-current tracks and report the resulting open connections."""
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--dry-run", action="store_true",
-                    help="report what would be removed, change nothing")
+    ap.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="report what would be removed, change nothing",
+    )
     args = ap.parse_args()
 
     board = pcbnew.LoadBoard(str(PCB))
-    doomed = [t for t in board.GetTracks()
-              if t.GetNetname() in HIGH_CURRENT_NETS]
+    doomed = [t for t in board.GetTracks() if t.GetNetname() in HIGH_CURRENT_NETS]
 
     if not doomed:
-        print("no tracks on " + "/".join(HIGH_CURRENT_NETS)
-              + " -- nothing to strip")
+        print("no tracks on " + "/".join(HIGH_CURRENT_NETS) + " -- nothing to strip")
         return 0
 
     by_net: dict[str, list[float]] = {}
     for t in doomed:
         by_net.setdefault(t.GetNetname(), []).append(
-            pcbnew.ToMM(t.GetWidth()) if t.GetClass() == "PCB_TRACK" else 0.0)
+            pcbnew.ToMM(t.GetWidth()) if t.GetClass() == "PCB_TRACK" else 0.0
+        )
 
     print(f"{'net':8s} {'segments':>9} {'widest mm':>10}")
     for net, widths in sorted(by_net.items()):
@@ -88,10 +90,11 @@ def main() -> int:
     board.Save(str(PCB))
 
     print(f"\nremoved {len(doomed)} items; zones refilled")
-    print(f"unconnected now: "
-          f"{board.GetConnectivity().GetUnconnectedCount(False)}")
-    print("The 50 A nets are open ON PURPOSE. Close them with a pour or a "
-          "placement change -- TODO.md 12.5.s and 12.5.t.")
+    print(f"unconnected now: {board.GetConnectivity().GetUnconnectedCount(False)}")
+    print(
+        "The 50 A nets are open ON PURPOSE. Close them with a pour or a "
+        "placement change -- TODO.md 12.5.s and 12.5.t."
+    )
     return 0
 
 

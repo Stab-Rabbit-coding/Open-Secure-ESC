@@ -51,12 +51,16 @@ Usage:
 # AI-generated; part selections are the repo owner's. Not human-authored.
 
 import argparse
-import copy
 import uuid
 from pathlib import Path
 
 from kiutils.items.common import (
-    Effects, Font, Justify, Position, Property, Stroke,
+    Effects,
+    Font,
+    Justify,
+    Position,
+    Property,
+    Stroke,
 )
 from kiutils.items.schitems import Connection, GlobalLabel
 from kiutils.schematic import Schematic
@@ -68,23 +72,22 @@ REPO = KICAD_DIR.parents[4]
 SCH = KICAD_DIR / "open_secure_esc_6s_50a_can485_faraday.kicad_sch"
 
 NEW_FET = "TPHR8504PL"
-NEW_FET_FP = ("Open_Secure_ESC:"
-              "Toshiba_2-5W1A_SOP-Advance-N_5.15x6.1mm_P1.27mm")
+NEW_FET_FP = "Open_Secure_ESC:Toshiba_2-5W1A_SOP-Advance-N_5.15x6.1mm_P1.27mm"
 
 # Gate-pin positions, symbol-internal. The delta between them is the whole
 # trick that preserves the gate wiring.
 OLD_GATE_XY = (-7.62, 2.54)
 NEW_GATE_XY = (-10.16, 0.0)
-PLACE_DX = OLD_GATE_XY[0] - NEW_GATE_XY[0]        # +2.54
-PLACE_DY = -(OLD_GATE_XY[1] - NEW_GATE_XY[1])     # -2.54  (sheet Y is inverted)
+PLACE_DX = OLD_GATE_XY[0] - NEW_GATE_XY[0]  # +2.54
+PLACE_DY = -(OLD_GATE_XY[1] - NEW_GATE_XY[1])  # -2.54  (sheet Y is inverted)
 
 # Per-FET drain and source nets, from the pre-swap netlist.
 FET_NETS = {
-    "Q1": {"D": "VM",   "S": "PH_A"},
+    "Q1": {"D": "VM", "S": "PH_A"},
     "Q2": {"D": "PH_A", "S": "ISENSE_A_HI"},
-    "Q3": {"D": "VM",   "S": "PH_B"},
+    "Q3": {"D": "VM", "S": "PH_B"},
     "Q4": {"D": "PH_B", "S": "ISENSE_B_HI"},
-    "Q5": {"D": "VM",   "S": "PH_C"},
+    "Q5": {"D": "VM", "S": "PH_C"},
     "Q6": {"D": "PH_C", "S": "ISENSE_C_HI"},
 }
 
@@ -111,16 +114,20 @@ C1_NOTE = (
 )
 
 SHIELDS = {
-    "SH1": ("WE_SHC_3670209", "WE-SHC 3670209 (frame)",
-            "Open_Secure_ESC:Wurth_WE-SHC_3670209_Frame_15.3x20.9mm"),
+    "SH1": (
+        "WE_SHC_3670209",
+        "WE-SHC 3670209 (frame)",
+        "Open_Secure_ESC:Wurth_WE-SHC_3670209_Frame_15.3x20.9mm",
+    ),
     "SH2": ("WE_SHC_3671209", "WE-SHC 3671209 (cover)", ""),
 }
 
 
 def eff(justify=None):
     """Standard 1.27 mm text effects."""
-    return Effects(font=Font(width=1.27, height=1.27),
-                   justify=Justify(horizontally=justify))
+    return Effects(
+        font=Font(width=1.27, height=1.27), justify=Justify(horizontally=justify)
+    )
 
 
 def prop_of(sym, key):
@@ -137,31 +144,51 @@ def set_prop(sym, key, value):
     """Set a property, creating it if absent."""
     p = prop_of(sym, key)
     if p is None:
-        sym.properties.append(Property(
-            key=key, value=value,
-            position=Position(X=sym.position.X, Y=sym.position.Y, angle=0),
-            effects=eff(), showName=False))
+        sym.properties.append(
+            Property(
+                key=key,
+                value=value,
+                position=Position(X=sym.position.X, Y=sym.position.Y, angle=0),
+                effects=eff(),
+                showName=False,
+            )
+        )
     else:
         p.value = value
 
 
 def add_wire(sch, x1, y1, x2, y2):
     """Draw a wire segment."""
-    sch.graphicalItems.append(Connection(
-        type="wire",
-        points=[Position(X=x1, Y=y1), Position(X=x2, Y=y2)],
-        stroke=Stroke(width=0, type="default"), uuid=str(uuid.uuid4())))
+    sch.graphicalItems.append(
+        Connection(
+            type="wire",
+            points=[Position(X=x1, Y=y1), Position(X=x2, Y=y2)],
+            stroke=Stroke(width=0, type="default"),
+            uuid=str(uuid.uuid4()),
+        )
+    )
 
 
 def add_label(sch, text, x, y, angle, justify):
     """Place a global label."""
-    sch.globalLabels.append(GlobalLabel(
-        text=text, shape="passive",
-        position=Position(X=x, Y=y, angle=angle),
-        effects=eff(justify), uuid=str(uuid.uuid4()),
-        properties=[Property(key="Intersheetrefs", value="${INTERSHEET_REFS}",
-                             position=Position(X=x, Y=y, angle=0),
-                             effects=eff(), showName=False)]))
+    sch.globalLabels.append(
+        GlobalLabel(
+            text=text,
+            shape="passive",
+            position=Position(X=x, Y=y, angle=angle),
+            effects=eff(justify),
+            uuid=str(uuid.uuid4()),
+            properties=[
+                Property(
+                    key="Intersheetrefs",
+                    value="${INTERSHEET_REFS}",
+                    position=Position(X=x, Y=y, angle=0),
+                    effects=eff(),
+                    showName=False,
+                )
+            ],
+        )
+    )
 
 
 def lib_symbol(entry_name):
@@ -199,8 +226,10 @@ def main() -> int:
 
     new_fet_pins = {
         p.number: (p.position.X, p.position.Y)
-        for ls in sch.libSymbols if ls.entryName == NEW_FET
-        for u in ls.units for p in u.pins
+        for ls in sch.libSymbols
+        if ls.entryName == NEW_FET
+        for u in ls.units
+        for p in u.pins
     }
 
     # ---- 1. the six FETs -------------------------------------------------
@@ -216,33 +245,43 @@ def main() -> int:
         keep = []
         for item in sch.graphicalItems:
             pts = getattr(item, "points", None)
-            if pts and len(pts) == 2 and any(
+            if (
+                pts
+                and len(pts) == 2
+                and any(
                     abs(p.X - t[0]) < 0.01 and abs(p.Y - t[1]) < 0.01
-                    for p in pts for t in (old_drain, old_source)):
+                    for p in pts
+                    for t in (old_drain, old_source)
+                )
+            ):
                 removed += 1
                 continue
             keep.append(item)
         sch.graphicalItems = keep
         # And any label sitting on those points.
         sch.globalLabels = [
-            g for g in sch.globalLabels
-            if not any(abs(g.position.X - t[0]) < 0.01
-                       and abs(g.position.Y - t[1]) < 0.01
-                       for t in (old_drain, old_source))
+            g
+            for g in sch.globalLabels
+            if not any(
+                abs(g.position.X - t[0]) < 0.01 and abs(g.position.Y - t[1]) < 0.01
+                for t in (old_drain, old_source)
+            )
         ]
 
         old.libId = f"{NEW_FET}:{NEW_FET}"
-        old.position = Position(X=old_pos.X + PLACE_DX,
-                                Y=old_pos.Y + PLACE_DY, angle=0)
+        old.position = Position(X=old_pos.X + PLACE_DX, Y=old_pos.Y + PLACE_DY, angle=0)
         set_prop(old, "Value", NEW_FET)
         set_prop(old, "Footprint", NEW_FET_FP)
-        set_prop(old, "Note",
-                 "Toshiba TPHR8504PL, 40 V / 0.7 mOhm / 150 A, 2-5W1A SOP "
-                 "Advance(N) [49]. Replaces IRFB4110PBF [20]. 40 V against a "
-                 "25.2 V pack is 1.59x, down from 3.97x -- accepted for the "
-                 "5.7x conduction-loss improvement; drain overshoot MUST be "
-                 "bounded via the DRV8353S IDRIVE setting and bench-measured "
-                 "before fab (TODO.md).")
+        set_prop(
+            old,
+            "Note",
+            "Toshiba TPHR8504PL, 40 V / 0.7 mOhm / 150 A, 2-5W1A SOP "
+            "Advance(N) [49]. Replaces IRFB4110PBF [20]. 40 V against a "
+            "25.2 V pack is 1.59x, down from 3.97x -- accepted for the "
+            "5.7x conduction-loss improvement; drain overshoot MUST be "
+            "bounded via the DRV8353S IDRIVE setting and bench-measured "
+            "before fab (TODO.md).",
+        )
 
         # Drain: one stub off the outermost drain pin, plus its rail label.
         dx, dy = pin_sheet_xy(old.position, new_fet_pins["8"])
@@ -265,8 +304,7 @@ def main() -> int:
             add_wire(sch, px + 2.54, py, px + 2.54, sy)
             add_wire(sch, px + 2.54, sy, sx, sy)
 
-        print(f"  {ref}: -> {NEW_FET}, D={nets['D']}, S={nets['S']}, "
-              f"gate preserved")
+        print(f"  {ref}: -> {NEW_FET}, D={nets['D']}, S={nets['S']}, gate preserved")
 
     print(f"  removed {removed} old drain/source stubs")
 

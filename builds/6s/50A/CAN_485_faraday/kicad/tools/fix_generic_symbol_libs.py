@@ -50,7 +50,6 @@ Usage:
 # TODO.md 12.4. AI-generated; reviewed against the primary sources named
 # in the docstring above. Not human-authored.
 
-
 import argparse
 import re
 from pathlib import Path
@@ -145,7 +144,7 @@ def main() -> int:
 
     text = SCH.read_text(encoding="utf-8")
     lib_start = text.index("(", text.index("(lib_symbols") - 1)
-    lib_block = text[lib_start:span(text, lib_start)]
+    lib_block = text[lib_start : span(text, lib_start)]
 
     blocks = extract_symbols(lib_block)
     # lib_symbols entries are keyed by full lib_id ("Device:R"); a standalone
@@ -175,9 +174,9 @@ def main() -> int:
             f'  (lib (name "{NEW_LIB_NAME}")(type "KiCad")'
             f'(uri "${{KIPRJMOD}}/../../../../../symbols/{NEW_LIB_NAME}.kicad_sym")'
             f'(options "")(descr "Generic support symbols (R, C, C_Polarized, '
-            f'Conn_01x02/03/04, PWR_FLAG) authored by tools/genlib.py. These are '
-            f'this repo\'s own parts, NOT KiCad\'s Device:/Connector_Generic:/power: '
-            f'symbols -- their pin geometry differs. See '
+            f"Conn_01x02/03/04, PWR_FLAG) authored by tools/genlib.py. These are "
+            f"this repo's own parts, NOT KiCad's Device:/Connector_Generic:/power: "
+            f"symbols -- their pin geometry differs. See "
             f'tools/fix_generic_symbol_libs.py."))\n'
         )
         table = table.rstrip()[:-1].rstrip() + "\n" + entry + ")\n"

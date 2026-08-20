@@ -65,8 +65,8 @@ HERE = Path(__file__).resolve().parent
 PCB = HERE.parent / "open_secure_esc_6s_50a_can485_faraday.kicad_pcb"
 BACKUP = PCB.with_suffix(".kicad_pcb.pre-grow.bak")
 
-SHIFT = 4.80              # mm, from the creepage arithmetic above
-MIDLINE = 30.0            # anything below this on Edge.Cuts moves
+SHIFT = 4.80  # mm, from the creepage arithmetic above
+MIDLINE = 30.0  # anything below this on Edge.Cuts moves
 # Everything at or below this shifts with U1. Deliberately set 0.9 mm ABOVE
 # U1's actual bounding-box top (22.88) rather than equal to it: the first run
 # used 22.88 exactly, and U1's own top compares as 22879999 nm against
@@ -140,22 +140,28 @@ def main() -> int:
         ref = f.GetReference()
         if ref in PARK:
             i = PARK.index(ref)
-            f.SetPosition(pcbnew.VECTOR2I(
-                ox + pcbnew.FromMM(PARK_X),
-                oy + pcbnew.FromMM(PARK_Y0 + i * PARK_DY)))
+            f.SetPosition(
+                pcbnew.VECTOR2I(
+                    ox + pcbnew.FromMM(PARK_X),
+                    oy + pcbnew.FromMM(PARK_Y0 + i * PARK_DY),
+                )
+            )
             parked += 1
             continue
         if courtyard_top(f) >= old_top:
             p = f.GetPosition()
-            f.SetPosition(pcbnew.VECTOR2I(p.x + (dx if ref == "U1" else 0),
-                                          p.y + d))
+            f.SetPosition(pcbnew.VECTOR2I(p.x + (dx if ref == "U1" else 0), p.y + d))
             shifted += 1
-    print(f"   {shifted} footprints shifted, {parked} isolated-group parts parked off-board")
+    print(
+        f"   {shifted} footprints shifted, {parked} isolated-group parts parked off-board"
+    )
     # Assert the part the whole calculation is about actually moved.
     u1_now = pcbnew.ToMM(u1.GetPosition().y - oy)
     if abs(u1_now - (u1_y0 + SHIFT)) > 0.001:
-        raise SystemExit(f"U1 did not shift: y {u1_y0:.2f} -> {u1_now:.2f}, "
-                         f"expected {u1_y0 + SHIFT:.2f}")
+        raise SystemExit(
+            f"U1 did not shift: y {u1_y0:.2f} -> {u1_now:.2f}, "
+            f"expected {u1_y0 + SHIFT:.2f}"
+        )
     print(f"   U1 verified: y {u1_y0:.2f} -> {u1_now:.2f}")
 
     print("\n3. extending zones that reached the old bottom")
@@ -176,8 +182,10 @@ def main() -> int:
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     board.BuildConnectivity()
     nb = board.GetBoardEdgesBoundingBox()
-    print(f"\nboard now {pcbnew.ToMM(nb.GetWidth()) - 0.1:.2f} x "
-          f"{pcbnew.ToMM(nb.GetHeight()) - 0.1:.2f} mm")
+    print(
+        f"\nboard now {pcbnew.ToMM(nb.GetWidth()) - 0.1:.2f} x "
+        f"{pcbnew.ToMM(nb.GetHeight()) - 0.1:.2f} mm"
+    )
 
     if args.dry_run:
         print("--dry-run: nothing written")

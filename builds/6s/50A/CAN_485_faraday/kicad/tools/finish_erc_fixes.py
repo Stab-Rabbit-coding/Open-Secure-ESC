@@ -76,14 +76,18 @@ Usage:
 # TODO.md 12.4. AI-generated; reviewed against the primary sources named
 # in the docstring above. Not human-authored.
 
-
 import argparse
 import copy
 import uuid
 from pathlib import Path
 
 from kiutils.items.common import (
-    Effects, Font, Justify, Position, Property, Stroke,
+    Effects,
+    Font,
+    Justify,
+    Position,
+    Property,
+    Stroke,
 )
 from kiutils.items.schitems import Connection, GlobalLabel
 from kiutils.schematic import Schematic
@@ -164,33 +168,40 @@ def ref_of(sym) -> str:
 
 def add_wire(sch: Schematic, x1: float, y1: float, x2: float, y2: float) -> None:
     """Draw a real wire segment between two sheet points."""
-    sch.graphicalItems.append(Connection(
-        type="wire",
-        points=[Position(X=x1, Y=y1), Position(X=x2, Y=y2)],
-        stroke=Stroke(width=0, type="default"),
-        uuid=str(uuid.uuid4()),
-    ))
+    sch.graphicalItems.append(
+        Connection(
+            type="wire",
+            points=[Position(X=x1, Y=y1), Position(X=x2, Y=y2)],
+            stroke=Stroke(width=0, type="default"),
+            uuid=str(uuid.uuid4()),
+        )
+    )
 
 
-def add_global_label(sch: Schematic, text: str, x: float, y: float,
-                     angle: float, justify: str) -> None:
+def add_global_label(
+    sch: Schematic, text: str, x: float, y: float, angle: float, justify: str
+) -> None:
     """Place a global label at a sheet point."""
     # Mirrors the shape/effects/Intersheetrefs pattern of the 139 global
     # labels the generator already placed on this sheet.
-    sch.globalLabels.append(GlobalLabel(
-        text=text,
-        shape="passive",
-        position=Position(X=x, Y=y, angle=angle),
-        effects=eff(justify),
-        uuid=str(uuid.uuid4()),
-        properties=[Property(
-            key="Intersheetrefs",
-            value="${INTERSHEET_REFS}",
-            position=Position(X=x, Y=y, angle=0),
-            effects=eff(),
-            showName=False,
-        )],
-    ))
+    sch.globalLabels.append(
+        GlobalLabel(
+            text=text,
+            shape="passive",
+            position=Position(X=x, Y=y, angle=angle),
+            effects=eff(justify),
+            uuid=str(uuid.uuid4()),
+            properties=[
+                Property(
+                    key="Intersheetrefs",
+                    value="${INTERSHEET_REFS}",
+                    position=Position(X=x, Y=y, angle=0),
+                    effects=eff(),
+                    showName=False,
+                )
+            ],
+        )
+    )
 
 
 def make_pad_pin() -> SymbolPin:
@@ -222,7 +233,7 @@ def add_pad_pin_to_library() -> bool:
         if sym.entryName != "DRV8353S":
             continue
         if not add_pad_pin(sym):
-            return False            # already present, nothing to do
+            return False  # already present, nothing to do
         lib.to_file(str(DRV_LIB))
         return True
     raise SystemExit("DRV8353S not found in its own library")
@@ -252,8 +263,9 @@ def main() -> int:
         if any(col_lo <= p.X <= col_hi for p in pts):
             return True
         # The short drop segment off each broken flag's own pin.
-        return (all(round(p.X, 2) in broken_x for p in pts)
-                and all(drop_lo <= p.Y <= drop_hi for p in pts))
+        return all(round(p.X, 2) in broken_x for p in pts) and all(
+            drop_lo <= p.Y <= drop_hi for p in pts
+        )
 
     before = len(sch.graphicalItems)
     kept = [g for g in sch.graphicalItems if not is_broken_route(g)]
@@ -278,7 +290,7 @@ def main() -> int:
 
     # ---- 1. R14, the SDO pull-up ----------------------------------------
     if "R14" not in by_ref:
-        template = by_ref["R11"]            # the nFAULT pull-up: same part
+        template = by_ref["R11"]  # the nFAULT pull-up: same part
         r14 = copy.deepcopy(template)
         r14.uuid = str(uuid.uuid4())
         r14.position = Position(X=R14_POS[0], Y=R14_POS[1], angle=0)
@@ -319,9 +331,9 @@ def main() -> int:
         # Name the existing MISO net so the pull-up joins it. U5's SDO pin is
         # symbol-internal (-17.78, 11.43); sheet Y is inverted.
         u5 = by_ref["U5"]
-        add_global_label(sch, MISO_NET,
-                         u5.position.X - 17.78, u5.position.Y - 11.43,
-                         180, "right")
+        add_global_label(
+            sch, MISO_NET, u5.position.X - 17.78, u5.position.Y - 11.43, 180, "right"
+        )
 
     # ---- 2. Thermal pad pin, and its tie to GND -------------------------
     u5 = by_ref["U5"]
@@ -329,8 +341,10 @@ def main() -> int:
     pad_y = u5.position.Y - PAD_PIN_XY[1]
     add_wire(sch, pad_x, pad_y, pad_x - 5.08, pad_y)
     add_global_label(sch, "GND", pad_x - 5.08, pad_y, 180, "right")
-    print(f"  U5 pin {PAD_PIN_NUMBER} ({PAD_PIN_NAME}) tied to GND "
-          f"at ({pad_x:.2f}, {pad_y:.2f})")
+    print(
+        f"  U5 pin {PAD_PIN_NUMBER} ({PAD_PIN_NAME}) tied to GND "
+        f"at ({pad_x:.2f}, {pad_y:.2f})"
+    )
 
     if args.dry_run:
         print("dry run -- nothing written")

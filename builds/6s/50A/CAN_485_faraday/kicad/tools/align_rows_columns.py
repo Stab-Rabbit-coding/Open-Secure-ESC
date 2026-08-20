@@ -100,37 +100,43 @@ SCORE = HERE / "score_placement.py"
 BACKUP = Path("/tmp/claude-1000/align_revert.kicad_pcb")
 BEST = Path("/tmp/claude-1000/align_best.kicad_pcb")
 
-MAX_SNAP_MM = 0.60      # beyond this it is a decision, not a slip
-MIN_GROUP = 3           # two parts agreeing is a coincidence
-TOL_MM = 0.05           # allowed growth in gate / commutation loop
+MAX_SNAP_MM = 0.60  # beyond this it is a decision, not a slip
+MIN_GROUP = 3  # two parts agreeing is a coincidence
+TOL_MM = 0.05  # allowed growth in gate / commutation loop
 
 # Groups the board already establishes. axis "x" = share a column,
 # "y" = share a row. Target is the value the majority already sit on.
 GROUPS = [
-    ("high-side FET row",   "y", ["Q1", "Q3", "Q5"]),
-    ("low-side FET row",    "y", ["Q2", "Q4", "Q6"]),
-    ("sense-amp row",       "y", ["U6", "U8", "U7"]),
-    ("phase terminal row",  "y", ["J4A", "J4B", "J4C"]),
-    ("gate resistor row",   "y", ["R1", "R2", "R3"]),
-    ("phase A column",      "x", ["U6", "Q1", "Q2", "J4A"]),
-    ("phase B column",      "x", ["U8", "Q3", "Q4", "J4B"]),
-    ("phase C column",      "x", ["U7", "Q5", "Q6", "J4C"]),
-    ("right stack column",  "x", ["R12", "C10", "R8", "U2"]),
-    ("left stack column",   "x", ["R7", "C4", "C3"]),
+    ("high-side FET row", "y", ["Q1", "Q3", "Q5"]),
+    ("low-side FET row", "y", ["Q2", "Q4", "Q6"]),
+    ("sense-amp row", "y", ["U6", "U8", "U7"]),
+    ("phase terminal row", "y", ["J4A", "J4B", "J4C"]),
+    ("gate resistor row", "y", ["R1", "R2", "R3"]),
+    ("phase A column", "x", ["U6", "Q1", "Q2", "J4A"]),
+    ("phase B column", "x", ["U8", "Q3", "Q4", "J4B"]),
+    ("phase C column", "x", ["U7", "Q5", "Q6", "J4C"]),
+    ("right stack column", "x", ["R12", "C10", "R8", "U2"]),
+    ("left stack column", "x", ["R7", "C4", "C3"]),
 ]
 
 
 def score():
     """The harness's verdict on the board as it currently stands."""
-    out = subprocess.run([sys.executable, str(SCORE), "--json"],
-                         capture_output=True, text=True)
+    out = subprocess.run(
+        [sys.executable, str(SCORE), "--json"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
     return json.loads(out.stdout)
 
 
 def positions(board):
     """ref -> (x_nm, y_nm) for every footprint."""
-    return {f.GetReference(): (f.GetPosition().x, f.GetPosition().y)
-            for f in board.Footprints()}
+    return {
+        f.GetReference(): (f.GetPosition().x, f.GetPosition().y)
+        for f in board.Footprints()
+    }
 
 
 def candidates(vals):
@@ -185,19 +191,17 @@ def ok(base, now):
     if n["drc_electrical"] != 0:
         return False, f"DRC electrical {n['drc_electrical']}"
     if n["unconnected"] > b["unconnected"]:
-        return False, (f"unconnected {b['unconnected']} -> "
-                       f"{n['unconnected']}")
+        return False, (f"unconnected {b['unconnected']} -> {n['unconnected']}")
     if n["creepage_min_mm"] < b["creepage_min_mm"]:
-        return False, (f"creepage {b['creepage_min_mm']} -> "
-                       f"{n['creepage_min_mm']}")
+        return False, (f"creepage {b['creepage_min_mm']} -> {n['creepage_min_mm']}")
     if not n["iso_lead_ok"]:
         return False, f"isolated lead {n['iso_lead_max_mm']}"
     if n["gate_loop_max_mm"] > b["gate_loop_max_mm"] + TOL_MM:
-        return False, (f"gate loop {b['gate_loop_max_mm']} -> "
-                       f"{n['gate_loop_max_mm']}")
+        return False, (f"gate loop {b['gate_loop_max_mm']} -> {n['gate_loop_max_mm']}")
     if n["commutation_max_mm"] > b["commutation_max_mm"] + TOL_MM:
-        return False, (f"commutation {b['commutation_max_mm']} -> "
-                       f"{n['commutation_max_mm']}")
+        return False, (
+            f"commutation {b['commutation_max_mm']} -> {n['commutation_max_mm']}"
+        )
     r = now["rules"]
     if not (r["iso_ic_perpendicular"] and r["pack_layer_separated"]):
         return False, "isolation rule regressed"
@@ -208,11 +212,13 @@ def apply_moves(moves, axis):
     """Move a whole candidate row at once, then refill."""
     board = pcbnew.LoadBoard(str(PCB))
     for ref, _, target in moves:
-        fp = next(f for f in board.Footprints()
-                  if f.GetReference() == ref)
+        fp = next(f for f in board.Footprints() if f.GetReference() == ref)
         p = fp.GetPosition()
-        fp.SetPosition(pcbnew.VECTOR2I(target, p.y) if axis == "x"
-                       else pcbnew.VECTOR2I(p.x, target))
+        fp.SetPosition(
+            pcbnew.VECTOR2I(target, p.y)
+            if axis == "x"
+            else pcbnew.VECTOR2I(p.x, target)
+        )
     board.Save(str(PCB))
     board = pcbnew.LoadBoard(str(PCB))
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
@@ -223,15 +229,17 @@ def apply_moves(moves, axis):
 def gain(base, now):
     """How much shorter the loops got. Ties break toward shorter loops."""
     b, n = base["electrical"], now["electrical"]
-    return ((b["gate_loop_max_mm"] - n["gate_loop_max_mm"])
-            + (b["commutation_max_mm"] - n["commutation_max_mm"]))
+    return (b["gate_loop_max_mm"] - n["gate_loop_max_mm"]) + (
+        b["commutation_max_mm"] - n["commutation_max_mm"]
+    )
 
 
 def main():
     """Snap each slip, keeping only the moves the numbers allow."""
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--dry-run", action="store_true",
-                    help="list the plan, change nothing")
+    ap.add_argument(
+        "--dry-run", action="store_true", help="list the plan, change nothing"
+    )
     args = ap.parse_args()
 
     board = pcbnew.LoadBoard(str(PCB))
@@ -239,12 +247,15 @@ def main():
 
     print(f"{len(groups)} groups have a reachable alternative row:")
     for name, axis, options in groups:
-        opts = ", ".join(f"{pcbnew.ToMM(t):.3f} ({a} agree, {len(m)} move)"
-                         for t, a, m in options)
+        opts = ", ".join(
+            f"{pcbnew.ToMM(t):.3f} ({a} agree, {len(m)} move)" for t, a, m in options
+        )
         print(f"   {name:22s} {axis}  {opts}")
     if skipped:
-        print(f"\n{len(skipped)} left alone -- further than "
-              f"{MAX_SNAP_MM} mm, so read as intent not slip:")
+        print(
+            f"\n{len(skipped)} left alone -- further than "
+            f"{MAX_SNAP_MM} mm, so read as intent not slip:"
+        )
         for ref, name, d in skipped:
             print(f"   {ref:4s} {d:+7.3f} mm from {name}")
 
@@ -253,10 +264,12 @@ def main():
         return 0
 
     base = score()
-    print(f"\nbaseline: creepage {base['electrical']['creepage_min_mm']} "
-          f"unconnected {base['electrical']['unconnected']} "
-          f"gate {base['electrical']['gate_loop_max_mm']} "
-          f"comm {base['electrical']['commutation_max_mm']}")
+    print(
+        f"\nbaseline: creepage {base['electrical']['creepage_min_mm']} "
+        f"unconnected {base['electrical']['unconnected']} "
+        f"gate {base['electrical']['gate_loop_max_mm']} "
+        f"comm {base['electrical']['commutation_max_mm']}"
+    )
 
     kept, dropped = [], []
     for name, axis, options in groups:
@@ -281,19 +294,22 @@ def main():
         shutil.copy2(BEST, PCB)
         base = score()
         g, target, moves = best
-        print(f"   {name:22s} {axis} -> {pcbnew.ToMM(target):7.3f}  "
-              f"moved {' '.join(m[0] for m in moves)}"
-              f"{'   loops -%.2f mm' % g if g > 0 else ''}")
+        print(
+            f"   {name:22s} {axis} -> {pcbnew.ToMM(target):7.3f}  "
+            f"moved {' '.join(m[0] for m in moves)}"
+            f"{f'   loops -{g:.2f} mm' if g > 0 else ''}"
+        )
         kept.append((name, axis, pcbnew.ToMM(target), moves))
 
     final = score()["electrical"]
-    print(f"\nrows aligned {len(kept)}, candidate rows rejected "
-          f"{len(dropped)}")
-    print(f"final: creepage {final['creepage_min_mm']} "
-          f"unconnected {final['unconnected']} "
-          f"gate {final['gate_loop_max_mm']} "
-          f"comm {final['commutation_max_mm']} "
-          f"DRC-el {final['drc_electrical']}")
+    print(f"\nrows aligned {len(kept)}, candidate rows rejected {len(dropped)}")
+    print(
+        f"final: creepage {final['creepage_min_mm']} "
+        f"unconnected {final['unconnected']} "
+        f"gate {final['gate_loop_max_mm']} "
+        f"comm {final['commutation_max_mm']} "
+        f"DRC-el {final['drc_electrical']}"
+    )
     if dropped:
         print("\nleft misaligned on purpose -- the number said no:")
         for name, axis, target, why in dropped:

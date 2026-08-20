@@ -84,7 +84,7 @@ HERE = Path(__file__).resolve().parent
 PCB = HERE.parent / "open_secure_esc_6s_50a_can485_faraday.kicad_pcb"
 BACKUP = PCB.with_suffix(".kicad_pcb.pre-poursplit.bak")
 
-SPLIT_X = 35.95            # board centreline; J5A ends 34.95, J5B starts 36.95
+SPLIT_X = 35.95  # board centreline; J5A ends 34.95, J5B starts 36.95
 ZONE_NAME = "GND return corridor for J5B (TODO 12.5.ax option 4)"
 
 
@@ -103,34 +103,56 @@ def main() -> int:
     for z in stale:
         board.Remove(z)
     if stale:
-        print(f"removed {len(stale)} zone(s) from the superseded "
-              f"overlapping-region implementation")
+        print(
+            f"removed {len(stale)} zone(s) from the superseded "
+            f"overlapping-region implementation"
+        )
 
     # Cut the VM top stem back to the centreline. The outline is asserted
     # rather than pattern-matched: if the pour is re-drawn this must be
     # re-derived, not silently applied to a shape it no longer fits.
     target = None
     for z in board.Zones():
-        if (not z.GetIsRuleArea() and z.GetNetname() == "VM"
-                and z.GetLayerSet().Contains(fcu)):
+        if (
+            not z.GetIsRuleArea()
+            and z.GetNetname() == "VM"
+            and z.GetLayerSet().Contains(fcu)
+        ):
             target = z
     if target is None:
         raise SystemExit("F.Cu VM zone not found")
 
     chain = target.Outline().Outline(0)
-    pts = [(round(chain.CPoint(k).x / mm, 2), round(chain.CPoint(k).y / mm, 2))
-           for k in range(chain.PointCount())]
-    expected = [(25.02, 20.5), (46.78, 20.5), (46.78, 44.4), (51.45, 44.4),
-                (51.45, 60.33), (20.45, 60.33), (20.45, 44.4), (25.02, 44.4)]
-    if pts == [(SPLIT_X, 20.5) if q == (46.78, 20.5) else
-               (SPLIT_X, 44.4) if q == (46.78, 44.4) else q
-               for q in expected]:
+    pts = [
+        (round(chain.CPoint(k).x / mm, 2), round(chain.CPoint(k).y / mm, 2))
+        for k in range(chain.PointCount())
+    ]
+    expected = [
+        (25.02, 20.5),
+        (46.78, 20.5),
+        (46.78, 44.4),
+        (51.45, 44.4),
+        (51.45, 60.33),
+        (20.45, 60.33),
+        (20.45, 44.4),
+        (25.02, 44.4),
+    ]
+    if pts == [
+        (SPLIT_X, 20.5)
+        if q == (46.78, 20.5)
+        else (SPLIT_X, 44.4)
+        if q == (46.78, 44.4)
+        else q
+        for q in expected
+    ]:
         print("VM stem already cut back -- nothing to do")
         return 0
     if pts != expected:
-        raise SystemExit(f"F.Cu VM outline is not the shape this tool was "
-                         f"written for.\n  found:    {pts}\n"
-                         f"  expected: {expected}\nRe-derive before running.")
+        raise SystemExit(
+            f"F.Cu VM outline is not the shape this tool was "
+            f"written for.\n  found:    {pts}\n"
+            f"  expected: {expected}\nRe-derive before running."
+        )
 
     moved = 0
     for k in range(chain.PointCount()):
@@ -138,8 +160,10 @@ def main() -> int:
         if round(q.x / mm, 2) == 46.78:
             chain.SetPoint(k, pcbnew.VECTOR2I(int(SPLIT_X * mm), q.y))
             moved += 1
-    print(f"cut the VM top stem: {moved} vertices x 46.78 -> {SPLIT_X}; "
-          f"GND now fills x {SPLIT_X}..51.45 above y 44.40")
+    print(
+        f"cut the VM top stem: {moved} vertices x 46.78 -> {SPLIT_X}; "
+        f"GND now fills x {SPLIT_X}..51.45 above y 44.40"
+    )
     if args.dry_run:
         print("dry run -- not written")
         return 0
@@ -152,16 +176,29 @@ def main() -> int:
     # Post-condition, not a pre-condition: the whole point of the change is
     # that J5B ends up sitting on F.Cu GND copper. Verify it before saving
     # rather than assuming the pour did what was intended.
-    j5b = next((p for f in board.GetFootprints()
-                if f.GetReference() == "J5B" for p in f.Pads()), None)
+    j5b = next(
+        (
+            p
+            for f in board.GetFootprints()
+            if f.GetReference() == "J5B"
+            for p in f.Pads()
+        ),
+        None,
+    )
     reached = False
     for z in board.Zones():
-        if (z.GetIsRuleArea() or z.GetNetname() != "GND"
-                or not z.GetLayerSet().Contains(fcu)):
+        if (
+            z.GetIsRuleArea()
+            or z.GetNetname() != "GND"
+            or not z.GetLayerSet().Contains(fcu)
+        ):
             continue
         poly = z.GetFilledPolysList(fcu)
-        if poly and poly.OutlineCount() and poly.Collide(
-                j5b.GetEffectivePolygon(fcu), 0):
+        if (
+            poly
+            and poly.OutlineCount()
+            and poly.Collide(j5b.GetEffectivePolygon(fcu), 0)
+        ):
             reached = True
     if not reached:
         raise SystemExit("J5B did NOT end up on F.Cu GND copper -- not saving")

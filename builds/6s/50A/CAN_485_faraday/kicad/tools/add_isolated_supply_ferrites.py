@@ -82,9 +82,13 @@ import uuid
 from pathlib import Path
 
 from kiutils.items.common import Effects, Font, Position, Property
-from kiutils.items.schitems import (Connection, GlobalLabel,
-                                    SchematicSymbol, SymbolProjectInstance,
-                                    SymbolProjectPath)
+from kiutils.items.schitems import (
+    Connection,
+    GlobalLabel,
+    SchematicSymbol,
+    SymbolProjectInstance,
+    SymbolProjectPath,
+)
 from kiutils.schematic import Schematic
 from kiutils.symbol import SymbolLib
 
@@ -94,25 +98,24 @@ SYMLIB = HERE.parents[5] / "symbols" / "BLM15HD182SN1D.kicad_sym"
 BACKUP = SCH.with_suffix(".kicad_sch.pre-ferrite.bak")
 
 PITCH = 2.54
-PIN_REACH = 7.62      # BLM15HD182SN1D symbol pins sit at local (+/-7.62, 0)
-FLAG_Y = 782.54       # existing PWR_FLAG row; pin lands 6.35 below, label 11.43
+PIN_REACH = 7.62  # BLM15HD182SN1D symbol pins sit at local (+/-7.62, 0)
+FLAG_Y = 782.54  # existing PWR_FLAG row; pin lands 6.35 below, label 11.43
 FLAG_PIN_DY = 6.35
 FLAG_LABEL_DY = 11.43
-PIN11_Y = {"U3": 198.57, "U4": 418.57}      # right-side pin 11, measured
-LABEL_X = 385.09                             # right-side label column
+PIN11_Y = {"U3": 198.57, "U4": 418.57}  # right-side pin 11, measured
+LABEL_X = 385.09  # right-side label column
 
 # (part, pin) -> new global-label text. Only pins whose NET changes appear.
 RELABEL = {
-    ("U3", 16): "CAN_VISOIN",       # was CAN_VISOIN_OPEN
-    ("U3", 18): "CAN_GNDISO",       # was CAN_ISO_GND  -- [10] GNDISO
+    ("U3", 16): "CAN_VISOIN",  # was CAN_VISOIN_OPEN
+    ("U3", 18): "CAN_GNDISO",  # was CAN_ISO_GND  -- [10] GNDISO
     ("U3", 20): "CAN_GNDISO",
-    ("U4", 11): "RS485_GNDISO",     # was RS485_ISO_GND -- [9] converter side
+    ("U4", 11): "RS485_GNDISO",  # was RS485_ISO_GND -- [9] converter side
     ("U4", 14): "RS485_GNDISO",
-    ("U4", 19): "RS485_VISOIN",     # was RS485_VISOIN_OPEN
+    ("U4", 19): "RS485_VISOIN",  # was RS485_VISOIN_OPEN
 }
 # Stray copies of the renamed nets elsewhere on the sheet (the PWR_FLAG row).
-RENAME_ANY = {"CAN_VISOIN_OPEN": "CAN_VISOIN",
-              "RS485_VISOIN_OPEN": "RS485_VISOIN"}
+RENAME_ANY = {"CAN_VISOIN_OPEN": "CAN_VISOIN", "RS485_VISOIN_OPEN": "RS485_VISOIN"}
 
 # ref -> (net on pin 1, net on pin 2, x, y) in a clear area right of U3/U4.
 FERRITES = {
@@ -151,20 +154,26 @@ def main() -> int:
             continue
         for y, txt in wanted:
             if abs(lb.position.Y - y) < 0.01:
-                print(f"   relabel ({lb.position.X:.2f},{lb.position.Y:.2f}) "
-                      f"{lb.text} -> {txt}")
+                print(
+                    f"   relabel ({lb.position.X:.2f},{lb.position.Y:.2f}) "
+                    f"{lb.text} -> {txt}"
+                )
                 lb.text = txt
                 hits += 1
                 break
     if hits != len(RELABEL):
-        raise SystemExit(f"expected {len(RELABEL)} relabels, matched {hits} "
-                         "-- refusing to write a half-rewired sheet")
+        raise SystemExit(
+            f"expected {len(RELABEL)} relabels, matched {hits} "
+            "-- refusing to write a half-rewired sheet"
+        )
 
     # --- 2. rename the stray copies (PWR_FLAG row) ---
     for lb in sch.globalLabels:
         if lb.text in RENAME_ANY:
-            print(f"   rename stray ({lb.position.X:.2f},{lb.position.Y:.2f}) "
-                  f"{lb.text} -> {RENAME_ANY[lb.text]}")
+            print(
+                f"   rename stray ({lb.position.X:.2f},{lb.position.Y:.2f}) "
+                f"{lb.text} -> {RENAME_ANY[lb.text]}"
+            )
             lb.text = RENAME_ANY[lb.text]
 
     # --- 3. place the beads, each pin carrying its net as a global label ---
@@ -180,60 +189,114 @@ def main() -> int:
         print("   added BLM15HD182SN1D to lib_symbols")
 
     def instance(ref):
-        return [SymbolProjectInstance(name=proj, paths=[SymbolProjectPath(
-            sheetInstancePath=sheet, reference=ref, unit=1)])]
+        return [
+            SymbolProjectInstance(
+                name=proj,
+                paths=[
+                    SymbolProjectPath(sheetInstancePath=sheet, reference=ref, unit=1)
+                ],
+            )
+        ]
 
     for ref, (net1, net2, x, y) in FERRITES.items():
         sym = SchematicSymbol(
-            libraryNickname="BLM15HD182SN1D", entryName="BLM15HD182SN1D",
+            libraryNickname="BLM15HD182SN1D",
+            entryName="BLM15HD182SN1D",
             position=Position(X=x, Y=y, angle=0),
-            unit=1, inBom=True, onBoard=True,
-            uuid=str(uuid.uuid4()), instances=instance(ref))
+            unit=1,
+            inBom=True,
+            onBoard=True,
+            uuid=str(uuid.uuid4()),
+            instances=instance(ref),
+        )
         sym.properties = [
-            Property(key="Reference", value=ref,
-                     position=Position(X=x, Y=y - 3.81, angle=0), effects=eff()),
-            Property(key="Value", value="BLM15HD182SN1D",
-                     position=Position(X=x, Y=y + 3.81, angle=0), effects=eff()),
-            Property(key="Footprint", value="Inductor_SMD:L_0402_1005Metric",
-                     position=Position(X=x, Y=y, angle=0), effects=eff(True)),
-            Property(key="Datasheet", value="docs/datasheets/ENFA0024.pdf",
-                     position=Position(X=x, Y=y, angle=0), effects=eff(True)),
+            Property(
+                key="Reference",
+                value=ref,
+                position=Position(X=x, Y=y - 3.81, angle=0),
+                effects=eff(),
+            ),
+            Property(
+                key="Value",
+                value="BLM15HD182SN1D",
+                position=Position(X=x, Y=y + 3.81, angle=0),
+                effects=eff(),
+            ),
+            Property(
+                key="Footprint",
+                value="Inductor_SMD:L_0402_1005Metric",
+                position=Position(X=x, Y=y, angle=0),
+                effects=eff(True),
+            ),
+            Property(
+                key="Datasheet",
+                value="docs/datasheets/ENFA0024.pdf",
+                position=Position(X=x, Y=y, angle=0),
+                effects=eff(True),
+            ),
         ]
         sch.schematicSymbols.append(sym)
         for net, dx, ang in ((net1, -PIN_REACH, 180), (net2, PIN_REACH, 0)):
-            sch.globalLabels.append(GlobalLabel(
-                text=net, shape="input", uuid=str(uuid.uuid4()),
-                position=Position(X=x + dx, Y=y, angle=ang), effects=eff()))
+            sch.globalLabels.append(
+                GlobalLabel(
+                    text=net,
+                    shape="input",
+                    uuid=str(uuid.uuid4()),
+                    position=Position(X=x + dx, Y=y, angle=ang),
+                    effects=eff(),
+                )
+            )
         print(f"   {ref}: {net1} -- {net2}   at ({x}, {y})")
 
     # --- 4. drivers for the two new isolated-ground nets ---
-    flag = next(s for s in sch.schematicSymbols
-                if s.entryName == "PWR_FLAG")
+    flag = next(s for s in sch.schematicSymbols if s.entryName == "PWR_FLAG")
     for net, x in NEW_FLAGS.items():
         sym = SchematicSymbol(
-            libraryNickname=flag.libraryNickname, entryName=flag.entryName,
+            libraryNickname=flag.libraryNickname,
+            entryName=flag.entryName,
             position=Position(X=x, Y=FLAG_Y, angle=0),
-            unit=1, inBom=False, onBoard=False,
-            uuid=str(uuid.uuid4()), instances=instance("#FLG0"))
+            unit=1,
+            inBom=False,
+            onBoard=False,
+            uuid=str(uuid.uuid4()),
+            instances=instance("#FLG0"),
+        )
         sym.properties = [
-            Property(key="Reference", value="#FLG0",
-                     position=Position(X=x, Y=FLAG_Y, angle=0),
-                     effects=eff(True)),
-            Property(key="Value", value="PWR_FLAG",
-                     position=Position(X=x, Y=FLAG_Y - 2.54, angle=0),
-                     effects=eff()),
+            Property(
+                key="Reference",
+                value="#FLG0",
+                position=Position(X=x, Y=FLAG_Y, angle=0),
+                effects=eff(True),
+            ),
+            Property(
+                key="Value",
+                value="PWR_FLAG",
+                position=Position(X=x, Y=FLAG_Y - 2.54, angle=0),
+                effects=eff(),
+            ),
         ]
         sch.schematicSymbols.append(sym)
         # Same shape as every other flag on this sheet: pin -> short wire ->
         # global label, rather than a label dropped straight onto the pin.
-        sch.graphicalItems.append(Connection(
-            type="wire", uuid=str(uuid.uuid4()),
-            points=[Position(X=x, Y=FLAG_Y + FLAG_PIN_DY),
-                    Position(X=x, Y=FLAG_Y + FLAG_LABEL_DY)]))
-        sch.globalLabels.append(GlobalLabel(
-            text=net, shape="input", uuid=str(uuid.uuid4()),
-            position=Position(X=x, Y=FLAG_Y + FLAG_LABEL_DY, angle=270),
-            effects=eff()))
+        sch.graphicalItems.append(
+            Connection(
+                type="wire",
+                uuid=str(uuid.uuid4()),
+                points=[
+                    Position(X=x, Y=FLAG_Y + FLAG_PIN_DY),
+                    Position(X=x, Y=FLAG_Y + FLAG_LABEL_DY),
+                ],
+            )
+        )
+        sch.globalLabels.append(
+            GlobalLabel(
+                text=net,
+                shape="input",
+                uuid=str(uuid.uuid4()),
+                position=Position(X=x, Y=FLAG_Y + FLAG_LABEL_DY, angle=270),
+                effects=eff(),
+            )
+        )
         print(f"   PWR_FLAG on {net} at ({x}, {FLAG_Y})")
 
     if args.dry_run:

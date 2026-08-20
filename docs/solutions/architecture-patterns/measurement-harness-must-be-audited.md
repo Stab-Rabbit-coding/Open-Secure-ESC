@@ -37,7 +37,7 @@ did not match the drawing.
 ## The five
 
 | # | Defect | What it asserted |
-|---|--------|------------------|
+| --- | ------ | ------------------ |
 | 1 | Measured pad **centres**, not edges | 7.68 mm where the true gap was 2.51 mm; hid a 77.6 mm perimeter part entirely |
 | 2 | `edge_path` ignored along-edge separation | U3 vs Q2 read 7.83 mm; true unfolded path 27.15 mm |
 | 3 | Read only kicad-cli's `violations` array | "DRC electrical 0" while the change broke two GND connections |

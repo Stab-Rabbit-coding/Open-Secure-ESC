@@ -72,9 +72,9 @@ PCB = HERE.parent / "open_secure_esc_6s_50a_can485_faraday.kicad_pcb"
 
 # Band covering J5A, C1 and all three high-side drain lands. The lowest VM
 # copper is Q5's drain land at y = 14.93 mm; 15.50 clears it.
-BAND = (0.55, 0.60, 24.95, 15.50)          # x1, y1, x2, y2 in board-local mm
-PRIORITY = 2                                # phase pours are 3, GND is 0
-CLEARANCE_MM = 0.3                          # matches every other zone here
+BAND = (0.55, 0.60, 24.95, 15.50)  # x1, y1, x2, y2 in board-local mm
+PRIORITY = 2  # phase pours are 3, GND is 0
+CLEARANCE_MM = 0.3  # matches every other zone here
 
 
 def board_origin(board) -> tuple[int, int]:
@@ -127,8 +127,7 @@ def measure_neck(board) -> tuple[float, float]:
 def main() -> int:
     """Add the pour, refill, and report what it connected and where it necks."""
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--dry-run", action="store_true",
-                    help="report only, write nothing")
+    ap.add_argument("--dry-run", action="store_true", help="report only, write nothing")
     args = ap.parse_args()
 
     board = pcbnew.LoadBoard(str(PCB))
@@ -160,14 +159,18 @@ def main() -> int:
     area = zone.GetFilledPolysList(pcbnew.F_Cu).Area() / 1e12
     neck, neck_x = measure_neck(board)
 
-    print(f"F.Cu VM pour: {area:.1f} mm^2 over "
-          f"x {x1}..{x2}, y {y1}..{y2} mm, priority {PRIORITY}")
+    print(
+        f"F.Cu VM pour: {area:.1f} mm^2 over "
+        f"x {x1}..{x2}, y {y1}..{y2} mm, priority {PRIORITY}"
+    )
     print(f"unconnected: {before} -> {after}")
     print(f"narrowest copper height: {neck:.2f} mm at x = {neck_x:.1f} mm")
-    print("\nThe neck is pinched between J5B (GND pack terminal) above and "
-          "the PH_C pour below,\nand is the only F.Cu path to Q5's drain. "
-          "It still needs via stitching to the\nIn2 VM plane -- see this "
-          "script's docstring and TODO.md 12.5.s.")
+    print(
+        "\nThe neck is pinched between J5B (GND pack terminal) above and "
+        "the PH_C pour below,\nand is the only F.Cu path to Q5's drain. "
+        "It still needs via stitching to the\nIn2 VM plane -- see this "
+        "script's docstring and TODO.md 12.5.s."
+    )
 
     if args.dry_run:
         print("\n--dry-run: nothing written")

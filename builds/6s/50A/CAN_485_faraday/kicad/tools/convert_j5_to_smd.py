@@ -59,9 +59,9 @@ HERE = Path(__file__).resolve().parent
 PCB = HERE.parent / "open_secure_esc_6s_50a_can485_faraday.kicad_pcb"
 BACKUP = PCB.with_suffix(".kicad_pcb.pre-smd.bak")
 
-ISO_BOTTOM = 23.82     # lowest isolated copper, all of it on B.Cu
-NOTCH_TO = 24.50       # notch the F.Cu pours down to here
-INSET = 5.12           # 7.5 - 1.6 board - 0.83 (C12's own inset), rounded up
+ISO_BOTTOM = 23.82  # lowest isolated copper, all of it on B.Cu
+NOTCH_TO = 24.50  # notch the F.Cu pours down to here
+INSET = 5.12  # 7.5 - 1.6 board - 0.83 (C12's own inset), rounded up
 RIGHT = 26.88
 
 
@@ -92,9 +92,11 @@ def main() -> int:
             ls.AddLayer(pcbnew.F_Mask)
             ls.AddLayer(pcbnew.F_Paste)
             p.SetLayerSet(ls)
-            print(f"   {ref}.{p.GetNumber()} [{p.GetNetname()}] "
-                  f"{pcbnew.ToMM(p.GetSizeX()):.2f} x {pcbnew.ToMM(p.GetSizeY()):.2f} mm, "
-                  f"drill {before:.2f} -> none, F.Cu only")
+            print(
+                f"   {ref}.{p.GetNumber()} [{p.GetNetname()}] "
+                f"{pcbnew.ToMM(p.GetSizeX()):.2f} x {pcbnew.ToMM(p.GetSizeY()):.2f} mm, "
+                f"drill {before:.2f} -> none, F.Cu only"
+            )
 
     print(f"\n2. notching the F.Cu pours to x {INSET}..{RIGHT} above y {NOTCH_TO}")
     for z in board.Zones():
@@ -109,16 +111,28 @@ def main() -> int:
         left = pcbnew.ToMM(bx.GetLeft() - ox)
         right = pcbnew.ToMM(bx.GetRight() - ox)
         if top > ISO_BOTTOM:
-            print(f"   {z.GetNetname():4s} starts below the isolated section, untouched")
+            print(
+                f"   {z.GetNetname():4s} starts below the isolated section, untouched"
+            )
             continue
-        pts = [(INSET, top), (RIGHT, top), (RIGHT, NOTCH_TO), (right, NOTCH_TO),
-               (right, bot), (left, bot), (left, NOTCH_TO), (INSET, NOTCH_TO)]
+        pts = [
+            (INSET, top),
+            (RIGHT, top),
+            (RIGHT, NOTCH_TO),
+            (right, NOTCH_TO),
+            (right, bot),
+            (left, bot),
+            (left, NOTCH_TO),
+            (INSET, NOTCH_TO),
+        ]
         o.RemoveAllContours()
         o.NewOutline()
         for x, y in pts:
             o.Append(ox + pcbnew.FromMM(x), oy + pcbnew.FromMM(y))
-        print(f"   {z.GetNetname():4s} notched: full width below y {NOTCH_TO}, "
-              f"x {INSET}..{RIGHT} above it")
+        print(
+            f"   {z.GetNetname():4s} notched: full width below y {NOTCH_TO}, "
+            f"x {INSET}..{RIGHT} above it"
+        )
 
     if not args.dry_run:
         shutil.copy2(PCB, BACKUP)
@@ -129,8 +143,10 @@ def main() -> int:
     board = pcbnew.LoadBoard(str(PCB))
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     board.BuildConnectivity()
-    print(f"\nunconnected: {board.GetConnectivity().GetUnconnectedCount(False)}"
-          "  (In2 VM plane is orphaned until the via fields are added)")
+    print(
+        f"\nunconnected: {board.GetConnectivity().GetUnconnectedCount(False)}"
+        "  (In2 VM plane is orphaned until the via fields are added)"
+    )
     if args.dry_run:
         print("--dry-run: nothing written")
         return 0

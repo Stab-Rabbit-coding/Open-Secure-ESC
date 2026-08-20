@@ -72,7 +72,6 @@ Usage:
 # TODO.md 12.4. AI-generated; reviewed against the primary sources named
 # in the docstring above. Not human-authored.
 
-
 import argparse
 import sys
 from collections import defaultdict
@@ -94,21 +93,21 @@ PINNED: dict[str, tuple[str, int]] = {
     "ADM3055E_ADM3057E:ADM3055E_ADM3057E": ("U", 3),
     "ADM2582E_ADM2587E:ADM2582E_ADM2587E": ("U", 4),
     "DRV8353S:DRV8353S": ("U", 5),
-    "INA240:INA240": ("U", 6),          # U6, U7, U8
-    "WSLP2512:WSLP2512": ("R", 1),      # R1, R2, R3 -- the three phase shunts
+    "INA240:INA240": ("U", 6),  # U6, U7, U8
+    "WSLP2512:WSLP2512": ("R", 1),  # R1, R2, R3 -- the three phase shunts
     "IRFB4110PBF:IRFB4110PBF": ("Q", 1),
     "INR21700_P42A:INR21700_P42A": ("BT", 1),
-    "WE_SHC_3670375:WE_SHC_3670375": ("SH", 1),   # FRAME  -- soldered
-    "WE_SHC_3671375:WE_SHC_3671375": ("SH", 2),   # COVER  -- clips on
+    "WE_SHC_3670375:WE_SHC_3670375": ("SH", 1),  # FRAME  -- soldered
+    "WE_SHC_3671375:WE_SHC_3671375": ("SH", 2),  # COVER  -- clips on
 }
 
 # Everything not pinned above is numbered from this starting point, in
 # reading order, using the prefix already on the symbol ("R?" -> "R").
 FREE_START: dict[str, int] = {
-    "R": 4,     # R1..R3 are the WSLP2512 shunts
+    "R": 4,  # R1..R3 are the WSLP2512 shunts
     "C": 1,
     "J": 1,
-    "U": 9,     # U1..U8 are pinned above
+    "U": 9,  # U1..U8 are pinned above
     "Q": 7,
     "BT": 7,
     "SH": 3,
@@ -190,8 +189,11 @@ def assign(symbols) -> dict[str, str]:
 def main() -> int:
     """Annotate, assign footprints, and set board-exclusion flags."""
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--dry-run", action="store_true",
-                    help="report the changes without writing the file")
+    ap.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="report the changes without writing the file",
+    )
     args = ap.parse_args()
 
     sch = Schematic().from_file(str(SCH))
@@ -207,21 +209,23 @@ def main() -> int:
 
     # Virtual symbols: '#'-prefixed reference, out of the BOM, off the board.
     flags = [s for s in sch.schematicSymbols if s.libId in VIRTUAL_LIB_IDS]
-    for i, sym in enumerate(sorted(flags,
-                                   key=lambda s: (round(s.position.Y, 3),
-                                                  round(s.position.X, 3))), 1):
+    for i, sym in enumerate(
+        sorted(flags, key=lambda s: (round(s.position.Y, 3), round(s.position.X, 3))), 1
+    ):
         set_reference(sym, f"#FLG{i:02d}")
         sym.inBom = False
         sym.onBoard = False
     if flags:
-        print(f"  virtual    {len(flags)} PWR_FLAG symbols -> #FLGnn, "
-              f"out of BOM, off board")
+        print(
+            f"  virtual    {len(flags)} PWR_FLAG symbols -> #FLGnn, "
+            f"out of BOM, off board"
+        )
 
     changed = 0
     for sym in sch.schematicSymbols:
         ref = refs.get(sym.uuid)
         if ref is None:
-            continue          # power flag, left to KiCad's own numbering
+            continue  # power flag, left to KiCad's own numbering
         old = prop(sym, "Reference").value
         if old != ref:
             set_reference(sym, ref)
@@ -234,13 +238,11 @@ def main() -> int:
                 fp_prop.value = fp
                 print(f"  footprint  {ref:5} -> {fp}")
 
-        if ref in EXCLUDE_FROM_BOARD:
-            if sym.onBoard:
-                sym.onBoard = False
-                print(f"  off-board  {ref:5} (stays in BOM)")
+        if ref in EXCLUDE_FROM_BOARD and sym.onBoard:
+            sym.onBoard = False
+            print(f"  off-board  {ref:5} (stays in BOM)")
 
-    print(f"annotated {changed} symbols "
-          f"({len(refs)} total, power flags excluded)")
+    print(f"annotated {changed} symbols ({len(refs)} total, power flags excluded)")
 
     if args.dry_run:
         print("dry run -- nothing written")

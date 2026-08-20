@@ -111,7 +111,7 @@ def sheet_to_axis(ws) -> dict | None:
     """Convert one axis worksheet into the axis dict. None if not an axis sheet."""
     header_row = find_header_row(ws)
     if header_row is None:
-        return None                      # Legend and anything non-axis
+        return None  # Legend and anything non-axis
 
     headers = [
         str(ws.cell(row=header_row, column=c).value or "").strip()
@@ -134,9 +134,7 @@ def sheet_to_axis(ws) -> dict | None:
             continue
         cells = [("" if v is None else str(v).strip()) for v in values]
         has_status = (
-            status_idx is not None
-            and cells[status_idx]
-            and cells[status_idx] != "None"
+            status_idx is not None and cells[status_idx] and cells[status_idx] != "None"
         )
         if not has_status:
             notes.append(cells[0])
@@ -189,13 +187,18 @@ def unresolved_cells(db: dict) -> list[dict]:
                 if col == "Status":
                     continue
                 flagged = any(m in val for m in UNRESOLVED_MARKERS)
-                if flagged or status == "Open / unresolved":
-                    if flagged or col == axis["key_column"]:
-                        out.append({
-                            "axis": axis_key, "row": row_key,
-                            "column": col, "status": status,
-                            "reason": "explicit TBD" if flagged else status,
-                        })
+                if (flagged or status == "Open / unresolved") and (
+                    flagged or col == axis["key_column"]
+                ):
+                    out.append(
+                            {
+                                "axis": axis_key,
+                                "row": row_key,
+                                "column": col,
+                                "status": status,
+                                "reason": "explicit TBD" if flagged else status,
+                            }
+                        )
     return out
 
 
@@ -216,14 +219,17 @@ def build_db() -> dict:
             "workbook": str(WORKBOOK.relative_to(REPO)),
             "workbook_sha256": hashlib.sha256(raw).hexdigest(),
             "workbook_mtime": datetime.fromtimestamp(
-                WORKBOOK.stat().st_mtime, timezone.utc).isoformat(),
+                WORKBOOK.stat().st_mtime, timezone.utc
+            ).isoformat(),
             "exported": datetime.now(timezone.utc).isoformat(),
             "exported_by": "docs/tools/decision_matrix_to_json.py",
             "governed_by": "AGENTS.md",
             "note": "Generated file -- edit the workbook, then re-run the "
-                    "exporter. Do not hand-edit this JSON.",
+            "exporter. Do not hand-edit this JSON.",
         },
-        "status_legend": parse_legend(wb["Legend"]) if "Legend" in wb.sheetnames else {},
+        "status_legend": parse_legend(wb["Legend"])
+        if "Legend" in wb.sheetnames
+        else {},
         "axes": axes,
     }
 
@@ -231,8 +237,11 @@ def build_db() -> dict:
 def main() -> int:
     """Export the workbook, or check the existing export for staleness."""
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--check", action="store_true",
-                    help="exit 1 if the JSON is missing or stale; do not write")
+    ap.add_argument(
+        "--check",
+        action="store_true",
+        help="exit 1 if the JSON is missing or stale; do not write",
+    )
     args = ap.parse_args()
 
     db = build_db()
@@ -244,21 +253,26 @@ def main() -> int:
         old = json.loads(OUTPUT.read_text(encoding="utf-8"))
         old_hash = (old.get("source") or {}).get("workbook_sha256")
         if old_hash != db["source"]["workbook_sha256"]:
-            print("STALE: workbook has changed since the JSON was exported; "
-                  "re-run docs/tools/decision_matrix_to_json.py")
+            print(
+                "STALE: workbook has changed since the JSON was exported; "
+                "re-run docs/tools/decision_matrix_to_json.py"
+            )
             return 1
         print(f"OK: {OUTPUT.relative_to(REPO)} matches the workbook")
         return 0
 
-    OUTPUT.write_text(json.dumps(db, indent=2, ensure_ascii=False) + "\n",
-                      encoding="utf-8")
+    OUTPUT.write_text(
+        json.dumps(db, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
     print(f"wrote {OUTPUT.relative_to(REPO)}")
     for key, axis in db["axes"].items():
         print(f"  {key:14} {len(axis['rows'])} rows x {len(axis['columns'])} cols")
 
     flagged = unresolved_cells(db)
-    print(f"\n{len(flagged)} cells need primary-source verification before a "
-          f"build can consume them:")
+    print(
+        f"\n{len(flagged)} cells need primary-source verification before a "
+        f"build can consume them:"
+    )
     seen = set()
     for f in flagged:
         tag = (f["axis"], f["row"])

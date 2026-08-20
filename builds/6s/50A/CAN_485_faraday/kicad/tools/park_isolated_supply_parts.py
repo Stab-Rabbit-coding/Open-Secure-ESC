@@ -56,7 +56,7 @@ BACKUP = PCB.with_suffix(".kicad_pcb.pre-isocaps.bak")
 CAPLIB = "/usr/share/kicad/footprints/Capacitor_SMD.pretty"
 CAPFP = "C_0805_2012Metric"
 
-PARK_X_FB = 32.0        # staging columns, board-local mm (board ends at 25.45)
+PARK_X_FB = 32.0  # staging columns, board-local mm (board ends at 25.45)
 PARK_X_C = 40.0
 PARK_Y0 = 6.0
 PARK_DY_FB = 4.0
@@ -64,14 +64,14 @@ PARK_DY_C = 5.5
 
 # ref, value, net on pad 1, net on pad 2
 CAPS = [
-    ("C11", "10uF",  "CAN_VISOOUT",   "CAN_GNDISO"),
-    ("C12", "220nF", "CAN_VISOOUT",   "CAN_GNDISO"),
-    ("C13", "100nF", "CAN_VISOIN",    "CAN_ISO_GND"),
-    ("C14", "10nF",  "CAN_VISOIN",    "CAN_ISO_GND"),
-    ("C15", "10uF",  "RS485_VISOOUT", "RS485_GNDISO"),
+    ("C11", "10uF", "CAN_VISOOUT", "CAN_GNDISO"),
+    ("C12", "220nF", "CAN_VISOOUT", "CAN_GNDISO"),
+    ("C13", "100nF", "CAN_VISOIN", "CAN_ISO_GND"),
+    ("C14", "10nF", "CAN_VISOIN", "CAN_ISO_GND"),
+    ("C15", "10uF", "RS485_VISOOUT", "RS485_GNDISO"),
     ("C16", "100nF", "RS485_VISOOUT", "RS485_GNDISO"),
-    ("C17", "100nF", "RS485_VISOIN",  "RS485_ISO_GND"),
-    ("C18", "10nF",  "RS485_VISOIN",  "RS485_ISO_GND"),
+    ("C17", "100nF", "RS485_VISOIN", "RS485_ISO_GND"),
+    ("C18", "10nF", "RS485_VISOIN", "RS485_ISO_GND"),
 ]
 FERRITES = ["FB1", "FB2", "FB3", "FB4"]
 
@@ -101,12 +101,12 @@ def main() -> int:
     ox, oy = origin(board)
 
     def put(fp, x, y):
-        fp.SetPosition(pcbnew.VECTOR2I(ox + pcbnew.FromMM(x),
-                                       oy + pcbnew.FromMM(y)))
+        fp.SetPosition(pcbnew.VECTOR2I(ox + pcbnew.FromMM(x), oy + pcbnew.FromMM(y)))
 
     print(f"1. moving the four beads out to x = {PARK_X_FB} mm")
-    found = {f.GetReference(): f for f in board.Footprints()
-             if f.GetReference() in FERRITES}
+    found = {
+        f.GetReference(): f for f in board.Footprints() if f.GetReference() in FERRITES
+    }
     for i, ref in enumerate(FERRITES):
         if ref not in found:
             print(f"     {ref} not on the board -- skipped")
@@ -128,15 +128,17 @@ def main() -> int:
         board.Add(fp)
         y = PARK_Y0 + i * PARK_DY_C
         put(fp, PARK_X_C, y)
-        fp.Flip(fp.GetPosition(), False)          # isolated section is on B.Cu
+        fp.Flip(fp.GetPosition(), False)  # isolated section is on B.Cu
         for p in fp.Pads():
             p.SetNet(net(board, n1 if p.GetNumber() == "1" else n2))
         print(f"     {ref:4s} {val:6s} [{n1} | {n2}] -> ({PARK_X_C}, {y})")
 
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     board.BuildConnectivity()
-    print(f"\nunconnected: {board.GetConnectivity().GetUnconnectedCount(False)}"
-          "  (every parked part is unrouted by definition)")
+    print(
+        f"\nunconnected: {board.GetConnectivity().GetUnconnectedCount(False)}"
+        "  (every parked part is unrouted by definition)"
+    )
 
     if args.dry_run:
         print("--dry-run: nothing written")

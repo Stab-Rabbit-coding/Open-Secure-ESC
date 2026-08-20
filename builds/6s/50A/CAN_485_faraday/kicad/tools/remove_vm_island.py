@@ -83,12 +83,10 @@ def existing(board):
 
 def island_box(board):
     """The dead pocket, derived from where U5's via ring actually is now."""
-    fp = next((f for f in board.Footprints()
-               if f.GetReference() == VIA_OWNER), None)
+    fp = next((f for f in board.Footprints() if f.GetReference() == VIA_OWNER), None)
     if fp is None:
         raise SystemExit(f"{VIA_OWNER} not on board")
-    vias = [p for p in fp.Pads()
-            if p.GetNumber() == VIA_PAD and p.GetDrillSize().x > 0]
+    vias = [p for p in fp.Pads() if p.GetNumber() == VIA_PAD and p.GetDrillSize().x > 0]
     if not vias:
         raise SystemExit(f"no through-hole {VIA_OWNER}.{VIA_PAD} vias")
     xs, ys, r = [], [], 0
@@ -104,9 +102,11 @@ def island_box(board):
 def vm_outlines(board):
     """How many separate polygons the In2.Cu VM plane fills as."""
     for zone in board.Zones():
-        if (zone.GetNetname() == "VM"
-                and zone.IsOnLayer(pcbnew.In2_Cu)
-                and not zone.GetIsRuleArea()):
+        if (
+            zone.GetNetname() == "VM"
+            and zone.IsOnLayer(pcbnew.In2_Cu)
+            and not zone.GetIsRuleArea()
+        ):
             return zone.GetFilledPolysList(pcbnew.In2_Cu).OutlineCount()
     return -1
 
@@ -114,8 +114,7 @@ def vm_outlines(board):
 def main():
     """Add the rule area, refill, and report the polygon count either side."""
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--dry-run", action="store_true",
-                    help="report only, write nothing")
+    ap.add_argument("--dry-run", action="store_true", help="report only, write nothing")
     args = ap.parse_args()
 
     board = pcbnew.LoadBoard(str(PCB))
@@ -124,15 +123,20 @@ def main():
     old = existing(board)
     if old is not None:
         ob = old.GetBoundingBox()
-        if (abs(ob.GetLeft() - x1) < 1000 and abs(ob.GetRight() - x2) < 1000
-                and abs(ob.GetTop() - y1) < 1000
-                and abs(ob.GetBottom() - y2) < 1000):
+        if (
+            abs(ob.GetLeft() - x1) < 1000
+            and abs(ob.GetRight() - x2) < 1000
+            and abs(ob.GetTop() - y1) < 1000
+            and abs(ob.GetBottom() - y2) < 1000
+        ):
             print("rule area already present and correctly placed")
             return 0
-        print(f"rule area is STALE: it sits at x "
-              f"{pcbnew.ToMM(ob.GetLeft()):.2f}..{pcbnew.ToMM(ob.GetRight()):.2f} "
-              f"but {VIA_OWNER}'s via ring now needs x "
-              f"{pcbnew.ToMM(x1):.2f}..{pcbnew.ToMM(x2):.2f} -- replacing")
+        print(
+            f"rule area is STALE: it sits at x "
+            f"{pcbnew.ToMM(ob.GetLeft()):.2f}..{pcbnew.ToMM(ob.GetRight()):.2f} "
+            f"but {VIA_OWNER}'s via ring now needs x "
+            f"{pcbnew.ToMM(x1):.2f}..{pcbnew.ToMM(x2):.2f} -- replacing"
+        )
         board.Remove(old)
 
     print(f"In2.Cu VM plane fills as {vm_outlines(board)} polygons")
@@ -158,10 +162,12 @@ def main():
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     board.BuildConnectivity()
 
-    print(f"rule area '{NAME}' on In2.Cu over x "
-          f"{pcbnew.ToMM(x1):.2f}..{pcbnew.ToMM(x2):.2f}, y "
-          f"{pcbnew.ToMM(y1):.2f}..{pcbnew.ToMM(y2):.2f} (copper pour only), "
-          f"derived from {VIA_OWNER}.{VIA_PAD}")
+    print(
+        f"rule area '{NAME}' on In2.Cu over x "
+        f"{pcbnew.ToMM(x1):.2f}..{pcbnew.ToMM(x2):.2f}, y "
+        f"{pcbnew.ToMM(y1):.2f}..{pcbnew.ToMM(y2):.2f} (copper pour only), "
+        f"derived from {VIA_OWNER}.{VIA_PAD}"
+    )
     print(f"In2.Cu VM plane now fills as {vm_outlines(board)} polygons")
 
     if args.dry_run:

@@ -84,7 +84,7 @@ PCB = HERE.parent / "open_secure_esc_6s_50a_can485_faraday.kicad_pcb"
 BACKUP = PCB.with_suffix(".kicad_pcb.pre-shieldmove.bak")
 
 # SH1's land rectangle, measured off the board 2026-08-19.
-SHIELD = (24.85, 47.05, 51.70, 68.30)      # x0, x1, y0, y1
+SHIELD = (24.85, 47.05, 51.70, 68.30)  # x0, x1, y0, y1
 SHIELD_MARGIN_MM = 0.50
 EDGE_MARGIN_MM = 0.50
 STEP_MM = 0.05
@@ -98,8 +98,12 @@ def courtyard_box(fp, mm):
     bb = fp.GetCourtyard(fp.GetLayer()).BBox()
     if bb.GetWidth() <= 0 or bb.GetHeight() <= 0:
         bb = fp.GetBoundingBox(False, False)
-    return (bb.GetLeft() / mm, bb.GetRight() / mm,
-            bb.GetTop() / mm, bb.GetBottom() / mm)
+    return (
+        bb.GetLeft() / mm,
+        bb.GetRight() / mm,
+        bb.GetTop() / mm,
+        bb.GetBottom() / mm,
+    )
 
 
 def overlaps(a, b) -> bool:
@@ -116,14 +120,20 @@ def main() -> int:
     board = pcbnew.LoadBoard(str(PCB))
     mm = pcbnew.pcbIUScale.IU_PER_MM
     edge = board.GetBoardEdgesBoundingBox()
-    board_box = (edge.GetLeft() / mm + EDGE_MARGIN_MM,
-                 edge.GetRight() / mm - EDGE_MARGIN_MM,
-                 edge.GetTop() / mm + EDGE_MARGIN_MM,
-                 edge.GetBottom() / mm - EDGE_MARGIN_MM)
+    board_box = (
+        edge.GetLeft() / mm + EDGE_MARGIN_MM,
+        edge.GetRight() / mm - EDGE_MARGIN_MM,
+        edge.GetTop() / mm + EDGE_MARGIN_MM,
+        edge.GetBottom() / mm - EDGE_MARGIN_MM,
+    )
 
     sx0, sx1, sy0, sy1 = SHIELD
-    keepout = (sx0 - SHIELD_MARGIN_MM, sx1 + SHIELD_MARGIN_MM,
-               sy0 - SHIELD_MARGIN_MM, sy1 + SHIELD_MARGIN_MM)
+    keepout = (
+        sx0 - SHIELD_MARGIN_MM,
+        sx1 + SHIELD_MARGIN_MM,
+        sy0 - SHIELD_MARGIN_MM,
+        sy1 + SHIELD_MARGIN_MM,
+    )
 
     fps = {f.GetReference(): f for f in board.GetFootprints()}
     missing = [r for r in MOVABLE if r not in fps]
@@ -156,11 +166,14 @@ def main() -> int:
                 box = (nx - half_w, nx + half_w, ny - half_h, ny + half_h)
                 if overlaps(box, keepout):
                     continue
-                if (box[0] < board_box[0] or box[1] > board_box[1]
-                        or box[2] < board_box[2] or box[3] > board_box[3]):
+                if (
+                    box[0] < board_box[0]
+                    or box[1] > board_box[1]
+                    or box[2] < board_box[2]
+                    or box[3] > board_box[3]
+                ):
                     continue
-                if any(l == layer and overlaps(box, ob)
-                       for l, ob in placed.values()):
+                if any(l == layer and overlaps(box, ob) for l, ob in placed.values()):
                     continue
                 best = (d, nx, ny)
         if best is None:
@@ -168,14 +181,17 @@ def main() -> int:
 
         d, nx, ny = best
         fp.SetPosition(pcbnew.VECTOR2I(int(nx * mm), int(ny * mm)))
-        placed[ref] = (layer, (nx - half_w, nx + half_w,
-                               ny - half_h, ny + half_h))
+        placed[ref] = (layer, (nx - half_w, nx + half_w, ny - half_h, ny + half_h))
         total += d
-        print(f"  {ref:4} ({cx:6.2f},{cy:6.2f}) -> ({nx:6.2f},{ny:6.2f})  "
-              f"moved {d:5.2f} mm")
+        print(
+            f"  {ref:4} ({cx:6.2f},{cy:6.2f}) -> ({nx:6.2f},{ny:6.2f})  "
+            f"moved {d:5.2f} mm"
+        )
 
-    print(f"  total displacement {total:.2f} mm over {len(MOVABLE)} parts "
-          f"(mean {total / len(MOVABLE):.2f} mm)")
+    print(
+        f"  total displacement {total:.2f} mm over {len(MOVABLE)} parts "
+        f"(mean {total / len(MOVABLE):.2f} mm)"
+    )
 
     if args.dry_run:
         print("dry run -- not written")

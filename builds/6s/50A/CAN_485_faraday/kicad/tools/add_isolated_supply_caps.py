@@ -53,8 +53,13 @@ import uuid
 from pathlib import Path
 
 from kiutils.items.common import Effects, Font, Position, Property
-from kiutils.items.schitems import (Connection, GlobalLabel, SchematicSymbol,
-                                    SymbolProjectInstance, SymbolProjectPath)
+from kiutils.items.schitems import (
+    Connection,
+    GlobalLabel,
+    SchematicSymbol,
+    SymbolProjectInstance,
+    SymbolProjectPath,
+)
 from kiutils.schematic import Schematic
 
 HERE = Path(__file__).resolve().parent
@@ -71,14 +76,14 @@ FOOTPRINT = "Capacitor_SMD:C_0805_2012Metric"
 
 # ref, value, net on pin 1, net on pin 2, sheet x, sheet y
 CAPS = [
-    ("C11", "10uF",  "CAN_VISOOUT",   "CAN_GNDISO",    509.85, 202.54),
-    ("C12", "220nF", "CAN_VISOOUT",   "CAN_GNDISO",    509.85, 232.54),
-    ("C13", "100nF", "CAN_VISOIN",    "CAN_ISO_GND",   509.85, 262.54),
-    ("C14", "10nF",  "CAN_VISOIN",    "CAN_ISO_GND",   509.85, 292.54),
-    ("C15", "10uF",  "RS485_VISOOUT", "RS485_GNDISO",  509.85, 422.54),
-    ("C16", "100nF", "RS485_VISOOUT", "RS485_GNDISO",  509.85, 452.54),
-    ("C17", "100nF", "RS485_VISOIN",  "RS485_ISO_GND", 509.85, 482.54),
-    ("C18", "10nF",  "RS485_VISOIN",  "RS485_ISO_GND", 509.85, 512.54),
+    ("C11", "10uF", "CAN_VISOOUT", "CAN_GNDISO", 509.85, 202.54),
+    ("C12", "220nF", "CAN_VISOOUT", "CAN_GNDISO", 509.85, 232.54),
+    ("C13", "100nF", "CAN_VISOIN", "CAN_ISO_GND", 509.85, 262.54),
+    ("C14", "10nF", "CAN_VISOIN", "CAN_ISO_GND", 509.85, 292.54),
+    ("C15", "10uF", "RS485_VISOOUT", "RS485_GNDISO", 509.85, 422.54),
+    ("C16", "100nF", "RS485_VISOOUT", "RS485_GNDISO", 509.85, 452.54),
+    ("C17", "100nF", "RS485_VISOIN", "RS485_ISO_GND", 509.85, 482.54),
+    ("C18", "10nF", "RS485_VISOIN", "RS485_ISO_GND", 509.85, 512.54),
 ]
 
 
@@ -94,47 +99,86 @@ def main() -> int:
     args = ap.parse_args()
 
     sch = Schematic.from_file(str(SCH))
-    have = {p.value for s in sch.schematicSymbols for p in s.properties
-            if p.key == "Reference"}
+    have = {
+        p.value
+        for s in sch.schematicSymbols
+        for p in s.properties
+        if p.key == "Reference"
+    }
     if "C11" in have:
         print("isolated-supply capacitors already present -- nothing to do")
         return 0
 
-    proto = next(s for s in sch.schematicSymbols
-                 if s.entryName == "C"
-                 and any(p.key == "Reference" and p.value == "C2"
-                         for p in s.properties))
+    proto = next(
+        s
+        for s in sch.schematicSymbols
+        if s.entryName == "C"
+        and any(p.key == "Reference" and p.value == "C2" for p in s.properties)
+    )
     proj = proto.instances[0].name
     sheet = proto.instances[0].paths[0].sheetInstancePath
 
     for ref, val, n1, n2, x, y in CAPS:
         sym = SchematicSymbol(
-            libraryNickname=proto.libraryNickname, entryName=proto.entryName,
+            libraryNickname=proto.libraryNickname,
+            entryName=proto.entryName,
             position=Position(X=x, Y=y, angle=0),
-            unit=1, inBom=True, onBoard=True, uuid=str(uuid.uuid4()),
-            instances=[SymbolProjectInstance(name=proj, paths=[
-                SymbolProjectPath(sheetInstancePath=sheet,
-                                  reference=ref, unit=1)])])
+            unit=1,
+            inBom=True,
+            onBoard=True,
+            uuid=str(uuid.uuid4()),
+            instances=[
+                SymbolProjectInstance(
+                    name=proj,
+                    paths=[
+                        SymbolProjectPath(
+                            sheetInstancePath=sheet, reference=ref, unit=1
+                        )
+                    ],
+                )
+            ],
+        )
         sym.properties = [
-            Property(key="Reference", value=ref,
-                     position=Position(X=x, Y=y - 3.81, angle=0),
-                     effects=eff()),
-            Property(key="Value", value=val,
-                     position=Position(X=x, Y=y + 3.81, angle=0),
-                     effects=eff()),
-            Property(key="Footprint", value=FOOTPRINT,
-                     position=Position(X=x, Y=y, angle=0), effects=eff(True)),
+            Property(
+                key="Reference",
+                value=ref,
+                position=Position(X=x, Y=y - 3.81, angle=0),
+                effects=eff(),
+            ),
+            Property(
+                key="Value",
+                value=val,
+                position=Position(X=x, Y=y + 3.81, angle=0),
+                effects=eff(),
+            ),
+            Property(
+                key="Footprint",
+                value=FOOTPRINT,
+                position=Position(X=x, Y=y, angle=0),
+                effects=eff(True),
+            ),
         ]
         sch.schematicSymbols.append(sym)
         for net, dy in ((n1, -1), (n2, +1)):
-            sch.graphicalItems.append(Connection(
-                type="wire", uuid=str(uuid.uuid4()),
-                points=[Position(X=x, Y=y + dy * PIN_DY),
-                        Position(X=x, Y=y + dy * LABEL_DY)]))
-            sch.globalLabels.append(GlobalLabel(
-                text=net, shape="input", uuid=str(uuid.uuid4()),
-                position=Position(X=x, Y=y + dy * LABEL_DY, angle=90),
-                effects=eff()))
+            sch.graphicalItems.append(
+                Connection(
+                    type="wire",
+                    uuid=str(uuid.uuid4()),
+                    points=[
+                        Position(X=x, Y=y + dy * PIN_DY),
+                        Position(X=x, Y=y + dy * LABEL_DY),
+                    ],
+                )
+            )
+            sch.globalLabels.append(
+                GlobalLabel(
+                    text=net,
+                    shape="input",
+                    uuid=str(uuid.uuid4()),
+                    position=Position(X=x, Y=y + dy * LABEL_DY, angle=90),
+                    effects=eff(),
+                )
+            )
         print(f"   {ref:4s} {val:6s} {n1} -- {n2}")
 
     if args.dry_run:

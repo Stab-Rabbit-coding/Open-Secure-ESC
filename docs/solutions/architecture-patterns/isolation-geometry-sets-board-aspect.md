@@ -50,14 +50,14 @@ sit BETWEEN the two isolated rows?**
 With both isolated rows facing opposite board edges (the arrangement that lets
 planes cross the middle), the answer is arithmetic:
 
-```
+```text
 minimum board width = widest_part + 2 x (creepage + pin_inset) + 2 x edge_margin
 ```
 
 Run `docs/tools/isolation_envelope.py` — it answers this and prices the
 alternative. For this build:
 
-```
+```text
 12.90 + 2 x (7.5 + 1.43) + 2 x 0.55 = 31.86 mm
 
 at 25.40 mm -> dx = 4.27 mm  FAILS
@@ -68,7 +68,7 @@ at 32.00 mm -> dx = 7.57 mm  OK
 the vertical stack. If it does not, the part must clear the isolated section
 in Y instead**, which costs the creepage offset *plus* the part's own height:
 
-```
+```text
 6.17 mm (gap) + 12.90 mm (its own height) = 19.07 mm of length
 ```
 
@@ -130,7 +130,7 @@ constraints from the actual mounting geometry rather than inheriting them.
 so their isolated pin rows face opposite board edges and their non-isolated
 rows face inboard:
 
-```
+```text
 U3 isolated x= 1.98   non-isolated x=11.28   (rot 180)
 U4 isolated x=23.75   non-isolated x=14.45
 ```
@@ -143,7 +143,7 @@ only obvious in hindsight.
 **Check the connectors too, not just the ICs.** After rotating a transceiver,
 its connector is on the wrong side of the barrier until it follows:
 
-```
+```text
 before rotation:  RS485_A  U4.13 -> J3   3.12 mm
 after rotation:   RS485_A  U4.13 -> J3  13.61 mm
 ```

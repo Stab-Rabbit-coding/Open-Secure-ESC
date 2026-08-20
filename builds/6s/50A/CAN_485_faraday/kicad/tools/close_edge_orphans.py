@@ -56,7 +56,7 @@ HERE = Path(__file__).resolve().parent
 PCB = HERE.parent / "open_secure_esc_6s_50a_can485_faraday.kicad_pcb"
 
 ISLAND_NAME = "VM island under U5 via ring"
-OVERSHOOT_MM = 0.5      # push past the edge so no sliver can survive rounding
+OVERSHOOT_MM = 0.5  # push past the edge so no sliver can survive rounding
 
 
 def phase_rule_area(board):
@@ -83,8 +83,7 @@ def orphan_count(board):
 def main():
     """Extend the exclusion to the board edge and report the effect."""
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--dry-run", action="store_true",
-                    help="report only, write nothing")
+    ap.add_argument("--dry-run", action="store_true", help="report only, write nothing")
     args = ap.parse_args()
 
     board = pcbnew.LoadBoard(str(PCB))
@@ -99,8 +98,10 @@ def main():
     bottom = zone.GetBoundingBox().GetBottom()
     target = edge + pcbnew.FromMM(OVERSHOOT_MM)
     gap = pcbnew.ToMM(edge - bottom)
-    print(f"rule area ends at y {pcbnew.ToMM(bottom):.2f}, "
-          f"board edge y {pcbnew.ToMM(edge):.2f}  -> {gap:.2f} mm gap")
+    print(
+        f"rule area ends at y {pcbnew.ToMM(bottom):.2f}, "
+        f"board edge y {pcbnew.ToMM(edge):.2f}  -> {gap:.2f} mm gap"
+    )
     if gap <= 0:
         print("already reaches the edge -- nothing to do")
         return 0
@@ -114,8 +115,10 @@ def main():
         if p.y >= bottom - 1000:
             outline.SetPoint(i, pcbnew.VECTOR2I(p.x, target))
             moved += 1
-    print(f"extended {moved} outline points to y "
-          f"{pcbnew.ToMM(target):.2f} ({OVERSHOOT_MM} mm past the edge)")
+    print(
+        f"extended {moved} outline points to y "
+        f"{pcbnew.ToMM(target):.2f} ({OVERSHOOT_MM} mm past the edge)"
+    )
 
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     board.BuildConnectivity()

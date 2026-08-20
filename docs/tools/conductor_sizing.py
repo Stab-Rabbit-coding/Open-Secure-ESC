@@ -86,16 +86,16 @@ Usage:
 
 from dataclasses import dataclass
 
-RHO_20 = 1.68e-8          # ohm*m, annealed copper at 20 C
-ALPHA = 0.00393           # /K
-OZ_MM = 0.0348            # 1 oz copper = 34.8 um
+RHO_20 = 1.68e-8  # ohm*m, annealed copper at 20 C
+ALPHA = 0.00393  # /K
+OZ_MM = 0.0348  # 1 oz copper = 34.8 um
 BOARD_T_MM = 1.6
 
 # The build's rating and geometry, from builds/6s/50A/CAN_485_faraday/.
 PHASE_CURRENT_A = 50.0
 PHASE_POUR_W_MM = 7.5
 PHASE_POUR_L_MM = 22.0
-COPPER_TEMP_C = 85.0      # assumed operating copper temperature, not measured
+COPPER_TEMP_C = 85.0  # assumed operating copper temperature, not measured
 
 # The gap the phase pours do NOT cover. Measured off the board 2026-08-16:
 # each F.Cu phase pour ends at y = 33.10 mm, and its B.Cu terminal pad (J4A/
@@ -124,6 +124,7 @@ def via_barrel_area_mm2(drill_mm: float, plating_mm: float = 0.025) -> float:
 @dataclass
 class Row:
     """One copper-weight option and what it costs."""
+
     oz: float
     r_ohm: float
     drop_v: float
@@ -136,7 +137,7 @@ def phase_options() -> list[Row]:
     out = []
     for oz in (1.0, 2.0, 3.0):
         r = pour_resistance(oz, PHASE_POUR_W_MM, PHASE_POUR_L_MM)
-        w = PHASE_CURRENT_A ** 2 * r
+        w = PHASE_CURRENT_A**2 * r
         out.append(Row(oz, r, PHASE_CURRENT_A * r, w, 3 * w))
     return out
 
@@ -152,12 +153,13 @@ def phase_run_options(oz: float = 2.0) -> list[tuple[float, float, float]]:
     out = []
     for w in (3.0, 5.0, PHASE_POUR_W_MM):
         r = pour_resistance(oz, w, PHASE_RUN_L_MM)
-        out.append((w, r, 3 * PHASE_CURRENT_A ** 2 * r))
+        out.append((w, r, 3 * PHASE_CURRENT_A**2 * r))
     return out
 
 
-def vias_to_match_pour(oz: float, drill_mm: float,
-                       plating_mm: float = 0.025) -> tuple[int, float]:
+def vias_to_match_pour(
+    oz: float, drill_mm: float, plating_mm: float = 0.025
+) -> tuple[int, float]:
     """Vias needed so a layer transition is not thinner than the pour itself.
 
     Sized by equivalent copper cross-section, which is the honest comparison:
@@ -179,21 +181,28 @@ def main() -> int:
     for oz in (1.0, 2.0, 3.0):
         print(f"   {oz:.0f} oz   {sheet_resistance(oz) * 1e3:6.3f} mOhm/square")
 
-    print(f"\nPhase pour {PHASE_POUR_W_MM} x {PHASE_POUR_L_MM} mm "
-          f"({PHASE_POUR_L_MM / PHASE_POUR_W_MM:.2f} squares) at "
-          f"{PHASE_CURRENT_A:.0f} A:")
-    print(f"   {'oz':>3} {'R (mOhm)':>9} {'drop (mV)':>10} "
-          f"{'W/phase':>8} {'W all 3':>8}")
+    print(
+        f"\nPhase pour {PHASE_POUR_W_MM} x {PHASE_POUR_L_MM} mm "
+        f"({PHASE_POUR_L_MM / PHASE_POUR_W_MM:.2f} squares) at "
+        f"{PHASE_CURRENT_A:.0f} A:"
+    )
+    print(
+        f"   {'oz':>3} {'R (mOhm)':>9} {'drop (mV)':>10} {'W/phase':>8} {'W all 3':>8}"
+    )
     for r in phase_options():
-        print(f"   {r.oz:>3.0f} {r.r_ohm * 1e3:>9.3f} {r.drop_v * 1e3:>10.1f} "
-              f"{r.watts_each:>8.2f} {r.watts_total:>8.2f}")
+        print(
+            f"   {r.oz:>3.0f} {r.r_ohm * 1e3:>9.3f} {r.drop_v * 1e3:>10.1f} "
+            f"{r.watts_each:>8.2f} {r.watts_total:>8.2f}"
+        )
 
     print("\n   For scale: the six TPHR8504PL FETs [49] dissipate 6 x 1.75 W")
     print("   = 10.5 W of conduction loss at this current. At 1 oz the phase")
     print("   POURS alone beat that, which is the argument for 2 oz minimum.")
 
-    print(f"\nPour edge to phase terminal -- the {PHASE_RUN_L_MM:.0f} mm the "
-          f"pours do NOT cover, at 2 oz:")
+    print(
+        f"\nPour edge to phase terminal -- the {PHASE_RUN_L_MM:.0f} mm the "
+        f"pours do NOT cover, at 2 oz:"
+    )
     print(f"   {'width mm':>8} {'R (mOhm)':>9} {'W all 3':>8}")
     for w, r, watts in phase_run_options():
         print(f"   {w:>8.1f} {r * 1e3:>9.3f} {watts:>8.2f}")
@@ -201,13 +210,14 @@ def main() -> int:
     print("   loss combined (10.5 W). Do not let a router fill this gap: it")
     print("   must be pour, or the terminals must move onto the pour's layer.")
 
-    print("\nVia field, if a phase must change layers "
-          "(sized by equivalent copper):")
+    print("\nVia field, if a phase must change layers (sized by equivalent copper):")
     for oz in (2.0,):
         for drill, plat in ((0.3, 0.025), (0.4, 0.025), (0.3, 0.035)):
             n, per = vias_to_match_pour(oz, drill, plat)
-            print(f"   {oz:.0f} oz pour, {drill} mm drill / {plat * 1000:.0f} um"
-                  f" -> {n:3d} vias, {per:.1f} A per via")
+            print(
+                f"   {oz:.0f} oz pour, {drill} mm drill / {plat * 1000:.0f} um"
+                f" -> {n:3d} vias, {per:.1f} A per via"
+            )
     print("\n   Cheapest fix: DON'T change layers. Keep each phase terminal on")
     print("   the same side as its pour and the via field disappears entirely.")
     return 0

@@ -40,9 +40,9 @@ import argparse
 import math
 
 # Defaults measured off builds/6s/50A/CAN_485_faraday (2026-08-18).
-CREEPAGE_MM = 7.5     # ADM2582E [9] Table 6, input terminals to output terminals
-PIN_INSET_MM = 1.43   # isolated pin centre to board edge (U3.11 x1.98, edge 0.55)
-WIDEST_MM = 12.90     # widest non-isolated part (U1, MSPM0G3507)
+CREEPAGE_MM = 7.5  # ADM2582E [9] Table 6, input terminals to output terminals
+PIN_INSET_MM = 1.43  # isolated pin centre to board edge (U3.11 x1.98, edge 0.55)
+WIDEST_MM = 12.90  # widest non-isolated part (U1, MSPM0G3507)
 EDGE_MARGIN_MM = 0.55
 BOARD_W_MM = 25.40
 
@@ -62,7 +62,7 @@ def y_offset_needed(creepage, dx):
     """Vertical offset that restores `creepage` when only `dx` exists in x."""
     if dx >= creepage:
         return 0.0
-    return math.sqrt(creepage ** 2 - dx ** 2)
+    return math.sqrt(creepage**2 - dx**2)
 
 
 def main() -> int:
@@ -72,10 +72,15 @@ def main() -> int:
     ap.add_argument("--inset", type=float, default=PIN_INSET_MM)
     ap.add_argument("--widest", type=float, default=WIDEST_MM)
     ap.add_argument("--margin", type=float, default=EDGE_MARGIN_MM)
-    ap.add_argument("--board-width", type=float, default=BOARD_W_MM,
-                    help="candidate width to test")
-    ap.add_argument("--control-height", type=float, default=12.90,
-                    help="height the control band adds if it cannot sit beside")
+    ap.add_argument(
+        "--board-width", type=float, default=BOARD_W_MM, help="candidate width to test"
+    )
+    ap.add_argument(
+        "--control-height",
+        type=float,
+        default=12.90,
+        help="height the control band adds if it cannot sit beside",
+    )
     a = ap.parse_args()
 
     need = min_width(a.widest, a.creepage, a.inset, a.margin)
@@ -83,27 +88,33 @@ def main() -> int:
     print(f"isolated pin inset       {a.inset:6.2f} mm from the board edge")
     print(f"widest non-isolated part {a.widest:6.2f} mm\n")
     print("MINIMUM BOARD WIDTH for that part to sit BETWEEN the isolated rows:")
-    print(f"   {a.widest:.2f} + 2 x ({a.creepage} + {a.inset}) + 2 x {a.margin}"
-          f" = {need:.2f} mm\n")
+    print(
+        f"   {a.widest:.2f} + 2 x ({a.creepage} + {a.inset}) + 2 x {a.margin}"
+        f" = {need:.2f} mm\n"
+    )
 
     dx = clearance_at(a.board_width, a.widest, a.inset, a.margin)
     ok = dx >= a.creepage
-    print(f"at the candidate width {a.board_width:.2f} mm -> dx = {dx:.2f} mm  "
-          f"{'OK' if ok else 'FAILS'}")
+    print(
+        f"at the candidate width {a.board_width:.2f} mm -> dx = {dx:.2f} mm  "
+        f"{'OK' if ok else 'FAILS'}"
+    )
     if ok:
         print("   control sits alongside comms; no creepage band in the stack")
         return 0
 
     dy = y_offset_needed(a.creepage, max(dx, 0.0))
     cost = dy + a.control_height
-    print(f"   the part must instead clear the isolated section in Y by "
-          f"{dy:.2f} mm,")
-    print(f"   so the stack grows by {dy:.2f} (gap) + {a.control_height:.2f} "
-          f"(its own height) = {cost:.2f} mm\n")
+    print(f"   the part must instead clear the isolated section in Y by {dy:.2f} mm,")
+    print(
+        f"   so the stack grows by {dy:.2f} (gap) + {a.control_height:.2f} "
+        f"(its own height) = {cost:.2f} mm\n"
+    )
     print(f"TRADE: widening to {need:.2f} mm buys back {cost:.2f} mm of length.")
     short = need - a.board_width
-    print(f"   {short:.2f} mm of width for {cost:.2f} mm of length "
-          f"({cost/short:.1f}x)")
+    print(
+        f"   {short:.2f} mm of width for {cost:.2f} mm of length ({cost / short:.1f}x)"
+    )
     return 0
 
 

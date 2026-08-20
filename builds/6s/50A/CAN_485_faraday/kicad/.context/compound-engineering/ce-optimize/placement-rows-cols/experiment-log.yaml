@@ -72,4 +72,3 @@ final:
   remaining:
     - "creepage_min_mm 3.98 against 7.5 required. J1 2.74, R7 3.98, U1 5.70, J5B 6.23, C4 6.40, R12 7.17 all sit inside an isolated exclusion zone. Structural, not alignment - TODO.md 12.5.ac."
     - "gate_loop_max_mm 22.32 and commutation_max_mm 17.41 measured but untouched; power-stage placement was outside this run's scope."
-

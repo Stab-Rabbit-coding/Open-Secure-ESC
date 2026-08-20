@@ -232,7 +232,7 @@ What that test found is the real state of this board after routing, and it is
 much worse than the ratsnest count suggests:
 
 | net | islands | largest island |
-|---|---|---|
+| --- | ------- | -------------- |
 | GND | 25 | 30 of 85 pads |
 | VM | 9 | 28 of 54 pads |
 | PH_A / PH_C | 4 each | 4 of 9 pads |
@@ -312,7 +312,7 @@ time. With them actually running, 79 previously-hidden violations appeared.
 against a board with 48 known violations:
 
 | condition | hits |
-|---|---|
+| --------- | ---- |
 | `A.Type == 'Via'` | 502 |
 | `B.NetClass == 'Isolated'` | 499 |
 | `A.Type == 'Via' && B.NetClass == 'Isolated'` | **0** |

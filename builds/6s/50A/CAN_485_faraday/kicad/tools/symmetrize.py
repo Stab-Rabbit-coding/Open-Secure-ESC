@@ -79,22 +79,25 @@ PCB = HERE.parent / "open_secure_esc_6s_50a_can485_faraday.kicad_pcb"
 SCORE = HERE / "score_placement.py"
 BACKUP = Path("/tmp/claude-1000/sym_revert.kicad_pcb")
 
-MAX_SHIFT_MM = 1.0      # beyond this it is a relayout, not a centring
+MAX_SHIFT_MM = 1.0  # beyond this it is a relayout, not a centring
 TOL_MM = 0.05
 
 # (label, left refs, right refs). Both sides shift by the same delta.
 PAIRS = [
-    ("phase A / phase C", ["U6", "Q1", "Q2", "J4A", "R1"],
-                          ["U7", "Q5", "Q6", "J4C", "R3"]),
-    ("pack terminals",    ["J5A"], ["J5B"]),
-    ("isolators",         ["U3"],  ["U4"]),
-    ("comms connectors",  ["J2"],  ["J3"]),
-    ("iso ferrites out",  ["FB2"], ["FB4"]),
-    ("iso ferrites in",   ["FB1"], ["FB3"]),
-    ("iso caps upper",    ["C11"], ["C15"]),
-    ("iso caps lower",    ["C12"], ["C16"]),
-    ("iso caps outer",    ["C14"], ["C18"]),
-    ("iso caps inner",    ["C13"], ["C17"]),
+    (
+        "phase A / phase C",
+        ["U6", "Q1", "Q2", "J4A", "R1"],
+        ["U7", "Q5", "Q6", "J4C", "R3"],
+    ),
+    ("pack terminals", ["J5A"], ["J5B"]),
+    ("isolators", ["U3"], ["U4"]),
+    ("comms connectors", ["J2"], ["J3"]),
+    ("iso ferrites out", ["FB2"], ["FB4"]),
+    ("iso ferrites in", ["FB1"], ["FB3"]),
+    ("iso caps upper", ["C11"], ["C15"]),
+    ("iso caps lower", ["C12"], ["C16"]),
+    ("iso caps outer", ["C14"], ["C18"]),
+    ("iso caps inner", ["C13"], ["C17"]),
 ]
 
 # Groups that should sit ON the centreline.
@@ -108,8 +111,12 @@ CENTRED = [
 
 def score():
     """The harness's verdict on the board as it stands."""
-    out = subprocess.run([sys.executable, str(SCORE), "--json"],
-                         capture_output=True, text=True)
+    out = subprocess.run(
+        [sys.executable, str(SCORE), "--json"],
+        capture_output=True,
+        check=False,
+        text=True,
+    )
     return json.loads(out.stdout)
 
 
@@ -125,8 +132,7 @@ def shift(refs, delta):
     """Move every named footprint by delta in x, then refill."""
     board = pcbnew.LoadBoard(str(PCB))
     for ref in refs:
-        fp = next((f for f in board.Footprints()
-                   if f.GetReference() == ref), None)
+        fp = next((f for f in board.Footprints() if f.GetReference() == ref), None)
         if fp is None:
             continue
         p = fp.GetPosition()
@@ -146,16 +152,15 @@ def ok(base, now):
     if n["unconnected"] > b["unconnected"]:
         return False, f"unconnected {b['unconnected']} -> {n['unconnected']}"
     if n["creepage_min_mm"] < b["creepage_min_mm"]:
-        return False, (f"creepage {b['creepage_min_mm']} -> "
-                       f"{n['creepage_min_mm']}")
+        return False, (f"creepage {b['creepage_min_mm']} -> {n['creepage_min_mm']}")
     if not n["iso_lead_ok"]:
         return False, f"isolated lead {n['iso_lead_max_mm']}"
     if n["gate_loop_max_mm"] > b["gate_loop_max_mm"] + TOL_MM:
-        return False, (f"gate loop {b['gate_loop_max_mm']} -> "
-                       f"{n['gate_loop_max_mm']}")
+        return False, (f"gate loop {b['gate_loop_max_mm']} -> {n['gate_loop_max_mm']}")
     if n["commutation_max_mm"] > b["commutation_max_mm"] + TOL_MM:
-        return False, (f"commutation {b['commutation_max_mm']} -> "
-                       f"{n['commutation_max_mm']}")
+        return False, (
+            f"commutation {b['commutation_max_mm']} -> {n['commutation_max_mm']}"
+        )
     r = now["rules"]
     if not (r["iso_ic_perpendicular"] and r["pack_layer_separated"]):
         return False, "isolation rule regressed"
@@ -174,8 +179,9 @@ def group_x(board, refs):
     The median ignores a minority offset and returns the column the group
     actually shares, which is what "centre this column" means.
     """
-    xs = sorted(f.GetPosition().x for f in board.Footprints()
-                if f.GetReference() in refs)
+    xs = sorted(
+        f.GetPosition().x for f in board.Footprints() if f.GetReference() in refs
+    )
     if not xs:
         return None
     n = len(xs)
@@ -185,17 +191,21 @@ def group_x(board, refs):
 def main():
     """Centre each pair and group, keeping only what the numbers allow."""
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--dry-run", action="store_true",
-                    help="list the plan, change nothing")
+    ap.add_argument(
+        "--dry-run", action="store_true", help="list the plan, change nothing"
+    )
     args = ap.parse_args()
 
     board = pcbnew.LoadBoard(str(PCB))
     cx = centreline(board)
-    print(f"true board centreline x = {pcbnew.ToMM(cx):.3f} mm "
-          f"(outline polygon, not the stroke bbox)\n")
+    print(
+        f"true board centreline x = {pcbnew.ToMM(cx):.3f} mm "
+        f"(outline polygon, not the stroke bbox)\n"
+    )
 
-    specs = ([("pair", label, left, right) for label, left, right in PAIRS]
-             + [("centre", label, refs, None) for label, refs in CENTRED])
+    specs = [("pair", label, left, right) for label, left, right in PAIRS] + [
+        ("centre", label, refs, None) for label, refs in CENTRED
+    ]
 
     def delta_now(kind, left, right):
         """Recompute the shift against the board AS IT IS NOW.
@@ -223,8 +233,17 @@ def main():
         d, note = delta_now(kind, left, right)
         if d is None:
             continue
-        jobs.append((label, (left + right) if kind == "pair" else left,
-                     d, note, kind, left, right))
+        jobs.append(
+            (
+                label,
+                (left + right) if kind == "pair" else left,
+                d,
+                note,
+                kind,
+                left,
+                right,
+            )
+        )
 
     plan = []
     for label, refs, delta, note, kind, left, right in jobs:
@@ -232,15 +251,16 @@ def main():
         if abs(mm) < 0.0005:
             print(f"   {label:20s} already centred")
         elif abs(mm) > MAX_SHIFT_MM:
-            print(f"   {label:20s} {note}, off by {mm:+.3f} mm -- "
-                  f"beyond {MAX_SHIFT_MM} mm, left alone")
+            print(
+                f"   {label:20s} {note}, off by {mm:+.3f} mm -- "
+                f"beyond {MAX_SHIFT_MM} mm, left alone"
+            )
         else:
             plan.append((label, refs, mm, note, kind, left, right))
 
     print(f"\n{len(plan)} groups to centre:")
     for label, refs, mm, note, kind, left, right in plan:
-        print(f"   {label:20s} {note}, shift {mm:+.3f} mm  "
-              f"({len(refs)} parts)")
+        print(f"   {label:20s} {note}, shift {mm:+.3f} mm  ({len(refs)} parts)")
 
     if args.dry_run or not plan:
         if args.dry_run:
@@ -249,9 +269,11 @@ def main():
 
     base = score()
     e = base["electrical"]
-    print(f"\nbaseline: creepage {e['creepage_min_mm']} "
-          f"unconn {e['unconnected']} gate {e['gate_loop_max_mm']} "
-          f"comm {e['commutation_max_mm']}")
+    print(
+        f"\nbaseline: creepage {e['creepage_min_mm']} "
+        f"unconn {e['unconnected']} gate {e['gate_loop_max_mm']} "
+        f"comm {e['commutation_max_mm']}"
+    )
 
     kept, dropped = [], []
     for label, refs, _mm, _note, kind, left, right in plan:
@@ -278,9 +300,11 @@ def main():
 
     f = score()["electrical"]
     print(f"\ncentred {len(kept)}, reverted {len(dropped)}")
-    print(f"final: creepage {f['creepage_min_mm']} unconn {f['unconnected']} "
-          f"gate {f['gate_loop_max_mm']} comm {f['commutation_max_mm']} "
-          f"DRC-el {f['drc_electrical']}")
+    print(
+        f"final: creepage {f['creepage_min_mm']} unconn {f['unconnected']} "
+        f"gate {f['gate_loop_max_mm']} comm {f['commutation_max_mm']} "
+        f"DRC-el {f['drc_electrical']}"
+    )
     if dropped:
         print("\nleft off-centre on purpose -- the number said no:")
         for label, mm, why in dropped:

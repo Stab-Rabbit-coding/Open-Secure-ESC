@@ -91,7 +91,7 @@ Usage:
 import argparse
 import math
 
-MM2_TO_MIL2 = 1550.0031          # 1 mm^2 in mil^2
+MM2_TO_MIL2 = 1550.0031  # 1 mm^2 in mil^2
 
 # Constants. [S-F] is a dedicated via calculator that publishes IPC-2221 and
 # IPC-2152 side by side and settles the question this file previously had to
@@ -128,12 +128,12 @@ def barrel_area_mm2(drill_mm: float, plating_um: float) -> float:
     """
     r = drill_mm / 2.0
     t = plating_um / 1000.0
-    return math.pi * (r ** 2 - (r - t) ** 2)
+    return math.pi * (r**2 - (r - t) ** 2)
 
 
 def current_a(area_mm2: float, delta_t_c: float, k: float) -> float:
     """Conductor equation solved for current. A in mm^2 in, amps out."""
-    return k * (delta_t_c ** B_EXP) * ((area_mm2 * MM2_TO_MIL2) ** C_EXP)
+    return k * (delta_t_c**B_EXP) * ((area_mm2 * MM2_TO_MIL2) ** C_EXP)
 
 
 def fit_count(pad_mm: float, via_pad_mm: float, clearance_mm: float) -> int:
@@ -146,20 +146,33 @@ def fit_count(pad_mm: float, via_pad_mm: float, clearance_mm: float) -> int:
 def main() -> int:
     """Print the via budget for the pack terminals."""
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--current", type=float, default=50.0,
-                    help="terminal current in A (default 50)")
-    ap.add_argument("--pad", type=float, default=7.0,
-                    help="square terminal pad size in mm (default 7.0)")
-    ap.add_argument("--rise", type=float, default=10.0,
-                    help="allowed temperature rise in C (default 10)")
+    ap.add_argument(
+        "--current", type=float, default=50.0, help="terminal current in A (default 50)"
+    )
+    ap.add_argument(
+        "--pad",
+        type=float,
+        default=7.0,
+        help="square terminal pad size in mm (default 7.0)",
+    )
+    ap.add_argument(
+        "--rise",
+        type=float,
+        default=10.0,
+        help="allowed temperature rise in C (default 10)",
+    )
     args = ap.parse_args()
 
-    print(f"Terminal: {args.current:.0f} A into a {args.pad:.1f} x "
-          f"{args.pad:.1f} mm F.Cu pad, dT = {args.rise:.0f} C\n")
+    print(
+        f"Terminal: {args.current:.0f} A into a {args.pad:.1f} x "
+        f"{args.pad:.1f} mm F.Cu pad, dT = {args.rise:.0f} C\n"
+    )
 
     print("PER-VIA CAPACITY  (barrel annulus, plating inward from the drill)")
-    print(f"  {'drill':>6} {'class':>8} {'plating':>8} {'area':>10} "
-          f"{'IPC-2221':>9} {'IPC-2152':>9}")
+    print(
+        f"  {'drill':>6} {'class':>8} {'plating':>8} {'area':>10} "
+        f"{'IPC-2221':>9} {'IPC-2152':>9}"
+    )
     cap = {}
     for drill in (0.30, 0.40, 0.60):
         for cls, plating in PLATING_UM.items():
@@ -167,12 +180,16 @@ def main() -> int:
             i21 = current_a(a, args.rise, K_IPC2221)
             i52 = current_a(a, args.rise, K_IPC2152)
             cap[(drill, cls)] = (i21, i52)
-            print(f"  {drill:>6.2f} {cls:>8} {plating:>6.0f}um "
-                  f"{a * MM2_TO_MIL2:>7.1f}mil2 {i21:>8.2f}A {i52:>8.2f}A")
+            print(
+                f"  {drill:>6.2f} {cls:>8} {plating:>6.0f}um "
+                f"{a * MM2_TO_MIL2:>7.1f}mil2 {i21:>8.2f}A {i52:>8.2f}A"
+            )
 
     print(f"\nVIA COUNT  (with the {DESIGN_MARGIN:.0%} design margin [S-F] advises)")
-    print(f"  {'drill':>6} {'class':>8} {'basis':>9} {'A/via':>7} "
-          f"{'bare':>6} {'+margin':>8} {'fits pad':>9} {'verdict':>8}")
+    print(
+        f"  {'drill':>6} {'class':>8} {'basis':>9} {'A/via':>7} "
+        f"{'bare':>6} {'+margin':>8} {'fits pad':>9} {'verdict':>8}"
+    )
     for drill, via_pad in ((0.30, 0.60), (0.40, 0.80), (0.60, 1.00)):
         fits = fit_count(args.pad, via_pad, 0.20)
         for cls in PLATING_UM:
@@ -180,9 +197,11 @@ def main() -> int:
                 per = cap[(drill, cls)][idx]
                 bare = math.ceil(args.current / per)
                 marg = math.ceil(args.current / (per * (1 - DESIGN_MARGIN)))
-                print(f"  {drill:>6.2f} {cls:>8} {label:>9} {per:>6.2f}A "
-                      f"{bare:>6} {marg:>8} {fits:>9} "
-                      f"{'OK' if marg <= fits else 'SHORT':>8}")
+                print(
+                    f"  {drill:>6.2f} {cls:>8} {label:>9} {per:>6.2f}A "
+                    f"{bare:>6} {marg:>8} {fits:>9} "
+                    f"{'OK' if marg <= fits else 'SHORT':>8}"
+                )
 
     print("""
 THE SOURCE DISAGREES WITH ITSELF -- READ BEFORE USING THESE NUMBERS

@@ -78,8 +78,12 @@ PAIR = ("U7", "U8")
 
 def score():
     """The harness's verdict on the board as it stands."""
-    out = subprocess.run([sys.executable, str(SCORE), "--json"],
-                         capture_output=True, text=True)
+    out = subprocess.run(
+        [sys.executable, str(SCORE), "--json"],
+        capture_output=True,
+        check=False,
+        text=True,
+    )
     return json.loads(out.stdout)["electrical"]
 
 
@@ -95,8 +99,7 @@ def sense_net(fp):
 def main():
     """Exchange U7 and U8, reporting the measured cost."""
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--dry-run", action="store_true",
-                    help="report only, write nothing")
+    ap.add_argument("--dry-run", action="store_true", help="report only, write nothing")
     args = ap.parse_args()
 
     board = pcbnew.LoadBoard(str(PCB))
@@ -105,11 +108,12 @@ def main():
 
     for fp in (a, b):
         p = fp.GetPosition()
-        print(f"   {fp.GetReference()} at x {pcbnew.ToMM(p.x):.3f} "
-              f"carries {sense_net(fp)}")
+        print(
+            f"   {fp.GetReference()} at x {pcbnew.ToMM(p.x):.3f} "
+            f"carries {sense_net(fp)}"
+        )
 
-    if (a.GetFPID().GetLibItemName().wx_str()
-            != b.GetFPID().GetLibItemName().wx_str()):
+    if a.GetFPID().GetLibItemName().wx_str() != b.GetFPID().GetLibItemName().wx_str():
         raise SystemExit("different footprints -- not a clean swap, stopping")
     if a.GetOrientationDegrees() != b.GetOrientationDegrees():
         raise SystemExit("different orientations -- refusing to guess")
@@ -131,25 +135,24 @@ def main():
     print("\n   swapped")
     board = pcbnew.LoadBoard(str(PCB))
     for ref in PAIR:
-        fp = next(f for f in board.Footprints()
-                  if f.GetReference() == ref)
-        print(f"   {ref} now at x {pcbnew.ToMM(fp.GetPosition().x):.3f} "
-              f"carries {sense_net(fp)}")
+        fp = next(f for f in board.Footprints() if f.GetReference() == ref)
+        print(
+            f"   {ref} now at x {pcbnew.ToMM(fp.GetPosition().x):.3f} "
+            f"carries {sense_net(fp)}"
+        )
 
     after = score()
-    print(f"\n   creepage    {before['creepage_min_mm']} -> "
-          f"{after['creepage_min_mm']}")
+    print(f"\n   creepage    {before['creepage_min_mm']} -> {after['creepage_min_mm']}")
     print(f"   unconnected {before['unconnected']} -> {after['unconnected']}")
-    print(f"   gate loop   {before['gate_loop_max_mm']} -> "
-          f"{after['gate_loop_max_mm']}")
-    print(f"   commutation {before['commutation_max_mm']} -> "
-          f"{after['commutation_max_mm']}")
-    print(f"   DRC elec    {before['drc_electrical']} -> "
-          f"{after['drc_electrical']}")
+    print(f"   gate loop   {before['gate_loop_max_mm']} -> {after['gate_loop_max_mm']}")
+    print(
+        f"   commutation {before['commutation_max_mm']} -> "
+        f"{after['commutation_max_mm']}"
+    )
+    print(f"   DRC elec    {before['drc_electrical']} -> {after['drc_electrical']}")
 
     if args.dry_run:
-        print("\n--dry-run: NOTE, board was written; re-run git checkout "
-              "to undo")
+        print("\n--dry-run: NOTE, board was written; re-run git checkout to undo")
     return 0
 
 

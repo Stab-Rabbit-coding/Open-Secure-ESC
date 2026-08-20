@@ -53,16 +53,17 @@ HERE = Path(__file__).resolve().parent
 PCB = HERE.parent / "open_secure_esc_6s_50a_can485_faraday.kicad_pcb"
 BACKUP = PCB.with_suffix(".kicad_pcb.pre-lengthen.bak")
 
-SHIFT = 6.00        # 5.52 required; 6.00 keeps the 0.5 mm grid and adds margin
-SPLIT = 24.50       # between the isolated bottom (23.82) and SH1's top (25.80)
+SHIFT = 6.00  # 5.52 required; 6.00 keeps the 0.5 mm grid and adds margin
+SPLIT = 24.50  # between the isolated bottom (23.82) and SH1's top (25.80)
 
 # Hold station: the isolated block plus the pack terminals.
-STATIONARY = ({"J2", "J3", "U3", "U4", "J5A", "J5B"}
-              | {f"C{n}" for n in range(11, 19)}
-              | {f"FB{n}" for n in range(1, 5)})
+STATIONARY = (
+    {"J2", "J3", "U3", "U4", "J5A", "J5B"}
+    | {f"C{n}" for n in range(11, 19)}
+    | {f"FB{n}" for n in range(1, 5)}
+)
 # Assert these actually translate -- they are what the change is about.
-MUST_MOVE = {"SH1", "U5", "U1", "Q1", "Q2", "Q3", "Q4", "Q5", "Q6",
-             "J4A", "J4B", "J4C"}
+MUST_MOVE = {"SH1", "U5", "U1", "Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "J4A", "J4B", "J4C"}
 
 
 def origin(board):
@@ -78,7 +79,7 @@ def main() -> int:
     args = ap.parse_args()
 
     board = pcbnew.LoadBoard(str(PCB))
-    ox, oy = origin(board)
+    _, oy = origin(board)
     d = pcbnew.FromMM(SHIFT)
     split = oy + pcbnew.FromMM(SPLIT)
     mid = oy + pcbnew.FromMM(30.0)
@@ -122,7 +123,7 @@ def main() -> int:
     for z in board.Zones():
         o = z.Outline()
         top = o.BBox().GetTop()
-        whole = top >= split          # sits entirely in the moving region
+        whole = top >= split  # sits entirely in the moving region
         label = "translate" if whole else "extend"
         for i in range(o.OutlineCount()):
             ol = o.Outline(i)
@@ -136,8 +137,10 @@ def main() -> int:
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     board.BuildConnectivity()
     nb = board.GetBoardEdgesBoundingBox()
-    print(f"\nboard now {pcbnew.ToMM(nb.GetWidth()) - 0.1:.2f} x "
-          f"{pcbnew.ToMM(nb.GetHeight()) - 0.1:.2f} mm")
+    print(
+        f"\nboard now {pcbnew.ToMM(nb.GetWidth()) - 0.1:.2f} x "
+        f"{pcbnew.ToMM(nb.GetHeight()) - 0.1:.2f} mm"
+    )
 
     if args.dry_run:
         print("--dry-run: nothing written")

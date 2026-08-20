@@ -85,16 +85,14 @@ def board_via_spec():
 def main():
     """Resize the thermal vias, reporting the before/after geometry."""
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--dry-run", action="store_true",
-                    help="report only, write nothing")
+    ap.add_argument("--dry-run", action="store_true", help="report only, write nothing")
     args = ap.parse_args()
 
     dia, drill = board_via_spec()
     print(f"board Default net class via: {dia} mm pad / {drill} mm drill")
 
     board = pcbnew.LoadBoard(str(PCB))
-    fp = next((f for f in board.Footprints()
-               if f.GetReference() == TARGET_REF), None)
+    fp = next((f for f in board.Footprints() if f.GetReference() == TARGET_REF), None)
     if fp is None:
         raise SystemExit(f"{TARGET_REF} not on board")
 
@@ -107,14 +105,14 @@ def main():
         if abs(old_dr - drill) < 1e-6 and abs(old_sz - dia) < 1e-6:
             continue
         pad.SetSize(pcbnew.VECTOR2I(pcbnew.FromMM(dia), pcbnew.FromMM(dia)))
-        pad.SetDrillSize(pcbnew.VECTOR2I(pcbnew.FromMM(drill),
-                                         pcbnew.FromMM(drill)))
+        pad.SetDrillSize(pcbnew.VECTOR2I(pcbnew.FromMM(drill), pcbnew.FromMM(drill)))
         changed += 1
 
-    print(f"resized {changed} thermal vias on {TARGET_REF}.{TARGET_PAD}: "
-          f"0.400/0.200 -> {dia}/{drill} mm")
-    print(f"annular ring {(dia - drill) / 2:.3f} mm "
-          f"(board minimum 0.100 mm)")
+    print(
+        f"resized {changed} thermal vias on {TARGET_REF}.{TARGET_PAD}: "
+        f"0.400/0.200 -> {dia}/{drill} mm"
+    )
+    print(f"annular ring {(dia - drill) / 2:.3f} mm (board minimum 0.100 mm)")
 
     if args.dry_run:
         print("\n--dry-run: nothing written")

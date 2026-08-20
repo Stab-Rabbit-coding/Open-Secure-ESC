@@ -72,11 +72,11 @@ BACKUP = PCB.with_suffix(".kicad_pcb.pre-fix.bak")
 # Column x-bands, one per phase, taken from the FET columns and the terminals
 # they now sit above. Gaps between bands exceed the 0.3 mm zone clearance.
 COLUMNS = {"PH_A": (0.55, 8.20), "PH_B": (8.70, 16.50), "PH_C": (17.00, 24.95)}
-POUR_BOTTOM = 59.60          # inner edge, matches the existing GND pour
+POUR_BOTTOM = 59.60  # inner edge, matches the existing GND pour
 PHASE_PRIORITY = 3
 VM_PRIORITY = 2
 CLEARANCE_MM = 0.3
-EDGE_MARGIN = 0.03           # push overhanging parts this far back inside
+EDGE_MARGIN = 0.03  # push overhanging parts this far back inside
 # Board-edge copper clearance from the project rules. Courtyards are not the
 # binding constraint here -- a solder-pad footprint's courtyard is only
 # 0.25 mm bigger than its pad, so clearing the outline by courtyard still
@@ -125,8 +125,7 @@ def net_pad_span(board, net, x1, x2, only=None):
             if not (x1 <= x <= x2):
                 continue
             pb = p.GetBoundingBox()
-            ys += [pcbnew.ToMM(pb.GetTop() - oy),
-                   pcbnew.ToMM(pb.GetBottom() - oy)]
+            ys += [pcbnew.ToMM(pb.GetTop() - oy), pcbnew.ToMM(pb.GetBottom() - oy)]
     return (min(ys), max(ys)) if ys else None
 
 
@@ -175,8 +174,10 @@ def main() -> int:
     pa, pc = a.GetPosition(), c.GetPosition()
     a.SetPosition(pc)
     c.SetPosition(pa)
-    print(f"1. swapped J4A <-> J4C  "
-          f"(J4A x {pcbnew.ToMM(pa.x - ox):.2f} -> {pcbnew.ToMM(pc.x - ox):.2f} mm)")
+    print(
+        f"1. swapped J4A <-> J4C  "
+        f"(J4A x {pcbnew.ToMM(pa.x - ox):.2f} -> {pcbnew.ToMM(pc.x - ox):.2f} mm)"
+    )
 
     # --- 2. pull overhanging footprints back inside the outline ---
     moved = []
@@ -206,17 +207,22 @@ def main() -> int:
         if dx or dy:
             p = f.GetPosition()
             f.SetPosition(pcbnew.VECTOR2I(p.x + dx, p.y + dy))
-            moved.append(f"{f.GetReference()}"
-                         f"({pcbnew.ToMM(dx):+.2f},{pcbnew.ToMM(dy):+.2f})")
-    print(f"2. pulled {len(moved)} overhanging footprints inboard: "
-          f"{', '.join(moved) or 'none'}")
+            moved.append(
+                f"{f.GetReference()}({pcbnew.ToMM(dx):+.2f},{pcbnew.ToMM(dy):+.2f})"
+            )
+    print(
+        f"2. pulled {len(moved)} overhanging footprints inboard: "
+        f"{', '.join(moved) or 'none'}"
+    )
 
     # --- 3. drop the stale routing ---
     tracks = list(board.GetTracks())
     for t in tracks:
         board.Remove(t)
-    print(f"3. removed {len(tracks)} stale track/via items "
-          f"(routed against the previous placement)")
+    print(
+        f"3. removed {len(tracks)} stale track/via items "
+        f"(routed against the previous placement)"
+    )
 
     if not args.dry_run:
         shutil.copy2(PCB, BACKUP)
@@ -225,12 +231,19 @@ def main() -> int:
     # --- 4. rebuild the stale pours (reload: zone removal invalidates SWIG
     #        proxies, so this is done as its own pass over a fresh board) ---
     board = pcbnew.LoadBoard(str(PCB))
-    doomed = [z for z in board.Zones()
-              if not z.GetIsRuleArea()
-              and (z.GetNetname() in COLUMNS
-                   or (z.GetNetname() == "VM" and z.IsOnLayer(pcbnew.F_Cu)))]
-    print(f"4. rebuilding {len(doomed)} stale pours "
-          f"({', '.join(sorted(z.GetNetname() for z in doomed))})")
+    doomed = [
+        z
+        for z in board.Zones()
+        if not z.GetIsRuleArea()
+        and (
+            z.GetNetname() in COLUMNS
+            or (z.GetNetname() == "VM" and z.IsOnLayer(pcbnew.F_Cu))
+        )
+    ]
+    print(
+        f"4. rebuilding {len(doomed)} stale pours "
+        f"({', '.join(sorted(z.GetNetname() for z in doomed))})"
+    )
     for z in doomed:
         board.Remove(z)
 
@@ -240,22 +253,26 @@ def main() -> int:
             print(f"     {net}: NO PADS in x {x1}..{x2} -- skipped")
             continue
         top = max(0.60, span[0] - 0.50)
-        add_zone(board, net, pcbnew.F_Cu, PHASE_PRIORITY,
-                 x1, top, x2, POUR_BOTTOM)
-        print(f"     {net}: x {x1:5.2f}..{x2:5.2f}  y {top:5.2f}..{POUR_BOTTOM} "
-              f"(pads span y {span[0]:.2f}..{span[1]:.2f})")
+        add_zone(board, net, pcbnew.F_Cu, PHASE_PRIORITY, x1, top, x2, POUR_BOTTOM)
+        print(
+            f"     {net}: x {x1:5.2f}..{x2:5.2f}  y {top:5.2f}..{POUR_BOTTOM} "
+            f"(pads span y {span[0]:.2f}..{span[1]:.2f})"
+        )
 
     vm = net_pad_span(board, "VM", 0.0, W, only=VM_POWER_PARTS)
     vm_bottom = min(POUR_BOTTOM, vm[1] + 0.50)
-    add_zone(board, "VM", pcbnew.F_Cu, VM_PRIORITY,
-             0.55, 0.60, 24.95, vm_bottom)
-    print(f"     VM  : x  0.55..24.95  y  0.60..{vm_bottom:.2f} "
-          f"(pads span y {vm[0]:.2f}..{vm[1]:.2f})")
+    add_zone(board, "VM", pcbnew.F_Cu, VM_PRIORITY, 0.55, 0.60, 24.95, vm_bottom)
+    print(
+        f"     VM  : x  0.55..24.95  y  0.60..{vm_bottom:.2f} "
+        f"(pads span y {vm[0]:.2f}..{vm[1]:.2f})"
+    )
 
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     board.BuildConnectivity()
-    print(f"\nunconnected after rebuild: "
-          f"{board.GetConnectivity().GetUnconnectedCount(False)}")
+    print(
+        f"\nunconnected after rebuild: "
+        f"{board.GetConnectivity().GetUnconnectedCount(False)}"
+    )
 
     if args.dry_run:
         print("--dry-run: nothing written")

@@ -76,19 +76,19 @@ Usage:
 # TODO.md 12.4. AI-generated; reviewed against the primary sources named
 # in the docstring above. Not human-authored.
 
-
+import itertools
 import uuid
 from pathlib import Path
 
 FOOTPRINT_NAME = "Wurth_WE-SHC_3670375_Frame_29.3x37.5mm"
 
 # ---- Land pattern (REFERENCES.md [30] p.1, "Recommended Land Pattern") ----
-LAND_X = 38.7          # outer envelope, long axis
-LAND_Y = 30.5          # outer envelope, short axis
-RING_W = 1.5           # copper ring width
-PASTE_W = 0.5          # "0,5 Recommended Tin Paste Mask Layer"
-CORNER_R = 2.4         # R 2,4, outer corner
-HOLE_D = 1.3           # 2x (diameter) 1,3
+LAND_X = 38.7  # outer envelope, long axis
+LAND_Y = 30.5  # outer envelope, short axis
+RING_W = 1.5  # copper ring width
+PASTE_W = 0.5  # "0,5 Recommended Tin Paste Mask Layer"
+CORNER_R = 2.4  # R 2,4, outer corner
+HOLE_D = 1.3  # 2x (diameter) 1,3
 # Pad diameter is set flush with the 1,5 mm copper ring so the land keeps the
 # 38,7 x 30,5 envelope Wurth specifies -- a wider pad would push copper past
 # it. The 0,1 mm per-side annular ring that leaves is above the IPC-2221
@@ -97,14 +97,14 @@ HOLE_D = 1.3           # 2x (diameter) 1,3
 HOLE_PAD_D = 1.5
 
 # ---- Frame body (REFERENCES.md [30] p.1, "Dimensions") -------------------
-OUTER_X = 37.5         # Outer 37,5 +/-0,2
-OUTER_Y = 29.3         # Outer 29,3 +/-0,2
-INNER_X = 36.9         # Inner 36,9 +/-0,2
-INNER_Y = 28.7         # Inner 28,7 +/-0,2
+OUTER_X = 37.5  # Outer 37,5 +/-0,2
+OUTER_Y = 29.3  # Outer 29,3 +/-0,2
+INNER_X = 36.9  # Inner 36,9 +/-0,2
+INNER_Y = 28.7  # Inner 28,7 +/-0,2
 
 # Ring / wall centreline -- see check 1 in the module docstring.
-CX = (LAND_X - RING_W) / 2.0     # 18.60
-CY = (LAND_Y - RING_W) / 2.0     # 14.50
+CX = (LAND_X - RING_W) / 2.0  # 18.60
+CY = (LAND_Y - RING_W) / 2.0  # 14.50
 
 SILK_W = 0.12
 FAB_W = 0.10
@@ -133,10 +133,14 @@ def u() -> str:
 def rounded_rect(hx: float, hy: float, r: float) -> list[tuple[float, float]]:
     """Corner points of a rounded rectangle, approximated for silk/fab use."""
     return [
-        (-hx + r, -hy), (hx - r, -hy),
-        (hx, -hy + r), (hx, hy - r),
-        (hx - r, hy), (-hx + r, hy),
-        (-hx, hy - r), (-hx, -hy + r),
+        (-hx + r, -hy),
+        (hx - r, -hy),
+        (hx, -hy + r),
+        (hx, hy - r),
+        (hx - r, hy),
+        (-hx + r, hy),
+        (-hx, hy - r),
+        (-hx, -hy + r),
         (-hx + r, -hy),
     ]
 
@@ -175,7 +179,7 @@ def build() -> str:
     # ---- F.Fab: the frame's real outer and inner walls -------------------
     for hx, hy in ((OUTER_X / 2, OUTER_Y / 2), (INNER_X / 2, INNER_Y / 2)):
         pts = rounded_rect(hx, hy, 1.0)
-        for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
+        for (x1, y1), (x2, y2) in itertools.pairwise(pts):
             add(
                 f"\t(fp_line (start {x1:.4f} {y1:.4f}) (end {x2:.4f} {y2:.4f}) "
                 f'(stroke (width {FAB_W}) (type solid)) (layer "F.Fab") (uuid "{u()}"))'
@@ -193,7 +197,7 @@ def build() -> str:
         (LAND_X / 2 - RING_W, LAND_Y / 2 - RING_W, max(CORNER_R - RING_W, 0.5)),
     ):
         pts = rounded_rect(hx, hy, radius)
-        for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
+        for (x1, y1), (x2, y2) in itertools.pairwise(pts):
             add(
                 f"\t(fp_line (start {x1:.4f} {y1:.4f}) (end {x2:.4f} {y2:.4f}) "
                 f'(stroke (width {CRTYD_W}) (type solid)) (layer "F.CrtYd") (uuid "{u()}"))'
@@ -202,7 +206,7 @@ def build() -> str:
     # ---- F.SilkS: outline just outside the land --------------------------
     hx, hy = LAND_X / 2 + 0.15, LAND_Y / 2 + 0.15
     pts = rounded_rect(hx, hy, CORNER_R)
-    for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
+    for (x1, y1), (x2, y2) in itertools.pairwise(pts):
         add(
             f"\t(fp_line (start {x1:.4f} {y1:.4f}) (end {x2:.4f} {y2:.4f}) "
             f'(stroke (width {SILK_W}) (type solid)) (layer "F.SilkS") (uuid "{u()}"))'
@@ -213,10 +217,10 @@ def build() -> str:
     # them, so the corners are covered exactly once.
     span_x = LAND_X - 2 * RING_W
     ring = [
-        (-CX, 0.0, RING_W, LAND_Y),      # left
-        (CX, 0.0, RING_W, LAND_Y),       # right
-        (0.0, -CY, span_x, RING_W),      # top
-        (0.0, CY, span_x, RING_W),       # bottom
+        (-CX, 0.0, RING_W, LAND_Y),  # left
+        (CX, 0.0, RING_W, LAND_Y),  # right
+        (0.0, -CY, span_x, RING_W),  # top
+        (0.0, CY, span_x, RING_W),  # bottom
     ]
     for x, y, sx, sy in ring:
         add('\t(pad "1" smd rect')
@@ -232,9 +236,12 @@ def build() -> str:
     seg = (LAND_Y - HOLE_PAD_D) / 2.0
     off = (HOLE_PAD_D + seg) / 2.0
     paste = [
-        (-CX, -off, PASTE_W, seg), (-CX, off, PASTE_W, seg),
-        (CX, -off, PASTE_W, seg), (CX, off, PASTE_W, seg),
-        (0.0, -CY, span_x, PASTE_W), (0.0, CY, span_x, PASTE_W),
+        (-CX, -off, PASTE_W, seg),
+        (-CX, off, PASTE_W, seg),
+        (CX, -off, PASTE_W, seg),
+        (CX, off, PASTE_W, seg),
+        (0.0, -CY, span_x, PASTE_W),
+        (0.0, CY, span_x, PASTE_W),
     ]
     for x, y, sx, sy in paste:
         add('\t(pad "1" smd rect')

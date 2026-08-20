@@ -72,6 +72,7 @@ Usage:
 # AI-generated; the pad geometry is an engineering default, not a datasheet
 # or standards value. Not human-authored.
 
+import itertools
 import uuid
 from pathlib import Path
 
@@ -117,8 +118,7 @@ def u() -> str:
     return str(uuid.uuid4())
 
 
-def build(name: str, n: int, pad_w: float, pad_h: float,
-          pitch: float) -> str:
+def build(name: str, n: int, pad_w: float, pad_h: float, pitch: float) -> str:
     """Emit one .kicad_mod for an n-pad strip of the given geometry."""
     L: list[str] = []
     add = L.append
@@ -159,7 +159,7 @@ def build(name: str, n: int, pad_w: float, pad_h: float,
     cx, cy = half_w + CRTYD_CLR, half_h + CRTYD_CLR
     for layer, width in (("F.CrtYd", CRTYD_W), ("F.SilkS", SILK_W)):
         pts = [(-cx, -cy), (cx, -cy), (cx, cy), (-cx, cy), (-cx, -cy)]
-        for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
+        for (x1, y1), (x2, y2) in itertools.pairwise(pts):
             add(
                 f"\t(fp_line (start {x1:.4f} {y1:.4f}) (end {x2:.4f} {y2:.4f}) "
                 f'(stroke (width {width}) (type solid)) (layer "{layer}") '
@@ -169,7 +169,7 @@ def build(name: str, n: int, pad_w: float, pad_h: float,
     add(
         f"\t(fp_circle (center {-(cx + 0.4):.4f} {-half_h + pad_h / 2:.4f}) "
         f"(end {-(cx + 0.4) + 0.15:.4f} {-half_h + pad_h / 2:.4f}) "
-        f'(stroke (width {SILK_W}) (type solid)) (fill solid) '
+        f"(stroke (width {SILK_W}) (type solid)) (fill solid) "
         f'(layer "F.SilkS") (uuid "{u()}"))'
     )
 
@@ -195,10 +195,13 @@ def main() -> None:
     out.mkdir(parents=True, exist_ok=True)
     for name, (n, pw, ph, pitch) in VARIANTS.items():
         (out / f"{name}.kicad_mod").write_text(
-            build(name, n, pw, ph, pitch), encoding="utf-8")
+            build(name, n, pw, ph, pitch), encoding="utf-8"
+        )
         span = (n - 1) * pitch + pw
-        print(f"wrote {name}.kicad_mod  ({n} pads, {pitch} mm pitch, "
-              f"{span:.2f} x {ph:.2f} mm copper)")
+        print(
+            f"wrote {name}.kicad_mod  ({n} pads, {pitch} mm pitch, "
+            f"{span:.2f} x {ph:.2f} mm copper)"
+        )
 
 
 if __name__ == "__main__":

@@ -68,11 +68,9 @@ Usage:
 # TODO.md 12.4. AI-generated; reviewed against the primary sources named
 # in the docstring above. Not human-authored.
 
-
 import argparse
 import re
 import subprocess
-import sys
 import tempfile
 from pathlib import Path
 
@@ -91,8 +89,8 @@ SYSTEM_FP_ROOT = Path("/usr/share/kicad/footprints")
 
 BOARD_W = 30.0
 BOARD_H = 60.0
-EDGE_R = 2.0            # rounded corners
-ORIGIN_X = 20.0         # board origin on the KiCad sheet
+EDGE_R = 2.0  # rounded corners
+ORIGIN_X = 20.0  # board origin on the KiCad sheet
 ORIGIN_Y = 20.0
 
 # Nets carried by planes/pours rather than by routed tracks.
@@ -128,14 +126,21 @@ PLACEMENT: dict[str, tuple[float, float, float, str]] = {
     # Columns at x = 5.6 / 15.0 / 24.4. The 8.6 mm phase pads need >=9.1 mm
     # spacing, and 3 of them across 30 mm leaves only 4.2 mm of total margin,
     # so the column pitch is set by those pads and everything else follows.
-    "J5A": (9.0, 5.0, 0, "T"),        # pack +
-    "J5B": (21.0, 5.0, 0, "T"),       # pack -
-    "C1": (15.0, 12.0, 0, "T"),       # bulk, in the FET loop per [21] 11.1
-    "Q1": (5.6, 19.0, 0, "T"), "Q3": (15.0, 19.0, 0, "T"), "Q5": (24.4, 19.0, 0, "T"),
-    "Q2": (5.6, 28.0, 0, "T"), "Q4": (15.0, 28.0, 0, "T"), "Q6": (24.4, 28.0, 0, "T"),
-    "R1": (5.6, 35.0, 0, "T"), "R2": (15.0, 35.0, 0, "T"), "R3": (24.4, 35.0, 0, "T"),
-    "J4A": (5.0, 54.0, 0, "B"), "J4B": (15.0, 54.0, 0, "B"), "J4C": (25.0, 54.0, 0, "B"),
-
+    "J5A": (9.0, 5.0, 0, "T"),  # pack +
+    "J5B": (21.0, 5.0, 0, "T"),  # pack -
+    "C1": (15.0, 12.0, 0, "T"),  # bulk, in the FET loop per [21] 11.1
+    "Q1": (5.6, 19.0, 0, "T"),
+    "Q3": (15.0, 19.0, 0, "T"),
+    "Q5": (24.4, 19.0, 0, "T"),
+    "Q2": (5.6, 28.0, 0, "T"),
+    "Q4": (15.0, 28.0, 0, "T"),
+    "Q6": (24.4, 28.0, 0, "T"),
+    "R1": (5.6, 35.0, 0, "T"),
+    "R2": (15.0, 35.0, 0, "T"),
+    "R3": (24.4, 35.0, 0, "T"),
+    "J4A": (5.0, 54.0, 0, "B"),
+    "J4B": (15.0, 54.0, 0, "B"),
+    "J4C": (25.0, 54.0, 0, "B"),
     # ---- BOTTOM: gate drive, shielded, directly under the half-bridges -
     # SH1 moved to the bottom 2026-08-16. A single top-side column came to
     # 64.7 mm against a 60 mm board and the shield's 17.2 mm was the item that
@@ -144,26 +149,39 @@ PLACEMENT: dict[str, tuple[float, float, float, str]] = {
     # GHx->gate->SHx loop available ([21] Sec. 11.1).
     "SH1": (15.0, 22.0, 0, "B"),
     "U5": (15.0, 22.0, 0, "B"),
-    "C5": (8.0, 16.5, 0, "B"), "C6": (8.0, 22.0, 0, "B"), "C9": (8.0, 27.5, 0, "B"),
-    "C8": (22.0, 16.5, 0, "B"), "C7": (22.0, 27.5, 0, "B"),
-
+    "C5": (8.0, 16.5, 0, "B"),
+    "C6": (8.0, 22.0, 0, "B"),
+    "C9": (8.0, 27.5, 0, "B"),
+    "C8": (22.0, 16.5, 0, "B"),
+    "C7": (22.0, 27.5, 0, "B"),
     # ---- BOTTOM: sense amps, each under its own shunt ------------------
-    "U6": (5.6, 35.0, 0, "B"), "U7": (15.0, 35.0, 0, "B"), "U8": (24.4, 35.0, 0, "B"),
-
+    "U6": (5.6, 35.0, 0, "B"),
+    "U7": (15.0, 35.0, 0, "B"),
+    "U8": (24.4, 35.0, 0, "B"),
     # ---- BOTTOM: control ----------------------------------------------
     "U1": (11.0, 46.0, 0, "B"),
     "U2": (25.0, 42.0, 0, "B"),
-    "C2": (20.0, 39.0, 0, "B"), "C4": (24.0, 39.0, 0, "B"), "C3": (28.0, 39.0, 0, "B"),
+    "C2": (20.0, 39.0, 0, "B"),
+    "C4": (24.0, 39.0, 0, "B"),
+    "C3": (28.0, 39.0, 0, "B"),
     "C10": (28.0, 46.0, 0, "B"),
-    "R12": (28.0, 43.0, 0, "B"), "R13": (2.0, 39.0, 0, "B"),
-    "R6": (2.0, 43.0, 0, "B"), "R7": (2.0, 46.0, 0, "B"), "R4": (2.0, 49.0, 0, "B"),
-    "R5": (2.0, 52.0, 0, "B"), "R8": (28.0, 49.0, 0, "B"), "R9": (28.0, 52.0, 0, "B"),
-    "R10": (2.0, 8.0, 0, "B"), "R11": (2.0, 11.0, 0, "B"), "R14": (2.0, 14.0, 0, "B"),
+    "R12": (28.0, 43.0, 0, "B"),
+    "R13": (2.0, 39.0, 0, "B"),
+    "R6": (2.0, 43.0, 0, "B"),
+    "R7": (2.0, 46.0, 0, "B"),
+    "R4": (2.0, 49.0, 0, "B"),
+    "R5": (2.0, 52.0, 0, "B"),
+    "R8": (28.0, 49.0, 0, "B"),
+    "R9": (28.0, 52.0, 0, "B"),
+    "R10": (2.0, 8.0, 0, "B"),
+    "R11": (2.0, 11.0, 0, "B"),
+    "R14": (2.0, 14.0, 0, "B"),
     "J1": (8.0, 57.0, 0, "B"),
-
     # ---- BOTTOM: isolated field buses, far end ------------------------
-    "U3": (8.5, 45.0, 270, "T"), "U4": (22.5, 45.0, 270, "T"),
-    "J2": (8.5, 54.0, 0, "T"), "J3": (22.5, 54.0, 0, "T"),
+    "U3": (8.5, 45.0, 270, "T"),
+    "U4": (22.5, 45.0, 270, "T"),
+    "J2": (8.5, 54.0, 0, "T"),
+    "J3": (22.5, 54.0, 0, "T"),
 }
 
 # Copper keepout over the isolated band: no plane, no pour, any layer.
@@ -191,9 +209,9 @@ def run_netlist() -> tuple[dict[str, str], dict[tuple[str, str], str]]:
     with tempfile.TemporaryDirectory() as td:
         out = Path(td) / "net.net"
         subprocess.run(
-            ["kicad-cli", "sch", "export", "netlist",
-             "--output", str(out), str(SCH)],
-            check=True, capture_output=True,
+            ["kicad-cli", "sch", "export", "netlist", "--output", str(out), str(SCH)],
+            check=True,
+            capture_output=True,
         )
         text = out.read_text(encoding="utf-8")
 
@@ -205,11 +223,12 @@ def run_netlist() -> tuple[dict[str, str], dict[tuple[str, str], str]]:
             footprints[ref] = m.group(1)
 
     nets: dict[tuple[str, str], str] = {}
-    section = text[text.index("(nets"):]
+    section = text[text.index("(nets") :]
     for chunk in section.split("(net (code")[1:]:
         name = re.search(r'\(name "([^"]*)"\)', chunk).group(1)
         for ref, pad in re.findall(
-                r'\(node \(ref "([^"]+)"\) \(pin "([^"]+)"\)', chunk):
+            r'\(node \(ref "([^"]+)"\) \(pin "([^"]+)"\)', chunk
+        ):
             nets[(ref, pad)] = name
     return footprints, nets
 
@@ -226,6 +245,7 @@ def load_footprint(spec: str):
 
 def rounded_outline(board, x0, y0, w, h, r) -> None:
     """Draw a rounded rectangle on Edge.Cuts."""
+
     def line(ax, ay, bx, by):
         seg = pcbnew.PCB_SHAPE(board)
         seg.SetShape(pcbnew.SHAPE_T_SEGMENT)
@@ -294,9 +314,12 @@ def shield_encloses(board, other_box) -> bool:
     cx, cy = shield.GetPosition().x, shield.GetPosition().y
     hw = pcbnew.FromMM(SHIELD_INNER[0] / 2)
     hh = pcbnew.FromMM(SHIELD_INNER[1] / 2)
-    return (other_box.GetLeft() >= cx - hw and other_box.GetRight() <= cx + hw
-            and other_box.GetTop() >= cy - hh
-            and other_box.GetBottom() <= cy + hh)
+    return (
+        other_box.GetLeft() >= cx - hw
+        and other_box.GetRight() <= cx + hw
+        and other_box.GetTop() >= cy - hh
+        and other_box.GetBottom() <= cy + hh
+    )
 
 
 def add_keepout(board, x0, y0, w, h):
@@ -327,9 +350,10 @@ def add_keepout(board, x0, y0, w, h):
 
 def has_through_hole(fp) -> bool:
     """True if any pad drills through, i.e. the part blocks both sides."""
-    return any(p.GetAttribute() in (pcbnew.PAD_ATTRIB_PTH,
-                                    pcbnew.PAD_ATTRIB_NPTH)
-               for p in fp.Pads())
+    return any(
+        p.GetAttribute() in (pcbnew.PAD_ATTRIB_PTH, pcbnew.PAD_ATTRIB_NPTH)
+        for p in fp.Pads()
+    )
 
 
 def courtyard_collisions(board) -> list[str]:
@@ -345,7 +369,7 @@ def courtyard_collisions(board) -> list[str]:
             box = poly.BBox()
         side = "B" if fp.IsFlipped() else "T"
         if has_through_hole(fp):
-            side = "TB"                # occupies both sides
+            side = "TB"  # occupies both sides
         boxes.append((fp.GetReference(), box, side))
 
     hits = []
@@ -353,11 +377,11 @@ def courtyard_collisions(board) -> list[str]:
         for j in range(i + 1, len(boxes)):
             (ref_a, a, sa), (ref_b, b, sb) = boxes[i], boxes[j]
             if not (set(sa) & set(sb)):
-                continue               # opposite sides, no conflict
+                continue  # opposite sides, no conflict
             if not a.Intersects(b):
                 continue
             if ref_a == SHIELD_REF and shield_encloses(board, b):
-                continue            # enclosed by the shield, as designed
+                continue  # enclosed by the shield, as designed
             if ref_b == SHIELD_REF and shield_encloses(board, a):
                 continue
             hits.append(f"{ref_a} <-> {ref_b}")
@@ -367,8 +391,11 @@ def courtyard_collisions(board) -> list[str]:
 def main() -> int:
     """Create the board, place every part, assign nets, add planes."""
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--check-only", action="store_true",
-                    help="place and report collisions without writing the file")
+    ap.add_argument(
+        "--check-only",
+        action="store_true",
+        help="place and report collisions without writing the file",
+    )
     args = ap.parse_args()
 
     footprints, nets = run_netlist()
@@ -413,7 +440,7 @@ def main() -> int:
         for pad in fp.Pads():
             num = pad.GetNumber()
             if not num:
-                continue                      # paste aperture, no net
+                continue  # paste aperture, no net
             net_name = nets.get((ref, num))
             if net_name is None:
                 unmatched_pads.append(f"{ref}.{num}")
@@ -423,8 +450,10 @@ def main() -> int:
 
     print(f"placed {placed} footprints, {len(netinfo)} nets")
     if unmatched_pads:
-        print(f"  pads with no netlist node ({len(unmatched_pads)}): "
-              f"{', '.join(unmatched_pads)}")
+        print(
+            f"  pads with no netlist node ({len(unmatched_pads)}): "
+            f"{', '.join(unmatched_pads)}"
+        )
 
     # ---- Board outline ---------------------------------------------------
     rounded_outline(board, ORIGIN_X, ORIGIN_Y, BOARD_W, BOARD_H, EDGE_R)
@@ -441,15 +470,24 @@ def main() -> int:
     # In2: VM under the power stage, GND under the control section.
     power_h = 34.0
     add_zone(board, vm, [pcbnew.In2_Cu], zx, zy, zw, power_h, priority=1)
-    add_zone(board, gnd, [pcbnew.In2_Cu],
-             zx, zy + power_h, zw, zh - power_h, priority=0)
+    add_zone(
+        board, gnd, [pcbnew.In2_Cu], zx, zy + power_h, zw, zh - power_h, priority=0
+    )
     # Outer layers: GND pour for shielding and heat spreading.
     add_zone(board, gnd, [pcbnew.F_Cu, pcbnew.B_Cu], zx, zy, zw, zh, priority=0)
 
     # ---- Per-phase pours over each half-bridge --------------------------
     for net_name, (cx, top, w, h) in PHASE_POURS.items():
-        add_zone(board, netinfo[net_name], [pcbnew.F_Cu],
-                 ORIGIN_X + cx - w / 2, ORIGIN_Y + top, w, h, priority=3)
+        add_zone(
+            board,
+            netinfo[net_name],
+            [pcbnew.F_Cu],
+            ORIGIN_X + cx - w / 2,
+            ORIGIN_Y + top,
+            w,
+            h,
+            priority=3,
+        )
 
     # ---- Isolation barrier ----------------------------------------------
     # A rule area that forbids copper pours on every layer across the

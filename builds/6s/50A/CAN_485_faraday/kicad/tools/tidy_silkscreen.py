@@ -150,20 +150,31 @@ def drc_silk_offenders(pcb_path):
     The authority on what is violating is kicad-cli, not this script.
     """
     out = Path(tempfile.gettempdir()) / "tidy_silk_drc.json"
-    subprocess.run(["kicad-cli", "pcb", "drc", "--severity-all",
-                    "--format", "json", "-o", str(out), str(pcb_path)],
-                   capture_output=True, check=False)
+    subprocess.run(
+        [
+            "kicad-cli",
+            "pcb",
+            "drc",
+            "--severity-all",
+            "--format",
+            "json",
+            "-o",
+            str(out),
+            str(pcb_path),
+        ],
+        capture_output=True,
+        check=False,
+    )
     if not out.is_file():
         return -1, set()
     data = json.loads(out.read_text())
-    viol = [v for v in data.get("violations", [])
-            if v["type"].startswith("silk")]
+    viol = [v for v in data.get("violations", []) if v["type"].startswith("silk")]
     refs = set()
     for v in viol:
         for item in v.get("items", []):
             desc = item.get("description", "")
             if desc.startswith("Reference field of "):
-                refs.add(desc[len("Reference field of "):].strip())
+                refs.add(desc[len("Reference field of ") :].strip())
     return len(viol), refs
 
 
@@ -183,14 +194,14 @@ def relocate(board, wanted, offsets, edge):
             if ref.GetLayer() != layer or not ref.IsVisible():
                 continue
 
-            def clashes(box):
-                if not edge.Contains(box):
+            def clashes(box, pads_local, others_local, ref_local, edge_local):
+                if not edge_local.Contains(box):
                     return True
-                for p in pads:
+                for p in pads_local:
                     if box.Intersects(p):
                         return True
-                for item, ibox in others:
-                    if item is ref:
+                for item, ibox in others_local:
+                    if item is ref_local:
                         continue
                     if box.Intersects(ibox):
                         return True
@@ -200,7 +211,9 @@ def relocate(board, wanted, offsets, edge):
             placed = None
             for dx, dy in offsets:
                 ref.SetPosition(pcbnew.VECTOR2I(start.x + dx, start.y + dy))
-                if not clashes(ref.GetBoundingBox()):
+                if not clashes(
+                    ref.GetBoundingBox(), pads, others, ref, edge
+                ):
                     placed = (dx, dy)
                     break
             if placed is None:
@@ -216,18 +229,26 @@ def relocate(board, wanted, offsets, edge):
 def main():
     """Relocate colliding designators, reporting what could not be placed."""
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--max-search", type=float, default=4.0,
-                    help="furthest a designator may be moved, mm "
-                         "(default 4.0)")
-    ap.add_argument("--max-rounds", type=int, default=6,
-                    help="cap on DRC-verified rounds (default 6)")
+    ap.add_argument(
+        "--max-search",
+        type=float,
+        default=4.0,
+        help="furthest a designator may be moved, mm (default 4.0)",
+    )
+    ap.add_argument(
+        "--max-rounds",
+        type=int,
+        default=6,
+        help="cap on DRC-verified rounds (default 6)",
+    )
     args = ap.parse_args()
 
     offsets = spiral(pcbnew.FromMM(STEP_MM), pcbnew.FromMM(args.max_search))
 
     count, refs = drc_silk_offenders(PCB)
-    print(f"kicad-cli reports {count} silk violations, "
-          f"{len(refs)} designators at fault")
+    print(
+        f"kicad-cli reports {count} silk violations, {len(refs)} designators at fault"
+    )
 
     moved, stuck, rounds = [], set(), 0
     while refs and rounds < args.max_rounds:
@@ -238,15 +259,16 @@ def main():
 
         got, could_not = relocate(board, refs, offsets, edge)
         if not got:
-            print(f"   round {rounds}: no designator could be moved -- "
-                  f"stopping")
+            print(f"   round {rounds}: no designator could be moved -- stopping")
             stuck |= set(could_not)
             break
         board.Save(str(PCB))
 
         new_count, new_refs = drc_silk_offenders(PCB)
-        print(f"   round {rounds}: moved {len(got):2d}, "
-              f"silk violations {count} -> {new_count}")
+        print(
+            f"   round {rounds}: moved {len(got):2d}, "
+            f"silk violations {count} -> {new_count}"
+        )
         if new_count >= count:
             print("   no improvement -- stopping rather than churning")
             stuck |= set(could_not) | new_refs
@@ -261,11 +283,15 @@ def main():
     for r, d in sorted(moved, key=lambda x: -x[1]):
         print(f"   {r:5s} {d:5.2f} mm")
     if stuck:
-        print(f"\ncould not place ({len(stuck)}) -- REPORTED, not hidden: "
-              f"{' '.join(sorted(stuck))}")
-    print("\nSH1's 4 outline segments over its own pads are left alone: "
-          "trimming a\nfootprint's own graphics is referred to the repo "
-          "owner (CLAUDE.md).")
+        print(
+            f"\ncould not place ({len(stuck)}) -- REPORTED, not hidden: "
+            f"{' '.join(sorted(stuck))}"
+        )
+    print(
+        "\nSH1's 4 outline segments over its own pads are left alone: "
+        "trimming a\nfootprint's own graphics is referred to the repo "
+        "owner (CLAUDE.md)."
+    )
 
     return 0
 

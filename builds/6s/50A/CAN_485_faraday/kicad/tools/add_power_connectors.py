@@ -53,14 +53,18 @@ Usage:
 # TODO.md 12.4. AI-generated; reviewed against the primary sources named
 # in the docstring above. Not human-authored.
 
-
 import argparse
 import copy
 import uuid
 from pathlib import Path
 
 from kiutils.items.common import (
-    Effects, Font, Justify, Position, Property, Stroke,
+    Effects,
+    Font,
+    Justify,
+    Position,
+    Property,
+    Stroke,
 )
 from kiutils.items.schitems import Connection, GlobalLabel
 from kiutils.schematic import Schematic
@@ -87,8 +91,9 @@ NOTE_DEFAULT = (
 
 def eff(justify: str | None = None) -> Effects:
     """Standard 1.27 mm text effects, optionally justified."""
-    return Effects(font=Font(width=1.27, height=1.27),
-                   justify=Justify(horizontally=justify))
+    return Effects(
+        font=Font(width=1.27, height=1.27), justify=Justify(horizontally=justify)
+    )
 
 
 def prop_of(sym, key: str):
@@ -108,37 +113,51 @@ def set_prop(sym, key: str, value: str) -> None:
     """Set a property, creating it if the symbol does not already carry it."""
     p = prop_of(sym, key)
     if p is None:
-        sym.properties.append(Property(
-            key=key, value=value,
-            position=Position(X=sym.position.X, Y=sym.position.Y, angle=0),
-            effects=eff(), showName=False,
-        ))
+        sym.properties.append(
+            Property(
+                key=key,
+                value=value,
+                position=Position(X=sym.position.X, Y=sym.position.Y, angle=0),
+                effects=eff(),
+                showName=False,
+            )
+        )
     else:
         p.value = value
 
 
 def add_wire(sch, x1, y1, x2, y2) -> None:
     """Draw a real wire segment between two sheet points."""
-    sch.graphicalItems.append(Connection(
-        type="wire",
-        points=[Position(X=x1, Y=y1), Position(X=x2, Y=y2)],
-        stroke=Stroke(width=0, type="default"),
-        uuid=str(uuid.uuid4()),
-    ))
+    sch.graphicalItems.append(
+        Connection(
+            type="wire",
+            points=[Position(X=x1, Y=y1), Position(X=x2, Y=y2)],
+            stroke=Stroke(width=0, type="default"),
+            uuid=str(uuid.uuid4()),
+        )
+    )
 
 
 def add_global_label(sch, text, x, y, angle, justify) -> None:
     """Place a global label at a sheet point."""
-    sch.globalLabels.append(GlobalLabel(
-        text=text, shape="passive",
-        position=Position(X=x, Y=y, angle=angle),
-        effects=eff(justify), uuid=str(uuid.uuid4()),
-        properties=[Property(
-            key="Intersheetrefs", value="${INTERSHEET_REFS}",
-            position=Position(X=x, Y=y, angle=0),
-            effects=eff(), showName=False,
-        )],
-    ))
+    sch.globalLabels.append(
+        GlobalLabel(
+            text=text,
+            shape="passive",
+            position=Position(X=x, Y=y, angle=angle),
+            effects=eff(justify),
+            uuid=str(uuid.uuid4()),
+            properties=[
+                Property(
+                    key="Intersheetrefs",
+                    value="${INTERSHEET_REFS}",
+                    position=Position(X=x, Y=y, angle=0),
+                    effects=eff(),
+                    showName=False,
+                )
+            ],
+        )
+    )
 
 
 def main() -> int:
@@ -165,8 +184,9 @@ def main() -> int:
         template = by_ref["J2"]
         j5 = copy.deepcopy(template)
         j5.uuid = str(uuid.uuid4())
-        new_pos = Position(X=j4.position.X, Y=j4.position.Y + J5_OFFSET_Y,
-                           angle=j4.position.angle)
+        new_pos = Position(
+            X=j4.position.X, Y=j4.position.Y + J5_OFFSET_Y, angle=j4.position.angle
+        )
         for p in j5.properties:
             p.position = Position(
                 X=new_pos.X + (p.position.X - template.position.X),
@@ -191,8 +211,10 @@ def main() -> int:
             add_wire(sch, px, py, px - 5.08, py)
             add_global_label(sch, net, px - 5.08, py, 180, "right")
             print(f"  J5 pin @{net}")
-        print(f"  added J5 (battery input) at "
-              f"({new_pos.X:.2f}, {new_pos.Y:.2f}) -> {BATT_FP}")
+        print(
+            f"  added J5 (battery input) at "
+            f"({new_pos.X:.2f}, {new_pos.Y:.2f}) -> {BATT_FP}"
+        )
 
     if args.dry_run:
         print("dry run -- nothing written")

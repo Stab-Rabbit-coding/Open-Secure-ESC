@@ -237,9 +237,9 @@ inserting a row never breaks a caller:
 
 ```python
 db = json.load(open("docs/decision-matrix.json"))
-v  = db["axes"]["voltage"]["rows_by_key"]["6s"]        # 21.6 / 25.2 / 15.0 V
-m  = db["axes"]["motor"]["rows_by_key"]["brushless_bldc_pmsm"]
-s  = db["axes"]["shaft_sensor"]["rows_by_key"]["none_sensorless"]
+v = db["axes"]["voltage"]["rows_by_key"]["6s"]  # 21.6 / 25.2 / 15.0 V
+m = db["axes"]["motor"]["rows_by_key"]["brushless_bldc_pmsm"]
+s = db["axes"]["shaft_sensor"]["rows_by_key"]["none_sensorless"]
 ```
 
 **Check `Status` before consuming a row.** `unresolved_cells(db)` returns every

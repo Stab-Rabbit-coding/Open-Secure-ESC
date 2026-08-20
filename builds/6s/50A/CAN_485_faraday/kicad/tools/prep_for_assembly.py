@@ -102,25 +102,23 @@ FIDUCIALS = {
     pcbnew.B_Cu: [(2.2, 23.2), (29.7, 23.2), (29.7, 63.7)],
 }
 
-EXCLUDE = (pcbnew.FP_EXCLUDE_FROM_BOM
-           | pcbnew.FP_EXCLUDE_FROM_POS_FILES)
+EXCLUDE = pcbnew.FP_EXCLUDE_FROM_BOM | pcbnew.FP_EXCLUDE_FROM_POS_FILES
 
 
 def main():
     """Flag the non-parts, fix the attributes, add the fiducials."""
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--dry-run", action="store_true",
-                    help="report only, write nothing")
-    ap.add_argument("--no-fiducials", action="store_true",
-                    help="do the attribute fixes only")
+    ap.add_argument("--dry-run", action="store_true", help="report only, write nothing")
+    ap.add_argument(
+        "--no-fiducials", action="store_true", help="do the attribute fixes only"
+    )
     args = ap.parse_args()
 
     board = pcbnew.LoadBoard(str(PCB))
 
     print("1. bare pads excluded from BOM and position files:")
     for ref in NOT_PLACED:
-        fp = next((f for f in board.Footprints()
-                   if f.GetReference() == ref), None)
+        fp = next((f for f in board.Footprints() if f.GetReference() == ref), None)
         if fp is None:
             print(f"   {ref}: not on board")
             continue
@@ -134,13 +132,11 @@ def main():
             fp.SetAttributes(a | pcbnew.FP_SMD)
             print(f"   {fp.GetReference()}")
 
-    existing = [f for f in board.Footprints()
-                if f.GetReference().startswith("FID")]
+    existing = [f for f in board.Footprints() if f.GetReference().startswith("FID")]
     if args.no_fiducials:
         print("\n3. fiducials: skipped (--no-fiducials)")
     elif existing:
-        print(f"\n3. fiducials: {len(existing)} already present, "
-              f"leaving alone")
+        print(f"\n3. fiducials: {len(existing)} already present, leaving alone")
     else:
         poly = pcbnew.SHAPE_POLY_SET()
         board.GetBoardPolygonOutlines(poly)
@@ -156,17 +152,21 @@ def main():
                 n += 1
                 fp.SetReference(f"FID{n}")
                 board.Add(fp)
-                fp.SetPosition(pcbnew.VECTOR2I(ox + pcbnew.FromMM(x),
-                                               oy + pcbnew.FromMM(y)))
+                fp.SetPosition(
+                    pcbnew.VECTOR2I(ox + pcbnew.FromMM(x), oy + pcbnew.FromMM(y))
+                )
                 if layer == pcbnew.B_Cu:
                     fp.Flip(fp.GetPosition(), False)
                 fp.SetAttributes(fp.GetAttributes() | EXCLUDE)
                 fp.Reference().SetVisible(False)
-                print(f"   FID{n}  {board.GetLayerName(layer):5s} "
-                      f"({x:5.1f}, {y:5.1f}) mm")
+                print(
+                    f"   FID{n}  {board.GetLayerName(layer):5s} ({x:5.1f}, {y:5.1f}) mm"
+                )
 
-    print("\nREMINDER: the board is NOT ROUTED -- 0 segments, 157 unconnected."
-          "\nNone of the above makes it fabricable. See TODO.md 12.5.w.")
+    print(
+        "\nREMINDER: the board is NOT ROUTED -- 0 segments, 157 unconnected."
+        "\nNone of the above makes it fabricable. See TODO.md 12.5.w."
+    )
 
     if args.dry_run:
         print("\n--dry-run: nothing written")
