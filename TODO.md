@@ -378,6 +378,11 @@ detail belongs in design docs, not here.
         rotated so their isolated pin rows face the board edge. Without it the
         GND plane ran straight under the isolation barrier.
   - [ ] 12.4.k **(High, blocks fab) Size the power conductors against
+        **Cross-reference added 2026-08-20:** 12.5.ba now carries the
+        conductor/via arithmetic and the corroborated secondary sources
+        ([S-A]-[S-F] in `REFERENCES.md`); 12.5.bb adds the altitude question.
+        This item remains the one that closes when a primary standard is in
+        hand. **IPC-2152 is the document to buy.**
         IPC-2152 [46].** No conductor width in this build is a computed value.
         VM and GND are poured planes so they do not depend on track width, but
         the three PHASE nets reach the motor connector partly as routed
@@ -387,34 +392,57 @@ detail belongs in design docs, not here.
         the plane cross-sections, the vias and the connector pads, and choose
         the copper weight to match.
   - [ ] 12.4.l **(High, blocks fab) Select real power connectors.** J4
+        **Partly stale as written, verified 2026-08-20:** J4A/B/C are now
+        `SolderWirePad_1x01_SMD_5x10mm` and J5A/B are
+        `SolderWire-6sqmm_1x01_D3.5mm_OD7mm` converted to SMD, so the
+        footprints have moved on. **The substance stands: no connector has
+        been selected and no current rating verified.**
         (phases) and J5 (pack) are currently KiCad 6 mm^2 (~10 AWG) solder-wire
         pads — the largest in the stock library, chosen because the previous
         J4 was a 2.54 mm pin header, which is not a 50 A part. No connector
         has actually been selected and no current rating verified. Depends on
         12.4.k.
   - [ ] 12.4.m **(Medium) Set the isolation barrier width from the chosen
+        **DUPLICATE of 12.5.ae (2026-08-20) — track it there.**
         transceiver variant.** The keepout band is sized to clear the isolated
         pin rows, not to any creepage/clearance table. The real figure follows
         from the still-open ADM3055E-vs-ADM3057E (5000 vs 3750 V rms) and
         ADM2582E-vs-ADM2587E choices in this build's README.
   - [ ] 12.4.n **(Medium) Confirm the DRV8353S exposed pad may be tied to
+        **Verified 2026-08-20: the board does tie it to GND** (`U5` pad 41 net
+        = GND). The open question is the datasheet confirmation, not the
+        implementation.
         GND.** [21] requires the pad to be soldered (RTA0040B note 3) and
         requires a ground-plane connection at the GND pin (§11.1), but does
         not state that the pad is internally common with GND. Currently an
         engineering default per `AGENTS.md` §4.
-  - [ ] 12.4.o **(Medium) Confirm the WE-SHC frame's two 1.3 mm locating
-        holes should be PLATED.** [30] dimensions them but does not say.
-        Generated as plated on the shield net.
+  - [x] 12.4.o **SUPERSEDED 2026-08-20 — the part it asks about is not on
+        the board.** This concerned the WE-SHC **3670375** locating holes. The
+        shield was swapped to **3670209** in 12.5.c; verified on the board
+        2026-08-20, `SH1` is `Wurth_WE-SHC_3670209_Frame_15.3x20.9mm`, 8 pads.
+        If the 3670209's locating features need the same plating decision,
+        raise it against [51]/[52] as a new item, not this one.
   - [ ] 12.4.p **(Medium) Model the MCU's remaining 36 package pins.**
+        **Verified 2026-08-20: still exactly true** — `symbols/specs/
+        MSPM0G3518_Q1_PM.json` maps 28 pins and U1 has 28 of 64 pads on a real
+        net.
         `symbols/specs/MSPM0G3518_Q1_PM.json` maps 28 of the LQFP-64's 64
         pins, so 36 pads import with no net. Fine electrically (unused GPIO),
         but the symbol does not describe the package.
-  - [ ] 12.4.q **(Medium) Finish component placement.** `build_pcb.py`'s
-        placement table is legible and DRC-clean and respects [21] §11.1's
-        gate-loop and bulk-capacitor constraints, but it is a starting point,
-        not a solved placement. Thermal, EMI and manufacturability review of
-        the power stage is a human task.
+  - [x] 12.4.q **SUPERSEDED 2026-08-20 — `build_pcb.py`'s placement table
+        has not been the board's placement since 2026-08-16.** The repo owner
+        hand-placed it (12.5.f); it has since been widened (12.5.ac), aligned
+        (12.5.ap), symmetrised (12.5.aq), had U7/U8 re-assigned (12.5.ar),
+        U1/U5/SH1 centred (12.5.as), and seven passives moved out of the
+        shield ring (12.5.ay). The remaining placement questions are tracked
+        specifically in 12.5.z, 12.5.ax and 12.5.ay rather than as one
+        open-ended item. **The thermal/EMI human review this item asks for is
+        real and still outstanding** — carried to 12.4.k and 12.5.bb.
   - [ ] 12.4.r **(Low) 347 `endpoint_off_grid` ERC warnings.** `genlib.py`
+        **Count corrected 2026-08-20: 463, not 347** — it grew with the
+        isolated-supply and J1 schematic work. 7 `global_label_dangling` also
+        remain; 470 ERC violations total, 0 errors. The analysis below is
+        unchanged and still correct.
         lays the sheet out on a 10 mm grid, which is not a multiple of KiCad's
         1.27 mm connection grid. **Do not "fix" this with a coordinate
         snap** — it was tried and reverted: the generator separates parallel
@@ -423,9 +451,12 @@ detail belongs in design docs, not here.
         73 nets collapsed to 63). See `tools/snap_to_grid.py`, which now
         refuses to write without `--force`. A real fix means re-laying out
         the drawing with >= 1.27 mm lane spacing.
-  - [ ] 12.4.s (Low) 4 `silk_over_copper` and 1 `starved_thermal` DRC
-        warnings remain; cosmetic/fab-preference, not electrical.
-
+  - [x] 12.4.s **SUPERSEDED 2026-08-20 — the counts are from a board three
+        respins ago.** Measured on the current board: **11 `silk_over_copper`,
+        7 `silk_overlap`, 2 `isolated_copper`, 0 `starved_thermal`** — 20 DRC
+        violations, all cosmetic; zero shorts, clearance or isolation.
+        Silkscreen carries forward as 12.5.u, the `isolated_copper` as
+        12.5.at.
 - [~] 12.5 **Compact respin of `builds/6s/50A/CAN_485_faraday`, landed at
       25.4 x 60.1 mm** (2026-08-16). Triggered by the repo owner: the
       150 x 140 mm board from 12.4 was "way too big for a single channel ESC
@@ -489,6 +520,8 @@ detail belongs in design docs, not here.
         with that formula by ~2x at 10 A. Neither was used as a source. Noted
         so nobody adopts those numbers later believing they are IPC-2152.
   - [ ] 12.5.h Route (`tools/autoroute.py`), then DRC to zero errors.
+        **2026-08-20: superseded in practice by 12.5.av (the routing pass) and
+        blocked by 12.5.bf.** Kept as the parent goal; do not work it directly.
   - [ ] 12.5.i Fab outputs, then documentation.
   - [x] 12.5.j **Where the next session picks up** -- superseded; placement
         is done (12.5.f) and 12.5.g is resolved. See 12.5.t.
@@ -545,6 +578,12 @@ detail belongs in design docs, not here.
         already produced one verified GND-to-VM short on this board.
         REFERRED TO USER.
   - [ ] 12.5.t **(BLOCKING, electrical) THE PHASE GAP -- the phase nets do
+        **Status 2026-08-20 — partly addressed, not closed.** The phase pours
+        now extend to y 85.50 and reach J4A/B/C (`tools/fix_phase_pours.py`,
+        12.5.av(g)). **Connectivity is unproven** because the board is
+        unrouted, and 12.5.av recorded the pours fragmenting into 3-4 islands
+        each once routing ran. Re-verify with the `kicad` skill's
+        `connectivity_graph` after the next successful route.
         not reach their own terminals in copper.** Measured off the board
         2026-08-16: the PH_A/PH_B/PH_C pours are on **F.Cu** and end at
         y = 33.10 mm; their terminals J4A/J4B/J4C are on **B.Cu** starting at
@@ -1094,6 +1133,8 @@ detail belongs in design docs, not here.
         any candidate vendor.
 
   - [ ] 12.5.at **(Low) Two `isolated_copper` warnings remain, unexplained.**
+        **Verified 2026-08-20: still exactly 2 `isolated_copper`** on the
+        current board.
         kicad-cli reports one on `Zone [VM] on In2.Cu` and one on
         `Zone [GND] on In2.Cu`, but neither zone fills as more than one
         polygon — checked directly via `GetFilledPolysList().OutlineCount()`,
@@ -1163,6 +1204,9 @@ detail belongs in design docs, not here.
         POSITION, not the part, so all three sense amps are now listed.
 
   - [ ] 12.5.w **(BLOCKER for fabrication) The board is NOT ROUTED. This
+        **Verified 2026-08-20: still true, and now deliberate.** 151 unrouted.
+        The route was cleared rather than committed because the shield-ring
+        part moves invalidated it. Blocked on 12.5.bf.
         entry previously overstated the state and is corrected here.**
         It claimed "352 segments, 48 vias, 57 open" from the FreeRouting run.
         Measured 2026-08-19, the board carries **0 track segments, 2 vias and
@@ -1197,10 +1241,10 @@ detail belongs in design docs, not here.
         at y 62.750, so the array sits in the ~6 mm gap between the FET rows
         with 0.725 mm of clearance at the new radius. `drill_out_of_range`
         12 -> 0.
-  - [ ] 12.5.v **(Low) 5 `starved_thermal` and 2 `isolated_copper` DRC
-        warnings** at the 25.4 mm placement. Fab-preference and pour-shape
-        respectively; confirm each is intentional before generating gerbers.
-
+  - [x] 12.5.v **SUPERSEDED 2026-08-20 — measured at the 25.4 mm placement,
+        which no longer exists** (the board is 32.10 x 66.20 mm). Current
+        board: **0 `starved_thermal`, 2 `isolated_copper`**. The two
+        `isolated_copper` carry forward as 12.5.at.
   - [~] 12.5.av **FIRST REAL ROUTING PASS, 2026-08-19.** The board was found
         fully unrouted -- 0 track segments, 0 vias, 157 ratsnest connections --
         and getting it to route surfaced seven defects, **none of them routing
