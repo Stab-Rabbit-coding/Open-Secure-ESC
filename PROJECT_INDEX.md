@@ -79,6 +79,7 @@ concurrently, Faraday EMI tier.
 | `kicad/*.kicad_pcb` | 4-layer board: F.Cu, In1.Cu GND plane, In2.Cu VM/GND, B.Cu. |
 | `kicad/*.kicad_pro`, `*.kicad_prl` | Project settings; net classes live here, not in the board. |
 | `kicad/sym-lib-table`, `fp-lib-table` | Project-relative library tables pointing at `symbols/`. |
+| `kicad/*.kicad_dru` | Custom design rules. Holds the power/sense conductor spacing that a net-class clearance cannot express, because a net-class clearance also applies between adjacent pins of one package. |
 | `gerbers/` | Fabrication output. Empty — see `TODO.md` §12.4.k/l before generating. |
 
 ### builds/.../kicad/tools/
@@ -97,7 +98,7 @@ Generators and checkers. Re-run these rather than hand-editing the generated
 | `fix_generic_symbol_libs.py` | Moves the generic stand-in symbols into `Open_Secure_ESC_Generic.kicad_sym`. |
 | `add_power_connectors.py` | Adds the battery input (J5) and moves both power connectors off 2.54 mm headers. |
 | `set_netclasses.py` | Writes the Power / Sense / Isolated net classes into the project file. |
-| `autoroute.py` | FreeRouting round trip: DSN export → route → SES import → re-pour → report. |
+| `autoroute.py` | FreeRouting round trip: DSN export → route → SES import → re-pour → report. Repairs what the Specctra export loses on the way out: pour-only rule areas exported as total no-route keepouts, inner plane layers exported as signal layers, and a routing boundary with no edge-clearance margin. Hard-stops if the project net classes are not in effect. |
 | `add_isolated_supply_ferrites.py` | Schematic side of the isolated-supply fix: splits the merged isolated grounds, closes the dangling VISOOUT→VISOIN path, adds FB1–FB4 and two PWR_FLAGs. |
 | `add_ferrites_to_pcb.py` | PCB side of the same change: re-nets the U3/U4 pads and places FB1–FB4. Placement is parked, not solved — see TODO.md 12.5.af. |
 | `fix_after_replacement.py` | Mechanical repairs after the 2026-08-17 front/back re-placement: J4A↔J4C swap, edge overhangs, stale routing, stale pours. |
@@ -112,6 +113,11 @@ Generators and checkers. Re-run these rather than hand-editing the generated
 | `prep_for_assembly.py` | Flags bare solder pads out of the BOM/position files, fixes footprint attributes, and adds fiducials for SMT optical alignment. |
 | `close_edge_orphans.py` | Extends the phase-terminal rule area past the board edge so pour cannot form orphan strips in the gap below it. |
 | `remove_vm_island.py` | Excludes the floating 4.3 mm² VM pocket trapped inside U5's thermal-via ring on In2.Cu. |
+| `fix_phase_pours.py` | Re-derives each phase pour's top edge from the high-side FET source pads it has to reach. Refuses to act if the pads are no longer above the pour. |
+| `stitch_planes.py` | Ties the four copper layers together: the board had zero vias and every poured plane was floating. Scans finely and enforces the pitch as a minimum spacing, rather than using a lattice that misses the gaps on a dense board. |
+| `via_current_budget.py` | How many vias the 50 A pack terminals need versus how many fit. Shows its working; every figure is UNVERIFIED against a primary standard and says so. |
+| `split_top_pour.py` | Splits the top F.Cu pour on the board centreline so the pack return reaches ground in-plane, without the vias the isolation barrier forbids (TODO 12.5.ax option 4). |
+| `move_out_of_shield.py` | Moves the support passives that can leave SH1's shield land ring out of it, by minimum displacement. Derives the movable/immovable split from the netlist: a part may leave only if every net it carries already crosses the ring, or is GND. |
 | `tidy_silkscreen.py` | Moves colliding reference designators off pads, nearest-first. Driven by kicad-cli's DRC report, re-verified each round; reports what it cannot place rather than hiding it. |
 | `snap_to_grid.py` | **Refuses to run without `--force`.** Documents why a global grid snap shorts this sheet. |
 | `check_shorts.py` | Finds collinear overlapping wire segments on different nets — a short KiCad's ERC reads as one net. |

@@ -6,8 +6,8 @@ memory in the repository root.
 
 - **Agent:** Claude Code (model: Claude Opus 5, Anthropic)
 - **Memory store:** `~/.claude/projects/-home-steve-...-SecureControllers/memory/`
-- **Mirrored:** 2026-08-19
-- **Entries:** 1
+- **Mirrored:** 2026-08-20
+- **Entries:** 3
 
 All content below is AI-generated. It records how to work on this repo, not
 facts about the hardware — hardware facts belong in `REFERENCES.md`, `TODO.md`
@@ -43,3 +43,83 @@ into one of my commits, clean status means exactly the opposite.
   a clearance ERROR that a refill clears. Refill before judging their edit.
 
 Related: [[open-secure-esc-measure-before-asserting]]
+
+---
+
+## pcbnew-swig-chained-call-trap
+
+Never write `pad.GetBoundingBox().Inflate(k).Contains(pt)` in a pcbnew script.
+`GetBoundingBox()` returns a temporary `BOX2I` proxy, `Inflate()` returns a
+reference *into* that temporary, and the temporary can be collected before
+`Contains()` runs. The result is garbage — no exception, no warning. Bind the
+box to a live name first:
+
+```python
+box = pad.GetBoundingBox()
+box.Inflate(keep)
+if box.Contains(point):
+```
+
+**Why:** this pattern is idiomatic, correct C++ and the SWIG bindings do not
+keep the owner alive across the chain. It fails *open* — the collision test
+returned False for everything, so a via stitcher placed 60 vias through pad
+copper and took a board from 29 DRC violations to 186 including 41 shorts
+(Open-Secure-ESC, 2026-08-19).
+
+**How to apply:**
+- Any pcbnew call returning a reference (`GetBoundingBox`, `Outline`,
+  `GetFilledPolysList`, `Padstack`) gets its own local variable before a
+  mutator or a second method call.
+- Suspect this first when a geometric test in a pcbnew script "rejects
+  nothing" or "accepts everything" — before blaming the geometry.
+- Two more KiCad 9 API notes found the same day: `PCB_VIA::SetWidth()` now
+  needs a layer argument (use `SetFrontWidth()` for a plain through via), and
+  Specctra DSN coordinates are **decimal** micrometres, so an integer-only
+  `-?\d+` regex silently scrambles a coordinate list.
+- Verify any geometric helper against a point you know the answer for before
+  letting it write copper unattended.
+
+Related: [[kicad-concurrent-edit-hazard]]
+
+---
+
+## kicad-dru-silent-failure
+
+Custom rules in a `.kicad_dru` can be completely inert while DRC reports clean.
+Verified on KiCad 9.0.2, 2026-08-20, Open-Secure-ESC.
+
+**1. A multi-line `(condition "...")` invalidates the ENTIRE FILE** — every
+rule in it, including rules above the offending line. No error, no warning,
+exit 0. A rule that fires 154 times alone fires 0 times with a multi-line
+condition anywhere in the file. Keep every condition on one line.
+
+**2. Clause order in a two-item condition is not commutative.** Against a board
+with 48 known violations:
+
+```
+A.Type == 'Via'                                  -> 502 hits
+B.NetClass == 'Isolated'                         -> 499 hits
+A.Type == 'Via' && B.NetClass == 'Isolated'      ->   0 hits
+(A&&B) || (B&&A)   (contains the working clause) ->   0 hits
+A.NetClass == 'Isolated' && B.Type == 'Via'      -> 154 hits   <-- works
+```
+
+**Why:** both failures produce silence, and silence is indistinguishable from
+compliance. On Open-Secure-ESC a full day of DRC runs were quoted as evidence
+that conductor spacing was enforced; the rules producing that silence had never
+executed. 79 real violations were hidden.
+
+**How to apply:**
+- **Every DRC rule needs a negative control before it is trusted**: a board
+  known to violate it, on which the rule is *seen* to fire. Add the control
+  procedure as a comment beside the rule.
+- Positive-control the file itself when debugging: a deliberately absurd rule
+  (`min 5mm` between all tracks) must produce hundreds of hits. If it does not,
+  the file is not being loaded at all.
+- `kicad-cli pcb drc` needs `<name>.kicad_dru` and `<name>.kicad_pro` beside
+  `<name>.kicad_pcb`; copy all three when testing on a scratch board.
+- Generalise: this is the same shape as a netclass assignment naming a net that
+  does not exist, or a lint config with an unmatched path glob. Any checker
+  that can match nothing should be proven to match something.
+
+Related: [[pcbnew-swig-chained-call-trap]], [[kicad-concurrent-edit-hazard]]

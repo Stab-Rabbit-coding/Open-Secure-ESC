@@ -1201,6 +1201,363 @@ detail belongs in design docs, not here.
         warnings** at the 25.4 mm placement. Fab-preference and pour-shape
         respectively; confirm each is intentional before generating gerbers.
 
+  - [~] 12.5.av **FIRST REAL ROUTING PASS, 2026-08-19.** The board was found
+        fully unrouted -- 0 track segments, 0 vias, 157 ratsnest connections --
+        and getting it to route surfaced seven defects, **none of them routing
+        defects.** Full write-up:
+        `docs/solutions/architecture-patterns/what-the-autorouter-is-never-told.md`.
+        Fixed in this pass:
+        (a) **Net classes were gone from the `.kicad_pro`** -- only `Default`
+            remained, so VM, GND and all three phases would have routed at the
+            0.2 mm signal default. `tools/set_netclasses.py` re-run and
+            `tools/autoroute.py` now hard-stops if they are not in effect.
+        (b) **Two class net names no longer existed** (`CAN_VISOIN_OPEN`,
+            `RS485_VISOIN_OPEN`, renamed by the isolated-supply ferrite
+            respin). A class naming a missing net is silent; now a hard stop.
+        (c) **KiCad exports every rule area as a total no-route keepout**,
+            losing `tracks allowed`. The isolation rule area therefore
+            declared y 76.50..86.55 unroutable on all four layers -- the band
+            holding U1, U2 and J1. The MCU was unroutable.
+            `strip_pour_keepouts()` in `tools/autoroute.py`.
+        (d) **Inner plane layers export as `(type signal)`.** The first run
+            cut 59 segments / 196.7 mm of signal through the In1.Cu GND plane
+            and 29 segments / 218.3 mm through the In2.Cu VM plane. Now marked
+            `(type power)`; verified 0 segments on both.
+        (e) **The DSN routing boundary carries no edge-clearance margin** and
+            FreeRouting holds the track centreline, not its edge, inside it.
+            Boundary now inset by edge clearance + half the widest track.
+        (f) **`Power` 0.4 mm / `Sense` 0.3 mm net-class clearance was
+            unsatisfiable inside U5's 0.5 mm-pitch WQFN-40** (0.28 mm pin gap)
+            -- 24 violations no routing could clear. This is the same defect
+            already recorded for the `Isolated` class in
+            `tools/set_netclasses.py`; the lesson had not been carried across.
+            Clearances -> 0.2 mm, with the real conductor spacing moved to a
+            scoped custom rule in the new
+            `open_secure_esc_6s_50a_can485_faraday.kicad_dru`. 59 -> 35
+            violations.
+        (h) **Insetting the DSN routing boundary DOES NOT WORK on this board
+            and is now disabled.** It cost two full router runs, each hanging
+            to its time limit (2700 s, 3000 s) with no `.ses` and no error.
+            First cause: a flat 0.75 mm inset put J4A/B/C (5 x 10 mm phase
+            terminals, reaching y 85.50) outside the boundary. Clamping the
+            inset to the pads fixed that and it hung again, because the real
+            blocker is the pours -- GND, VM and the three phase `(plane ...)`
+            polygons reach the board edge at x 20.45..51.45, y 20.50..85.50,
+            so any inset leaves conductor outside the routable region and
+            pours cannot be clamped away. `inset_boundary()` is kept, disabled
+            behind `--inset-boundary`, with the finding in its docstring.
+            Edge clearance is still unsolved -- see 12.5.az.
+        (i) **`tools/autoroute.py` destroyed the board before it had a
+            result.** It cleared tracks and SAVED over the project file before
+            exporting the DSN, so each hang above left the real board with 548
+            segments deleted and nothing to replace them. Recovered from
+            backups twice. It now writes the cleared board to scratch and only
+            touches the project file once a routed result exists.
+        (g) **The three phase pours were stale**, left behind by the
+            2026-08-19 alignment pass: PH_A and PH_C stopped 3.04 mm short of
+            their high-side FET source pads, splitting each half-bridge switch
+            node in two. PH_B was correct, so the defect was not even
+            symmetric. `tools/fix_phase_pours.py` (new) re-derives the pour
+            edge from the pads it has to reach.
+  - [ ] 12.5.aw **(BLOCKING, electrical) The board had ZERO vias -- all four
+        poured planes were floating.** In1.Cu (solid GND) and In2.Cu (VM) were
+        poured, DRC-quiet, and tied to nothing. A zone fill makes every
+        same-net pad on its own layer look connected, so the ratsnest stays
+        quiet and the board reads as routed while the inner planes do no work.
+        `tools/stitch_planes.py` (new) now places the stitching; see 12.5.ax
+        for what it could NOT place.
+        **STILL OPEN:** the via count needed to carry 50 A between layers is
+        **UNVERIFIED**. IPC-2152 and IPC-2221 Table 6-1 govern it and neither
+        is in `REFERENCES.md` (both paywalled, neither read), so per
+        `AGENTS.md` Sec.1.3 no current rating is asserted. The stitching is
+        sized geometrically only. Resolve before fabrication.
+  - [ ] 12.5.ax **(BLOCKING, electrical) The pack return has no path to the
+        ground system, and the isolation strategy is what forbids it.**
+        REFERRED TO USER -- this is a placement/architecture decision.
+        **Correction first.** An earlier note in this session claimed
+        isolated-to-non-isolated separation had degraded to 0.000 mm. That was
+        a planar pad-to-pad measurement that ignored layers and it is WRONG.
+        `tools/score_placement.py` measures the closest isolated/non-isolated
+        pair **on a shared layer, between different parts** and reports
+        **creepage 7.83 mm against the 7.5 mm requirement of [9] Table 6 --
+        PASS**, with `pack_layer_separated` PASS. Both exclusions are correct
+        and deliberate: J5A/J5B are SMD on the face opposite the isolated
+        parts, so the only surface path is around the board edge, and that is
+        a recorded decision worth 2.80 -> 4.64 mm on this build. The barrier
+        holds. The 7.25 mm figure between U3's own pin rows is the SOIC-20W
+        package's internal pitch, not a layout dimension, and is likewise
+        excluded by design.
+        **The real problem.** J5B (pack -, 50 A return) is a 7.00 x 7.00 mm
+        SMD pad on **F.Cu only**, and across the top of the board F.Cu carries
+        the VM pour, not GND. Its only route to the ground system is therefore
+        a via -- and a via under J5B punches GND to B.Cu a fraction of a
+        millimetre from U4's isolated pin row, destroying exactly the layer
+        separation the barrier depends on. `tools/stitch_planes.py` placed
+        **0 of 18** pack-terminal vias; that refusal is correct, not a bug.
+        **The connection the pack return needs is the connection the isolation
+        forbids.** Scale of the gap, from `tools/via_current_budget.py`:
+        J5B needs ~40 vias at 0.60 mm drill on the optimistic basis and ~126
+        on the conservative one (12.5.ba). It can have none.
+        **Options, with what each costs.**
+        (1) **Pack terminals to the bottom edge, beside the phase terminals.**
+            Frees the top entirely; pack vias become legal. VM then runs the
+            board length -- 12.5.ac estimated ~1.9 W at 50 A across In2 at
+            full width. All four high-current terminals end up at one end,
+            which is arguably better for the harness. Cost: the bottom already
+            holds U1, U2, J1 and J4A/B/C (3 x 5 x 10 mm); this is a packing
+            problem, and the commutation loop (now 19.40 mm) grows.
+        (2) **Isolated section to the bottom, pack stays at the top.** 12.5.ac
+            showed the 7.5 mm exclusions leave only 6.77 mm of legal
+            non-isolated width against U1's 13.45 mm, so U1 must move too.
+            Gives up same-end comms wiring.
+        (3) **Accept a longer board, ~72 mm** (12.5.ac's figure). Simplest;
+            costs 6 mm on top of the 60.1 -> 66.1 mm already spent.
+        (4) **Split the F.Cu top pour so GND reaches J5B in-plane.** NEW, and
+            the only option that moves nothing: give J5B its own F.Cu GND
+            region beside J5A's VM region, at Power-class clearance. The
+            return then leaves the terminal on F.Cu and the F.Cu-to-plane
+            stitching happens further down the board, away from the isolated
+            section, where vias are legal. **Can be done now regardless of
+            which of (1)-(3) is chosen later.** Cost: F.Cu at the top must
+            carry VM and GND side by side, roughly halving the width each
+            gets (~15 mm of the 32 mm), and the split must not shorten the
+            around-edge creepage path. Both need checking before it is
+            adopted.
+        **Ruled out by measurement, so they need not be re-explored:**
+        (5) *Separate them laterally* -- U3's isolated pins span x
+            22.735..34.165 and U4's x 37.735..49.165; the only gap is
+            x 34.165..37.735 = **3.57 mm**, against a 7.00 mm pad. They can
+            only separate in y, confirming 12.5.ac with a fresh number.
+        (6) *Shrink the pack pads to make room* -- makes it worse. At 7.0 mm
+            the pad holds 36 vias at 0.60 mm drill, at 6.0 mm it holds 25, at
+            5.0 mm it holds 16, against ~40 needed (12.5.ba).
+  - [ ] 12.5.ba **(High) Via-current budget — CORRECTED 2026-08-19 after the
+        repo owner supplied a dedicated via calculator [S-F]. The earlier
+        figures in this item were wrong in two ways and are superseded.**
+        **Correction 1 — barrel geometry.** This project modelled the plating
+        as growing OUTWARD from the drill
+        (A = pi/4 ((d+2t)^2 - d^2)). Plating grows **inward**: the copper is
+        the ring between the drilled radius and the finished radius,
+        A = pi ((d/2)^2 - (d/2 - t)^2) per [S-F]. The old model overstated
+        barrel area by ~7 %.
+        **Correction 2 — which constant.** This item previously used the
+        INTERNAL constant (k = 0.024) for load-bearing figures and applied a
+        50 % array derate, giving 78-126 vias. [S-F], which is specifically a
+        via calculator, uses the **outer-layer** constant k = 0.048 for vias
+        and advises a **20-25 % design margin**, not a 50 % derate. The old
+        numbers were roughly 2x over-conservative.
+        **Corrected results** (dT 10 C, barrel annulus, k = 0.048 IPC-2221 /
+        0.064 IPC-2152):
+            0.30 mm drill  Class 2  1.45 A / 1.94 A
+            0.40 mm drill  Class 2  1.81 A / 2.42 A
+            0.60 mm drill  Class 2  2.46 A / 3.28 A
+            (Class 3, 25 um plating, is ~17 % higher throughout.)
+        For a 50 A terminal with the 25 % margin: **0.60 mm Class 2 needs 28
+        vias and 36 fit the 7.00 mm pad — OK.** At 0.30 mm drill, 46 needed
+        against 81 that fit. **This reverses the earlier claim that the
+        as-built terminal could not carry 50 A through vias on any reasonable
+        basis.** It can, on this basis.
+        **What it does NOT change:** J5B still cannot have vias at any count,
+        because the isolation barrier forbids them there, not the current
+        budget (12.5.ax). Option (4) remains the right call for the reason it
+        was chosen. This budget now applies to J5A and to the hand-off point
+        of the new F.Cu GND corridor.
+        **OPEN — the source disagrees with itself.** [S-F]'s reference table
+        gives ~0.65 A for a 0.30 mm via at 25 um / 10 C where its own formula
+        gives 1.69 A, a factor of 2.6. Its two table columns are mutually
+        consistent (0.87/0.65 = 1.34 = 0.064/0.048), so the standard-to-
+        standard ratio is sound and only the absolute scale is in doubt. **The
+        two readings straddle the answer**: formula basis 28 vias (fits),
+        table basis ~61 (does not). `tools/via_current_budget.py` prints both
+        and uses the formula, because its constants are corroborated by
+        [S-A]/[S-E] and the table's are not reproducible from the page.
+        **Resolving this is the single best reason to obtain IPC-2152.**
+  - [x] 12.5.bc **DONE 2026-08-19/20 — pack return given an F.Cu path
+        (12.5.ax option 4, repo owner's decision). Implemented twice; the
+        first implementation is recorded because its failure mode is not
+        obvious.**
+        **Final implementation:** `tools/split_top_pour.py` **cuts the F.Cu VM
+        zone back** so its top stem ends at the board centreline
+        (outline vertices x 46.78 -> 35.95), letting the existing whole-board
+        GND zone fill the J5B side by itself. **No zone is added.** J5B is
+        verified on F.Cu GND copper as a post-condition before the board is
+        saved.
+        **First implementation, withdrawn:** adding a priority-4 F.Cu GND
+        region over the J5B side to out-rank the VM pour. Electrically it
+        worked -- J5B joined the main 66-pad GND island, GND went 25 -> 20
+        islands, unrouted 66 -> 63. But it left **two overlapping GND planes
+        on F.Cu**, and KiCad exports every zone as its own
+        `(plane GND (polygon F.Cu ...))`. Two overlapping same-net planes are
+        pathological input for FreeRouting: **the router failed to complete a
+        single pass in 53 minutes**, twice, on a board it had routed in 23-34
+        minutes before. Diagnosed by diffing the DSN plane inventory against
+        the last board that routed normally -- the only structural difference
+        was 2 F.Cu GND planes where there had been 1. **Rule of thumb: one
+        plane per net per layer in the DSN, always.**
+        Isolation unaffected either way: the area handed to GND was already
+        primary-side copper (VM), so the net changed but not the layer or
+        extent; `score_placement.py` reports creepage 7.83 mm PASS.
+        **NOT VERIFIED:** whether the resulting F.Cu GND corridor carries
+        50 A. No current rating asserted per AGENTS.md Sec.1.3 -- see 12.5.ba.
+  - [ ] 12.5.bd **(BLOCKING, electrical — DEFECT INTRODUCED AND FIXED THE SAME
+        DAY, kept for the lesson) Plane stitching put 48 vias through the
+        isolation barrier.**
+        `tools/stitch_planes.py` as first written had no isolation rule. It
+        placed vias across the whole board wherever a net was poured on both
+        an outer and an inner layer -- including the top band, where the
+        isolated section lives. Audit 2026-08-19: **26 vias sat at y < 34**,
+        several directly over U3/U4's isolated pin rows and the isolated
+        supply capacitors. Worst measured clearance from a via to isolated
+        copper: **0.340 mm** (a VM via at (29.40, 20.90) against C13.1,
+        CAN_VISOIN) **against the 7.5 mm requirement of [9] Table 6**.
+        A via defeats the barrier by definition: this board's isolation is
+        held by keeping primary copper on the face OPPOSITE the isolated
+        section (`pack_layer_separated`), and a via punches every layer. It is
+        the same reason J5B cannot be stitched.
+        **Nothing in the flow caught it.** KiCad DRC has no rule for it, and
+        `score_placement.py`'s creepage metric compares **pads on a shared
+        layer** -- a via is invisible to it. It surfaced only from an explicit
+        audit of via positions against the isolated nets.
+        **FIXED:** `ISOLATION_CLEARANCE_MM = 7.5` guard added to
+        `stitch_planes.py`; 48 offending vias removed; worst via-to-isolated
+        clearance now **7.75 mm**, creepage 7.83 mm PASS.
+        **STILL OPEN:** add this as a standing check. Either a custom rule in
+        `open_secure_esc_6s_50a_can485_faraday.kicad_dru` scoped to vias
+        versus the isolated net class, or a new metric in
+        `score_placement.py` that measures **all copper items**, not just
+        pads, against the isolated nets. Until one exists, any tool that
+        places copper unattended can reintroduce this silently.
+  - [ ] 12.5.be **(BLOCKING, process) The custom design rules had never fired,
+        and one of them still cannot be written the obvious way.**
+        Found 2026-08-20 while adding an isolation rule. Two separate defects
+        in `open_secure_esc_6s_50a_can485_faraday.kicad_dru`:
+        **(a) A multi-line `(condition "...")` silently invalidates the WHOLE
+        FILE.** Not just the offending rule -- every rule in it, including
+        ones above the offending line. No error, no warning, exit 0. Verified
+        on KiCad 9.0.2: a rule that fires 154 times alone fires **0** times
+        with a multi-line condition anywhere in the file. `power_conductor_
+        spacing` and `sense_conductor_spacing` were written multi-line on
+        2026-08-19 and had therefore **never fired**. **The DRC improvement
+        attributed to them in 12.5.av(f) came entirely from the net-class
+        clearance change; the conductor spacing was never enforced.** Now
+        single-lined and verified firing.
+        **With the rules actually running**, the board shows **61
+        `power_conductor_spacing` and 18 `sense_conductor_spacing`**
+        violations that were hidden the whole time. Triage them before fab.
+        **(b) Clause order in a two-item condition is not commutative.**
+        Measured against a board known to contain 48 violating vias:
+            `A.Type == 'Via'`                              -> 502 hits
+            `B.NetClass == 'Isolated'`                     -> 499 hits
+            `A.Type == 'Via' && B.NetClass == 'Isolated'`  ->   0 hits
+            `(A&&B) || (B&&A)` (containing the working clause) -> 0 hits
+            `A.NetClass == 'Isolated' && B.Type == 'Via'`  -> 154 hits
+        Both halves match alone; the obvious conjunction matches nothing; even
+        an OR containing the working clause matches nothing. Only one ordering
+        fires. The working form and a negative-control procedure are recorded
+        in the `.kicad_dru` beside the rule.
+        **STANDING REQUIREMENT: every rule in that file needs a negative
+        control** -- a board known to violate it, on which the rule must be
+        seen to fire. A rule that matches nothing reads exactly like a rule
+        passing, which is how (a) survived a full day of DRC runs being quoted
+        as evidence.
+  - [ ] 12.5.bf **(High, tooling) FreeRouting completes the session and does
+        not write the .ses, and autoroute.py hides why.** Found 2026-08-20
+        after three consecutive routing runs failed (45-53 min each).
+        **Symptom:** the router logs
+        `Auto-router session completed: ... final score ... (N unrouted)` and
+        then produces **no output file**. Reproduced standalone at `-mp 2`
+        (53 s, 58 unrouted) and `-mp 5` (1 min 59 s, 51 unrouted) -- both
+        completed, neither wrote a `.ses` anywhere on the filesystem. The one
+        run that DID write (2026-08-19, `-mp 60`, 33 min) logged an explicit
+        `Saving '...board.ses'` line that the failing runs never reach.
+        **Two wrong diagnoses were made before this, both recorded so the
+        reasoning is not repeated:** (1) overlapping same-net planes in the
+        DSN -- a real defect, fixed in 12.5.bc, but not the cause; (2) CPU
+        starvation from running `analyze_pcb --full` and `kicad-cli drc`
+        concurrently with the router -- plausible, and also not the cause, as
+        the standalone runs were unloaded.
+        **`tools/autoroute.py` must stream the router's output.** It uses
+        `subprocess.run(..., capture_output=True)`, so on `TimeoutExpired` the
+        router's entire stdout is discarded -- all three failed runs produced
+        logs containing **zero** router lines. That is why the board was
+        blamed three times: there was no evidence about what the router was
+        doing. Redirect to a file the caller can tail, and print the tail on
+        timeout as well as on success.
+        **Then determine the real cause:** compare the DSN/invocation of the
+        2026-08-19 run that saved against one that does not, and check whether
+        `-mp` below some threshold, or completing before convergence, skips
+        the write path. Until this is understood the board cannot be routed
+        reproducibly.
+  - [ ] 12.5.bb **(Medium, NEW) The conductor-spacing basis is sea-level, and
+        this is an airborne ESC.** [S-D] records that IPC-2221C (2023) revised
+        conductor spacing as a function of **altitude**, and that IPC-2221
+        specifies fixed spacing only up to 500 V (above which a per-volt
+        increment applies -- worked example: 580 V on column B1 gives
+        0.25 mm + 80 V x 0.0025 mm/V = 0.45 mm). The 6S pack is ~25.2 V so the
+        voltage band is not the issue; the **altitude derating column** is,
+        and nothing in this build has been checked against it. Note this is
+        separate from the isolation barrier, which is governed by [9] Table 6
+        and is unaffected. Determine the airframe's service ceiling, then
+        confirm which IPC-2221 column applies and whether
+        `open_secure_esc_6s_50a_can485_faraday.kicad_dru` needs to change.
+  - [~] 12.5.ay **(High) U5's escapes are blocked by SH1's shield land, not
+        by trace width.** ROOT CAUSE FOUND 2026-08-19, partially mitigated.
+        **The finding.** SH1 (Wurth WE-SHC 3670209) solders to a **closed
+        rectangular land on B.Cu**, x 24.85..47.05, y 51.70..68.30, 1.5 mm
+        wide. U5's pads (x 32.75..39.15, y 56.80..63.20) sit entirely inside
+        it. **No B.Cu trace of any width leaves that ring.** That is why 27 of
+        U5's pad connections were unrouted, and it is a placement fact, not a
+        routing one.
+        **What this killed.** A "Fine" net class at 0.10 mm track / 0.09 mm
+        clearance -- sized so exactly one trace fits the 0.280 mm gap between
+        U5's 0.5 mm-pitch pads -- was built and routed on the theory that
+        Default geometry was the constraint. Measured: **72 -> 69 unrouted, a
+        gain of three connections**, in exchange for leaving the fab envelope
+        `kicad/README.md` commits to. **Withdrawn.** Recorded here so it is
+        not retried: trace width was never the binding constraint.
+        **What actually works.** The land is **B.Cu only**, so F.Cu is free to
+        cross the ring. Every U5 escape has to be
+        `pad -> short B.Cu stub -> via -> F.Cu -> over the ring`, and that via
+        needs annulus space between U5's pads and the shield land.
+        **DONE — annulus freed, minimum-movement (repo owner's instruction).**
+        `tools/move_out_of_shield.py` (new) moved the seven support passives
+        that can leave the ring **without adding any new B.Cu crossing**:
+        R6, C2, R14, R4, R13, R5, R10. Total displacement 35.20 mm over seven
+        parts, mean 5.03 mm; six of the seven are pure-y moves that preserve
+        their x column, and R13/R5/R10/R4 land on one new shared row at
+        y 69.80. The split is derived from the netlist, not chosen: a part may
+        leave only if every one of its nets already crosses the ring or is GND
+        (which the shield land itself carries). Seven parts **must stay** --
+        R9, R11, C5, C6, C7, C8, C9 -- because they carry U5-only nets, and
+        they are exactly U5's charge pump and supply decoupling, which belong
+        within a few millimetres of the chip anyway.
+        **Effect, measured with tracks cleared:** U5 escapes with a legal via
+        site went **9/27 -> 13/27**; a control run that parked all 20 nearby
+        parts off-board reached only 14/27, so the minimal legal move captured
+        substantially all of the available gain.
+        **STILL OPEN.** The residual 14 are blocked by **Q3 and Q4 on F.Cu,
+        directly over U5** (6 and 5 sites respectively), plus R11 and C1. The
+        FET columns are locked under the shield by design, so closing the rest
+        needs either a different U5 orientation, a shield land broken into
+        segments (a slot in a Faraday-tier shield -- an EMI trade, not a free
+        move), or accepting hand-routing. REFERRED TO USER.
+        U1 is a separate and lesser problem: its B.Cu neighbours pinch the
+        escape corridors, but its binding constraints are the 1.1 mm to the
+        board edge below it and J4A/J4C on F.Cu overhead. Moving its
+        neighbours took it only 13/19 -> 15/19.
+  - [ ] 12.5.az **(Medium) 11 `copper_edge_clearance` violations, 6 of them
+        on the isolated comms nets.** Routed tracks sit as close as 0.317 mm
+        to the board edge against a 0.500 mm rule, because
+        `min_copper_edge_clearance` is a KiCad board-setup constraint that
+        never reaches the Specctra DSN. Moving the boundary is ruled out --
+        see 12.5.av(h) for the two runs that proved it. **UNTESTED candidate:**
+        a Specctra clearance rule of type `wire_area` / `via_area`, which
+        states clearance TO the boundary rather than moving it. Verify it is
+        honoured by FreeRouting 2.2.4 before relying on it; otherwise fix the
+        11 tracks by hand after 12.5.ay's fanout work re-routes the board.
+        Also still open: 5 `starved_thermal`, plus 15 silkscreen warnings
+        already tracked in 12.5.u.
+
 - [x] 12.6 **Decision matrix gained its two missing axes** (2026-08-16).
       `docs/decision-matrix.xlsx` now carries **Motor** (brushed vs brushless)
       and **Shaft Sensor** (sensorless / Hall / quadrature / resolver) sheets,

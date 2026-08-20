@@ -1556,6 +1556,136 @@ Date accessed: 2026-08-09.
 
 ## Pending Verification — Not Yet Cited
 
+### IPC-2152 and IPC-2221 — conductor current capacity and spacing — STANDARDS NOT OBTAINED; open secondary sources corroborated 2026-08-19
+
+**Neither standard has been read. No numbered citation tag is issued for
+either**, per `AGENTS.md` §1.3. What follows is the corroborated secondary
+basis currently used, recorded so it can be replaced wholesale when a primary
+copy is obtained.
+
+**What they are needed for.**
+
+- **IPC-2152** (*Standard for Determining Current Carrying Capacity in Printed
+  Board Design*, IPC, 2009) — conductor and via current capacity. Closes
+  `TODO.md` 12.5.aw and 12.5.ba: how many vias the 50 A pack terminals need,
+  and whether the phase conductors are sized. IPC-2152 superseded the older
+  closed-form method for this purpose.
+- **IPC-2221** (*Generic Standard on Printed Board Design*, IPC) Table 6-1 —
+  conductor spacing by voltage, behind the clearance values in
+  `builds/6s/50A/CAN_485_faraday/kicad/open_secure_esc_6s_50a_can485_faraday.kicad_dru`.
+  **Revision matters here:** IPC-2221C (2023) changed conductor-spacing
+  guidance as a function of **altitude**. This is an airborne ESC, so the
+  altitude column is the applicable one, not the sea-level column. Logged as
+  `TODO.md` 12.5.bb.
+
+**Secondary sources actually used, with validated URLs.** These are vendor
+educational articles — dated, attributed, and openly accessible, which makes
+them checkable, but they are **not** the standard and under `AGENTS.md` §1.1
+may not stand in for it.
+
+- **[S-A]** Z. Peterson, "PCB Trace Width vs. Current Table for High Power
+  Designs," *Altium Resources*, created 2019-12-01, updated 2025-06-27.
+  <https://resources.altium.com/p/pcb-trace-width-vs-current-table-high-voltage-design>
+  Used for: the trace-width table at 1 oz copper, 10 °C rise — 1 A → 10 mil,
+  2 A → 30 mil, 5 A → 110 mil, 10 A → 300 mil.
+- **[S-B]** Z. Peterson, "PCB Via Current-Carrying Capacity: Is My PCB Too
+  Hot?," *Altium Resources*, updated 2025-09-09.
+  <https://resources.altium.com/p/pcb-current-carrying-capacity-how-hot-too-hot>
+  Used for: the working rule of thumb — "If you set a less-conservative limit
+  of 1 A per via, and you need to supply 5 A instantaneously, then 5 large
+  vias with thick plating should be fine," noted as "much less than the 0.5 A
+  rule of thumb sometimes seen on forums." **This article gives no via-area
+  formula.**
+- **[S-C]** Z. Peterson, "IPC-2221 Calculator for PCB Trace Current and
+  Heating," *Altium Resources*, updated 2025-06-26.
+  <https://resources.altium.com/p/ipc-2221-calculator-pcb-trace-current-and-heating>
+  Used for: "the minimum width value that you calculate from IPC-2221 is
+  probably an overestimate, thus the IPC-2152 standard attempted to expand the
+  available set of data." — i.e. IPC-2221 demands *more* copper than IPC-2152,
+  so figures derived from it err conservatively.
+- **[S-D]** Z. Peterson, "Using an IPC-2221 PCB Clearance Calculator for High
+  Voltage Design," *Altium Resources*, updated 2025-09-09.
+  <https://resources.altium.com/p/using-an-ipc-2221-calculator-for-high-voltage-design>
+  Used for: IPC-2221 specifies fixed spacing only up to 500 V, above which a
+  per-volt increment applies (worked example given: 580 V on column B1 →
+  0.25 mm + (80 V × 0.0025 mm/V) = 0.45 mm); and the note that IPC-2221C
+  (2023) revised spacing versus altitude.
+- **[S-F]** "Via Calculator," *CircuitsLab Wiki*, retrieved 2026-08-19.
+  <https://circuitslab.wiki/via-calculator/>
+  The most directly applicable secondary source found so far: it publishes
+  **IPC-2221 and IPC-2152 side by side for vias specifically**, and settles
+  two questions the other sources leave open.
+  Used for:
+  - **Barrel area**: `Area = π × ((d/2)² − ((d/2) − t)²)` — the plating grows
+    **inward** from the drilled wall, so the copper is the ring between the
+    drilled radius and the finished radius. This **corrected an error in this
+    project's own model**, which had the plating growing outward into the
+    laminate and overstated barrel area by ~7 %.
+  - **Which constant applies to a via**: the **outer-layer** constant,
+    *k* = 0.048, not the internal 0.024. This project had been using the
+    internal constant for load-bearing figures and was therefore roughly
+    2× over-conservative.
+  - **IPC-2152 for vias**: *k* = 0.064, with "IPC-2152 typically rates vias
+    25–35 % higher for the same geometry because it accounts for plane
+    proximity heat-sinking." (0.064/0.048 = 1.33, inside that band, and
+    consistent in direction with [S-C].)
+  - **Plating minima**: IPC Class 2 = 20 µm, Class 3 = 25 µm.
+  - **Design margin**: "Apply 20–25 % safety margin above the IPC-2221
+    minimum current" — stated as advice to the designer; the calculator does
+    not apply it internally.
+  - **Array sizing**: `N = ⌈I_required / I_max_single⌉`.
+  **KNOWN INTERNAL INCONSISTENCY, recorded so it is not taken on trust.** The
+  page's own reference table disagrees with the page's own formula. Its table
+  gives ~0.65 A (IPC-2221) for a 0.30 mm via at 25 µm and ΔT 10 °C; its
+  formula and constants give 1.69 A for the same inputs — a factor of 2.6.
+  The table's two columns are self-consistent with each other
+  (0.87/0.65 = 1.34 ≈ 0.064/0.048), so the ratio between the standards is
+  sound and only the absolute scale is in question. **The two readings
+  straddle the design answer** for this build: on the formula basis the 7 mm
+  pack pad needs 28 vias with margin against 36 that fit (OK); on the table
+  basis it needs ~61 (SHORT). This project uses the formula, because its
+  constants are corroborated by [S-A]/[S-E] while the table's are not
+  reproducible from anything published on the page. **Resolving this is one
+  of the things a primary copy of IPC-2152 would settle.**
+- **[S-E]** `~/.claude/skills/pcb-engineer/references/design-rules.md`,
+  "Trace Width Calculator" (local tool documentation, not published).
+  Used for: the conductor equation and its constants —
+  *I* = *k* · Δ*T*^*b* · *A*^*c*, with *k* = 0.048 external / 0.024 internal,
+  *b* = 0.44, *c* = 0.725, *A* in mil², *I* in A, Δ*T* in °C.
+  **This file mislabels those constants "IPC-2152 methodology"; they are the
+  IPC-2221 conductor equation.**
+
+**Corroboration performed 2026-08-19.** [S-A]'s table was recomputed from
+[S-E]'s equation using the **external** constants, 1 oz = 1.378 mil, ΔT =
+10 °C. Agreement: −1.8 %, +0.7 %, +4.3 % on the 2 A, 5 A and 10 A rows
+(−11.4 % on the 1 A row, a rounded table entry). Two sources that do not cite
+each other produce the same numbers, so the **external** constants are treated
+as sound. Reproduce with
+`builds/6s/50A/CAN_485_faraday/kicad/tools/via_current_budget.py`.
+
+**What remains uncorroborated, and must not be presented as settled:**
+
+1. The **internal-layer constant** (*k* = 0.024) rests on [S-E] alone. [S-A]'s
+   table is external-layer data and cannot confirm it.
+2. The **annular via-barrel model** (*A* = π/4 (*D*ₒᵤₜ² − *D*ᵢₙ²),
+   *D*ₒᵤₜ = drill + 2 × plating) is this project's own construction. **No
+   source consulted states it** — [S-B], the one article specifically about
+   via current, offers only a rule of thumb.
+3. Whether external or internal constants apply to a via barrel. This project
+   uses internal for anything load-bearing.
+
+Against that, three independent bases — [S-B]'s 1 A/via, this project's
+IPC-2221 internal figure with a 50 % array derate, and [S-B]'s 0.5 A/via
+forum figure — all put the 50 A pack return between **50 and 100 vias**. The
+engineering conclusion does not depend on the paywalled text; only its
+precision does.
+
+**Access status:** open. The repo owner is seeking access under a cost ceiling
+of USD 200 as of 2026-08-19. **No price, vendor, or availability claim is made
+here**, because none has been verified against the issuing body. When a copy
+is obtained: read it, re-run `tools/via_current_budget.py`, replace the
+figures in `TODO.md` 12.5.ba, and promote this section to a numbered citation.
+
 ### Assembly and fabrication capability envelope — REQUIRES VERIFICATION
 
 Added 2026-08-19 when the repo owner specified professional reflow assembly at

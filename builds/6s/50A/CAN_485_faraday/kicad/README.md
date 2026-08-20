@@ -5,16 +5,21 @@ Governed by `AGENTS.md`. Open items are tracked in the repo-root `TODO.md`
 
 ## Status
 
-**Schematic: ERC-clean (0 errors). PCB: hand-placed by the repo owner and
-narrowed to 25.4 mm; placement has converged. Signal nets routed.** Not
-fabrication-ready — the three phase nets still do not reach their terminals in
-copper (see "The high-current gaps" below).
+**Schematic: ERC-clean (0 errors). PCB: placement and pour work advanced
+2026-08-19/20; the board is deliberately committed UNROUTED.** The previous
+route was invalidated by the shield-ring part moves and was cleared rather than
+committed, because a stale route shorts nets. Regenerate with
+`tools/autoroute.py` then `tools/stitch_planes.py`.
+
+Current DRC: **20 violations — 11 `silk_over_copper`, 7 `silk_overlap`,
+2 `isolated_copper`. Zero shorts, zero clearance, zero isolation violations.**
+151 unconnected (i.e. unrouted). Not fabrication-ready.
 
 | | State |
 | --- | --- |
 | Schematic | 50 parts, annotated, **0 ERC errors** (`endpoint_off_grid` + `global_label_dangling` warnings remain — see below) |
-| PCB | **25.4 × 60.1 mm**, double-sided, 47 footprints, 73 nets, 4 layers, planes poured, isolation keepout. **0 courtyard overlaps, 0 clearance errors, 0 hole-clearance errors** |
-| Routing | FreeRouting: **352 segments, 48 vias, 57 connections still open**. See "Routing" below |
+| PCB | **32.0 × 66.1 mm**, double-sided, 65 footprints, 75 nets, 4 layers, planes poured and stitched, isolation rule area (**stranded — `TODO.md` 12.5.z**). **0 courtyard overlaps, 0 clearance errors, 0 hole-clearance errors** |
+| Routing | **Cleared 2026-08-20** — see "Routing" below. Regenerate with `tools/autoroute.py`, then `tools/stitch_planes.py` |
 | Gerbers | Not generated. See "Before you fabricate". |
 
 ### Placement history
@@ -235,6 +240,44 @@ not what your loop actually is.
 
 ## Routing
 
+### 2026-08-19 routing pass — read this before re-running the router
+
+The board reached this pass **fully unrouted**: 0 track segments, 0 vias, 157
+ratsnest connections. Getting it to route surfaced ten defects, none of them
+routing defects. The full write-up is
+`docs/solutions/architecture-patterns/what-the-autorouter-is-never-told.md`;
+the WBS is `TODO.md` 12.5.av–az. The short version:
+
+- The project net classes had gone missing, so the 50 A pack and all three
+  phases would have routed at the 0.2 mm signal default. `autoroute.py` now
+  hard-stops rather than routing a board whose classes are not in effect.
+- KiCad exports every rule area as a **total** Specctra keepout, losing
+  `tracks allowed`. That put U1, U2 and J1 inside a no-route band; the MCU was
+  unroutable and it read as congestion.
+- KiCad exports In1.Cu and In2.Cu as `(type signal)`. The first run cut
+  **415 mm of signal through the GND and VM planes.** They are now marked
+  `(type power)`; verified 0 segments on both.
+- The board had **zero vias** — all four poured planes were floating.
+  `tools/stitch_planes.py` now ties them.
+- The PH_A and PH_C pours had been left 3.04 mm short of the high-side FET
+  source pads by an earlier alignment pass, splitting each half-bridge switch
+  node. `tools/fix_phase_pours.py` re-derives them.
+- **Do not turn on `--inset-boundary`.** It hung the router twice for a full
+  time limit each; the pours reach the board edge and cannot live outside an
+  inset boundary. See `TODO.md` 12.5.av(h).
+
+Current state: **423 segments (287 B.Cu, 136 F.Cu, 0 on the inner planes),
+125 vias, 66 open connections.** Routed track on the plane nets totals 1.3 mm
+on GND and 2.0 mm on VM — that audit exists because the Power class is relaxed
+to 0.5 mm in the DSN so the router can reach U5's 0.25 mm WQFN pads, and it
+confirms nothing signal-width ended up in series with a 50 A conductor.
+
+Almost every one of the 66 open connections terminates on U1 (LQFP-64) or U5
+(WQFN-40). Those need a staggered dogbone fanout before another router run
+will help — `TODO.md` 12.5.ay.
+
+### Historical: the 2026-08-16 pass
+
 `tools/autoroute.py` was run 2026-08-16 (FreeRouting 2.2.4, 100 passes,
 15 min 26 s). It took the board from 124 unrouted connections to 56, laying
 381 segments and 48 vias.
@@ -246,7 +289,8 @@ the zones, and `tools/add_vm_top_pour.py` replaced them with copper. The
 router did **not** attempt the three phase nets; those connections were left
 open and still are.
 
-Current state: **352 segments, 48 vias, 57 open connections.** Of those 57:
+State at the end of that pass (superseded by the 2026-08-19 pass above):
+**352 segments, 48 vias, 57 open connections.** Of those 57:
 
 | | Count | Status |
 | --- | --- | --- |
@@ -256,10 +300,15 @@ Current state: **352 segments, 48 vias, 57 open connections.** Of those 57:
 | `GND` stitches | 9 | Short pour-to-pad; routable |
 | Ordinary signal nets | 38 | Router did not converge; re-run with more passes or route by hand |
 
-Non-electrical DRC after all of the above: 32 `silk_over_copper`,
-21 `silk_overlap`, 12 `starved_thermal`, 5 `isolated_copper`,
-2 `silk_edge_clearance`. Every `starved_thermal` and `isolated_copper` is on
-`GND`; none is on `VM` or a phase. Silkscreen is deferred (`TODO.md` 12.5.u).
+DRC at the end of that pass: 32 `silk_over_copper`, 21 `silk_overlap`,
+12 `starved_thermal`, 5 `isolated_copper`, 2 `silk_edge_clearance`.
+
+**Current DRC (2026-08-19, after routing and stitching): 31 violations —
+11 `copper_edge_clearance`, 8 `silk_over_copper`, 7 `silk_overlap`,
+5 `starved_thermal`. Zero shorts, zero clearance, zero hole-clearance, zero
+schematic-parity errors.** `isolated_copper` cleared when the planes were
+stitched. Edge clearance is `TODO.md` 12.5.az; silkscreen is deferred
+(`TODO.md` 12.5.u).
 
 **Fab-capability note:** `U5`'s 12 thermal vias are **0.20 mm** drill. That
 matches this board's own minimum (`m_MinThroughDrill` = 0.2 mm) so it is not a
