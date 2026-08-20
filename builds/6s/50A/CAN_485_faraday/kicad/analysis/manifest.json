@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "project": "open_secure_esc_6s_50a_can485_faraday.kicad_pro",
+  "current": "2026-08-19_1742",
+  "runs": {
+    "2026-08-19_1742": {
+      "source_hashes": {
+        "open_secure_esc_6s_50a_can485_faraday.kicad_pcb": "sha256:1fcc0bf41b9369b3a9aa318fbf28763e8c462009330b69aa32eb9e3515ffa557"
+      },
+      "outputs": {
+        "pcb": "pcb.json"
+      },
+      "scripts": {
+        "pcb": "analyze_pcb.py open_secure_esc_6s_50a_can485_faraday.kicad_pcb"
+      },
+      "generated": "2026-08-19T23:57:13-04:00",
+      "pinned": false
+    }
+  }
+}

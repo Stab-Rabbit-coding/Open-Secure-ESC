@@ -2,7 +2,7 @@
 
 All builds:
 
-MCU: **TI MSPM0G3518-Q1**, package PM (LQFP-64), orderable `M0G3518QPMRQ1` [44] — pin map VERIFIED. Supersedes the NXP S32K144 [31] as of 2026-08-10 (`TODO.md` §13.1), for its AES-128/256 accelerator with GCM/CMAC and hardware keystore, which lifted the AES-128 ceiling the S32K144's SHE-compliant CSEc imposed.
+MCU: **TI MSPM0G3518-Q1**, package PM (LQFP-64), orderable `M0G3518QPMRQ1` [44] — pin map VERIFIED. Supersedes the NXP S32K144 [31] as of 2026-08-10 (`TODO.md` §13.1; migration record in [`docs/HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md`](docs/HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md)), for its AES-128/256 accelerator with GCM/CMAC and hardware keystore, which lifted the AES-128 ceiling the S32K144's SHE-compliant CSEc imposed.
 
 > **The two lines below still describe the S32K144 and its CSEc, which is no longer the MCU in any build.** They are left in place because the swap's *security* consequences are unfinished work, not a documentation lag — `docs/secure-element-architecture.md` has not yet been revisited (`TODO.md` §13.1.e), so rewriting the summary here would assert a conclusion nobody has reached. Treat every CSEc statement below as describing a superseded design until §13.1.e closes. The OPTIGA Trust M's role is unaffected: the MSPM0's AES engine is still symmetric, so the asymmetric layer is still required.
 
@@ -11,11 +11,14 @@ Root of trust: Infineon OPTIGA™ Trust M V3 secure element [45] over I²C (sche
 
 Build Options:
 
+* Motor speed sensor: ADC/DIO/SPI shaft sensor input (Hall / encoder / analog tach)
+* Motor type: Brushed / Brushless
 * Voltage: 2S, 4S, 6S, 8S, 12S
 * Amperage: 10A, 20A, 30A, 40A, 50A, 80A, 120A
 * Protocol: PWM, SBus, DBus, UART, TTL, SPI, RS-232 [3], RS-485 [4], CAN2.0 [5], CAN-FD [6], MIL-STD-1553B [7]
 * Control: Open, Closed-Diff, Closed-PID
 * EMI Hardening: None, Isolation, Grounding, Faraday
+* Ingress & environmental protection: IP ratings up to IP68 and NEMA equivalents up to NEMA 6P. Submersible variants MUST include cooling strategies that operate correctly in both air and water (see docs/design-submersible-cooling.md DRAFT).
 
 ## Repository layout
 

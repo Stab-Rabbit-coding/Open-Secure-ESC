@@ -38,8 +38,8 @@ Cited in: README.md (MCU line); symbols/specs/MSPM0G3507.json (pin map,
 Date accessed: 2026-08-02.
 **SUPERSEDED 2026-08-03: this repo's project MCU changed from the
 MSPM0G3507 to the NXP S32K144 — see [31].** Entry retained in full per
-`AGENTS.md` §2.5 ("never renumber or repurpose an existing tag for a
-different source"); this citation is historical only and is no longer
+`AGENTS.md` §2.5 (never renumber or repurpose an existing tag for a
+different source); this citation is historical only and is no longer
 referenced by README.md or any current build BOM/schematic.
 `symbols/specs/MSPM0G3507.json` and `symbols/MSPM0G3507.kicad_sym` were
 removed from the repo as part of the MCU swap (unused, superseded by
@@ -93,6 +93,8 @@ stands unchanged. See `docs/secure-element-architecture.md` for the split,
 and `docs/security-mcu-comparison.md` §3.3 for the device-class
 comparison. Nothing in [45] re-verifies, revives, or re-scopes any claim
 made under this tag.
+
+---
 
 **[3]** Telecommunications Industry Association, *Interface Between Data
 Terminal Equipment and Data Circuit-Terminating Equipment Employing Serial
