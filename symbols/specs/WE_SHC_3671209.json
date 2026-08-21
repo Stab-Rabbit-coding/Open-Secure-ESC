@@ -1,0 +1,17 @@
+{
+  "name": "WE_SHC_3671209",
+  "reference": "SH",
+  "footprint": "",
+  "datasheet": "docs/datasheets/3671209.pdf",
+  "description": "Wurth Elektronik WE-SHC two-piece board-level shielding cabinet, COVER part 3671209 -- the COMPACT variant of the 3670375/3671375 pair, adopted 2026-08-16 for the 30 x 70 mm respin. Land 22.2 x 16.6 mm against the 3670375's 38.7 x 30.5 mm, saving 812 mm^2 -- the single biggest area win available without changing the BOM's function. Same WE-SHC two-piece Faraday family, so the EMI tier is unchanged.",
+  "citation": "[15], [52]",
+  "verification": "MECHANICAL / NO-SCHEMATIC-SIGNAL PART. Dimensions VERIFIED from the local copy of the 3671209 datasheet: inner 20.9 x 15.3 mm, outer 21.3 x 15.7 mm, height 1.7 mm ref.. Intentionally has NO footprint: the cover clips onto the frame and is not soldered, so its datasheet publishes no land pattern. Placed on the schematic as BOM-only, excluded from the board -- same treatment as the 3671375 cover and the BT1-BT6 cells. Pairs with FRAME 3670209.",
+  "pins": [
+    {
+      "num": "1",
+      "name": "SHIELD_GND",
+      "etype": "passive",
+      "side": "bottom"
+    }
+  ]
+}

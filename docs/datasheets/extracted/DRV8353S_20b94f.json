@@ -1,0 +1,397 @@
+{
+  "mpn": "DRV8353S",
+  "manufacturer": "Texas Instruments",
+  "category": "motor_driver",
+  "topology": "other",
+  "package": "RTA0040B WQFN-40, 6 x 6 mm, 0.5 mm pitch, 4.15 mm exposed pad",
+  "description": "100 V three-phase smart gate driver, SPI, 3 integrated current-sense amplifiers",
+  "pins": [
+    {
+      "number": "1",
+      "name": "CPL",
+      "type": "power",
+      "direction": "bidirectional",
+      "description": "charge pump low",
+      "function": "OTHER"
+    },
+    {
+      "number": "2",
+      "name": "CPH",
+      "type": "power",
+      "direction": "bidirectional",
+      "description": "charge pump high",
+      "function": "OTHER"
+    },
+    {
+      "number": "3",
+      "name": "VM",
+      "type": "power",
+      "direction": "input",
+      "description": "gate driver supply",
+      "function": "VIN"
+    },
+    {
+      "number": "4",
+      "name": "VDRAIN",
+      "type": "power",
+      "direction": "input",
+      "description": "high-side drain sense",
+      "function": "VIN"
+    },
+    {
+      "number": "5",
+      "name": "VCP",
+      "type": "power",
+      "direction": "output",
+      "description": "charge pump output",
+      "function": "VOUT"
+    },
+    {
+      "number": "6",
+      "name": "GHA",
+      "type": "digital",
+      "direction": "output",
+      "description": "phase A high-side gate",
+      "function": "OTHER"
+    },
+    {
+      "number": "7",
+      "name": "SHA",
+      "type": "analog",
+      "direction": "bidirectional",
+      "description": "phase A high-side source",
+      "function": "OTHER"
+    },
+    {
+      "number": "8",
+      "name": "GLA",
+      "type": "digital",
+      "direction": "output",
+      "description": "phase A low-side gate",
+      "function": "OTHER"
+    },
+    {
+      "number": "9",
+      "name": "SPA",
+      "type": "analog",
+      "direction": "input",
+      "description": "phase A shunt positive",
+      "function": "OTHER"
+    },
+    {
+      "number": "10",
+      "name": "SNA",
+      "type": "analog",
+      "direction": "input",
+      "description": "phase A shunt negative",
+      "function": "OTHER"
+    },
+    {
+      "number": "11",
+      "name": "SNB",
+      "type": "analog",
+      "direction": "input",
+      "description": "phase B shunt negative",
+      "function": "OTHER"
+    },
+    {
+      "number": "12",
+      "name": "SPB",
+      "type": "analog",
+      "direction": "input",
+      "description": "phase B shunt positive",
+      "function": "OTHER"
+    },
+    {
+      "number": "13",
+      "name": "GLB",
+      "type": "digital",
+      "direction": "output",
+      "description": "phase B low-side gate",
+      "function": "OTHER"
+    },
+    {
+      "number": "14",
+      "name": "SHB",
+      "type": "analog",
+      "direction": "bidirectional",
+      "description": "phase B high-side source",
+      "function": "OTHER"
+    },
+    {
+      "number": "15",
+      "name": "GHB",
+      "type": "digital",
+      "direction": "output",
+      "description": "phase B high-side gate",
+      "function": "OTHER"
+    },
+    {
+      "number": "16",
+      "name": "GHC",
+      "type": "digital",
+      "direction": "output",
+      "description": "phase C high-side gate",
+      "function": "OTHER"
+    },
+    {
+      "number": "17",
+      "name": "SHC",
+      "type": "analog",
+      "direction": "bidirectional",
+      "description": "phase C high-side source",
+      "function": "OTHER"
+    },
+    {
+      "number": "18",
+      "name": "GLC",
+      "type": "digital",
+      "direction": "output",
+      "description": "phase C low-side gate",
+      "function": "OTHER"
+    },
+    {
+      "number": "19",
+      "name": "SPC",
+      "type": "analog",
+      "direction": "input",
+      "description": "phase C shunt positive",
+      "function": "OTHER"
+    },
+    {
+      "number": "20",
+      "name": "SNC",
+      "type": "analog",
+      "direction": "input",
+      "description": "phase C shunt negative",
+      "function": "OTHER"
+    },
+    {
+      "number": "21",
+      "name": "SOC",
+      "type": "analog",
+      "direction": "output",
+      "description": "phase C current sense amp output",
+      "function": "OTHER"
+    },
+    {
+      "number": "22",
+      "name": "SOB",
+      "type": "analog",
+      "direction": "output",
+      "description": "phase B current sense amp output",
+      "function": "OTHER"
+    },
+    {
+      "number": "23",
+      "name": "SOA",
+      "type": "analog",
+      "direction": "output",
+      "description": "phase A current sense amp output",
+      "function": "OTHER"
+    },
+    {
+      "number": "24",
+      "name": "VREF",
+      "type": "analog",
+      "direction": "input",
+      "description": "CSA reference",
+      "function": "OTHER"
+    },
+    {
+      "number": "25",
+      "name": "AGND",
+      "type": "ground",
+      "direction": "bidirectional",
+      "description": "analog ground",
+      "function": "GND"
+    },
+    {
+      "number": "26",
+      "name": "nFAULT",
+      "type": "digital",
+      "direction": "output",
+      "description": "fault, OPEN DRAIN, needs pull-up",
+      "function": "OTHER",
+      "required_external": "external pull-up resistor (open drain)"
+    },
+    {
+      "number": "27",
+      "name": "SDO",
+      "type": "digital",
+      "direction": "output",
+      "description": "SPI data out, OPEN DRAIN, needs pull-up",
+      "function": "OTHER",
+      "required_external": "external pull-up resistor (open drain)"
+    },
+    {
+      "number": "28",
+      "name": "SDI",
+      "type": "digital",
+      "direction": "input",
+      "description": "SPI data in",
+      "function": "OTHER"
+    },
+    {
+      "number": "29",
+      "name": "SCLK",
+      "type": "digital",
+      "direction": "input",
+      "description": "SPI clock",
+      "function": "CLK"
+    },
+    {
+      "number": "30",
+      "name": "nSCS",
+      "type": "digital",
+      "direction": "input",
+      "description": "SPI chip select",
+      "function": "OTHER"
+    },
+    {
+      "number": "31",
+      "name": "ENABLE",
+      "type": "digital",
+      "direction": "input",
+      "description": "device enable",
+      "function": "EN"
+    },
+    {
+      "number": "32",
+      "name": "INHA",
+      "type": "digital",
+      "direction": "input",
+      "description": "phase A high PWM",
+      "function": "OTHER"
+    },
+    {
+      "number": "33",
+      "name": "INLA",
+      "type": "digital",
+      "direction": "input",
+      "description": "phase A low PWM",
+      "function": "OTHER"
+    },
+    {
+      "number": "34",
+      "name": "INHB",
+      "type": "digital",
+      "direction": "input",
+      "description": "phase B high PWM",
+      "function": "OTHER"
+    },
+    {
+      "number": "35",
+      "name": "INLB",
+      "type": "digital",
+      "direction": "input",
+      "description": "phase B low PWM",
+      "function": "OTHER"
+    },
+    {
+      "number": "36",
+      "name": "INHC",
+      "type": "digital",
+      "direction": "input",
+      "description": "phase C high PWM",
+      "function": "OTHER"
+    },
+    {
+      "number": "37",
+      "name": "INLC",
+      "type": "digital",
+      "direction": "input",
+      "description": "phase C low PWM",
+      "function": "OTHER"
+    },
+    {
+      "number": "38",
+      "name": "DVDD",
+      "type": "power",
+      "direction": "output",
+      "description": "internal 3.3 V logic supply",
+      "function": "VOUT"
+    },
+    {
+      "number": "39",
+      "name": "GND",
+      "type": "ground",
+      "direction": "bidirectional",
+      "description": "device power ground",
+      "function": "GND"
+    },
+    {
+      "number": "40",
+      "name": "VGLS",
+      "type": "power",
+      "direction": "output",
+      "description": "low-side gate supply",
+      "function": "VOUT"
+    },
+    {
+      "number": "41",
+      "name": "PAD",
+      "type": "ground",
+      "direction": "bidirectional",
+      "description": "exposed thermal pad; drawing note 3 requires it soldered",
+      "function": "GND"
+    }
+  ],
+  "features": {
+    "has_pg": false,
+    "has_soft_start": null,
+    "spi": true,
+    "integrated_csa_count": 3,
+    "buck_regulator": false,
+    "open_drain_outputs": [
+      "nFAULT",
+      "SDO"
+    ],
+    "programmable_slew_rate": true,
+    "_slew_note": "IDRIVE is SPI-programmable and is the control for bounding MOSFET drain overshoot"
+  },
+  "peripherals": null,
+  "absolute_maximum_ratings": {
+    "vm_max_v": 100.0
+  },
+  "recommended_operating_conditions": null,
+  "electrical_characteristics": {
+    "open_drain_pullup_voltage_max_v": 5.5,
+    "open_drain_current_max_ma": 5.0,
+    "sdo_data_delay_ns": 30.0
+  },
+  "application_circuit": {
+    "vm_bypass": "0.1 uF ceramic at VM to GND, plus >= 10 uF bulk",
+    "charge_pump": "47 nF X5R/X7R between CPL and CPH, rated for VDRAIN",
+    "vcp": "1 uF 16 V X5R/X7R between VCP and VDRAIN",
+    "vgls": "1 uF 16 V X5R/X7R between VGLS and GND",
+    "dvdd": "1 uF 6.3 V X5R/X7R to GND/DGND",
+    "_layout": "Sec. 11.1: minimise the GHx->gate->SHx and GLx->gate->SPx loops; do not tie SLx directly to GND."
+  },
+  "spice_specs": null,
+  "extraction_metadata": {
+    "source_pdf": "drv8353.pdf",
+    "extracted_from_pages": [
+      1,
+      6,
+      78,
+      98,
+      99,
+      100
+    ],
+    "total_pdf_pages": 101,
+    "notes": "SLVSDY6A. Pin map is the DRV8353S (SPI) column of the 40-pin table. SDO and nFAULT are type OD and the datasheet states each 'requires an external pullup resistor'.",
+    "source_pdf_hash": "sha256:f440d3fae4c79d04078679ee6f3122d9aae2e169833a577fd993780204c3849e",
+    "extraction_date": "2026-08-16T04:22:19.078664+00:00",
+    "extraction_version": 2,
+    "retry_count": 0,
+    "extraction_score": 7.1,
+    "score_breakdown": {
+      "pin_coverage": 10.0,
+      "voltage_ratings": 6.0,
+      "application_info": 3.0,
+      "electrical_characteristics": 10.0,
+      "spice_specs": 5.0
+    }
+  }
+}

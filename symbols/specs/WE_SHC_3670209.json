@@ -1,0 +1,17 @@
+{
+  "name": "WE_SHC_3670209",
+  "reference": "SH",
+  "footprint": "Open_Secure_ESC:Wurth_WE-SHC_3670209_Frame_15.3x20.9mm",
+  "datasheet": "docs/datasheets/3670209.pdf",
+  "description": "Wurth Elektronik WE-SHC two-piece board-level shielding cabinet, FRAME part 3670209 -- the COMPACT variant of the 3670375/3671375 pair, adopted 2026-08-16 for the 30 x 70 mm respin. Land 22.2 x 16.6 mm against the 3670375's 38.7 x 30.5 mm, saving 812 mm^2 -- the single biggest area win available without changing the BOM's function. Same WE-SHC two-piece Faraday family, so the EMI tier is unchanged.",
+  "citation": "[15], [51]",
+  "verification": "MECHANICAL / NO-SCHEMATIC-SIGNAL PART. Dimensions VERIFIED from the local copy of the 3670209 datasheet: inner 20.5 x 14.9 mm, outer 20.9 x 15.3 mm (wall 0.2 mm), height 1.7 +/-0.2 mm. Recommended Land Pattern VERIFIED from the same page: outer 22.2 x 16.6 mm, ring width 1.5 mm, outer corner R 2.15, paste ring 0.5 mm. CROSS-CHECK: ring centreline from the land pattern ((22.2-1.5)/2 = 10.35, (16.6-1.5)/2 = 7.55) equals wall centreline from the body dimensions ((20.9+20.5)/4 = 10.35, (15.3+14.9)/4 = 7.55) exactly -- the same two-way check that validated the 3670375. NOTE, differs from the 3670375: this variant's land pattern has NO board holes. The '4x (diameter) 0,6' callout on the datasheet page belongs to the frame's own Dimensions drawing, a feature of the metal part, not of the board. HEIGHT CONSTRAINT: the 1.7 mm frame is far shorter than the 3670375's 6.2/6.5 mm. It clears the DRV8353S (0.8 mm max) and 0805 ceramics (~0.9-1.25 mm) but nothing taller -- it cannot cover the MOSFETs. Verify every enclosed part's height before layout.",
+  "pins": [
+    {
+      "num": "1",
+      "name": "SHIELD_GND",
+      "etype": "passive",
+      "side": "bottom"
+    }
+  ]
+}

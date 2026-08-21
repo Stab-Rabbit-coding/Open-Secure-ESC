@@ -1,0 +1,145 @@
+{
+  "mpn": "TPHR8504PL",
+  "manufacturer": "Toshiba Electronic Devices & Storage Corporation",
+  "category": "power_management",
+  "topology": "mosfet",
+  "package": "2-5W1A SOP Advance(N), 8-pin (5.15 x 6.10 mm)",
+  "description": "40 V N-channel MOSFET (U-MOS-H), 0.7 mOhm typ, 150 A",
+  "pins": [
+    {
+      "number": "1",
+      "name": "S",
+      "type": "power",
+      "direction": "bidirectional",
+      "description": "source",
+      "function": "OTHER"
+    },
+    {
+      "number": "2",
+      "name": "S",
+      "type": "power",
+      "direction": "bidirectional",
+      "description": "source",
+      "function": "OTHER"
+    },
+    {
+      "number": "3",
+      "name": "S",
+      "type": "power",
+      "direction": "bidirectional",
+      "description": "source",
+      "function": "OTHER"
+    },
+    {
+      "number": "4",
+      "name": "G",
+      "type": "digital",
+      "direction": "input",
+      "description": "gate",
+      "function": "OTHER",
+      "voltage_abs_max": 20.0,
+      "threshold_high_v": 2.4,
+      "threshold_low_v": 1.4,
+      "required_external": "gate drive from DRV8353S GHx/GLx"
+    },
+    {
+      "number": "5",
+      "name": "D",
+      "type": "power",
+      "direction": "bidirectional",
+      "description": "drain (also the central pad)",
+      "function": "OTHER",
+      "voltage_abs_max": 40.0
+    },
+    {
+      "number": "6",
+      "name": "D",
+      "type": "power",
+      "direction": "bidirectional",
+      "description": "drain",
+      "function": "OTHER",
+      "voltage_abs_max": 40.0
+    },
+    {
+      "number": "7",
+      "name": "D",
+      "type": "power",
+      "direction": "bidirectional",
+      "description": "drain",
+      "function": "OTHER",
+      "voltage_abs_max": 40.0
+    },
+    {
+      "number": "8",
+      "name": "D",
+      "type": "power",
+      "direction": "bidirectional",
+      "description": "drain",
+      "function": "OTHER",
+      "voltage_abs_max": 40.0
+    }
+  ],
+  "features": {
+    "has_pg": null,
+    "has_soft_start": null,
+    "channel": "N",
+    "technology": "U-MOS-H",
+    "land_pattern_published": true,
+    "land_pattern_source": "catalog ALQ00024 p.46, SOP Advance(N) cell"
+  },
+  "peripherals": null,
+  "absolute_maximum_ratings": {
+    "vds_max_v": 40.0,
+    "vgs_max_v": 20.0,
+    "id_dc_a": 150.0,
+    "id_silicon_limit_a": 340.0,
+    "id_pulsed_a": 500.0,
+    "pd_w": 170.0,
+    "eas_mj": 336.0,
+    "ias_a": 120.0,
+    "channel_temp_max_c": 175.0,
+    "storage_temp_min_c": -55.0,
+    "storage_temp_max_c": 175.0,
+    "_note": "ID ratings at Tc = 25 C; 150 A is package limited"
+  },
+  "recommended_operating_conditions": null,
+  "electrical_characteristics": {
+    "rds_on_mohm_typ": 0.7,
+    "rds_on_test_vgs_v": 10.0,
+    "vth_min_v": 1.4,
+    "vth_max_v": 2.4,
+    "qsw_nc_typ": 23.0,
+    "qoss_nc_typ": 85.4,
+    "idss_ua_max": 10.0,
+    "rth_ch_case_c_per_w": 0.88,
+    "rth_ch_amb_c_per_w": 50.0
+  },
+  "application_circuit": {
+    "_note": "Three-phase bridge, 6 devices, driven by TI DRV8353S. At 50 A phase current conduction loss is I^2R = 2500 x 0.0007 = 1.75 W per device."
+  },
+  "spice_specs": null,
+  "extraction_metadata": {
+    "source_pdf": "TPHR8504PL_datasheet_en_20191024.pdf",
+    "extracted_from_pages": [
+      1,
+      2,
+      3,
+      8,
+      9
+    ],
+    "total_pdf_pages": 10,
+    "notes": "Datasheet Rev. 5.0.A (2026-04-14). Land pattern is NOT in this PDF; it is in catalog ALQ00024 p.46. Two package variants ship under this MPN (2-5Q1S / 2-5W1A); this extraction and the repo footprint are for 2-5W1A.",
+    "source_pdf_hash": "sha256:1423461f6abc4f396fcd634050c815a7ac42f85bb8fe1dfe8783925140a154f5",
+    "extraction_date": "2026-08-16T04:22:19.049817+00:00",
+    "extraction_version": 2,
+    "retry_count": 0,
+    "extraction_score": 7.1,
+    "score_breakdown": {
+      "pin_coverage": 10.0,
+      "voltage_ratings": 6.0,
+      "application_info": 3.0,
+      "electrical_characteristics": 10.0,
+      "spice_specs": 5.0
+    }
+  }
+}

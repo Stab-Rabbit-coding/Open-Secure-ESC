@@ -1,0 +1,930 @@
+{
+  "schema_version": 1,
+  "source": {
+    "workbook": "docs/decision-matrix.xlsx",
+    "workbook_sha256": "7ebc9c1e84762fa1f6c3fa727c6846252c5642416b45fb931d0e52d774ad9546",
+    "workbook_mtime": "2026-08-16T05:24:59.770002+00:00",
+    "exported": "2026-08-16T05:25:51.953877+00:00",
+    "exported_by": "docs/tools/decision_matrix_to_json.py",
+    "governed_by": "AGENTS.md",
+    "note": "Generated file -- edit the workbook, then re-run the exporter. Do not hand-edit this JSON."
+  },
+  "status_legend": {
+    "Verified (local PDF)": "A local, directly-verified PDF copy exists in docs/datasheets/ and page/section citations were read from it (e.g. [1] MSPM0G3507, [2] SLB9672).",
+    "Candidate (unverified)": "A real part/standard was identified and cross-corroborated via 2+ independent secondary sources (distributor listings, search-indexed excerpts), but this session's live-fetch tool (WebFetch) returned HTTP 403 for every domain tried, so no primary PDF was opened directly and no local copy exists yet. Not yet selected in a bill of materials.",
+    "Open / unresolved": "No specific part or authoritative spec has been sourced yet; tracked as an open TODO.md item.",
+    "No part needed": "The MCU's own native peripheral (or a layout/practice-only technique) covers this option — no additional BOM line."
+  },
+  "axes": {
+    "voltage": {
+      "sheet": "Voltage",
+      "title": "Voltage Tier Decision Matrix",
+      "subtitle": "Build axis: Voltage (2S / 4S / 6S / 8S / 12S)",
+      "header_row": 10,
+      "parameters": {
+        "Cell part": "Molicel INR-21700-P42A [14]",
+        "Nominal V / cell": 3.6,
+        "Max (full charge) V / cell": 4.2,
+        "Min (cutoff) V / cell": 2.5
+      },
+      "key_column": "Tier",
+      "columns": [
+        "Tier",
+        "Series Cells",
+        "Nominal Pack V",
+        "Max Pack V",
+        "Min Pack V",
+        "Workflow / Derating Steps",
+        "BOM Components",
+        "REFERENCES.md Tags",
+        "Status"
+      ],
+      "notes": [],
+      "rows": [
+        {
+          "Tier": "2S",
+          "Series Cells": "2",
+          "Nominal Pack V": "7.2",
+          "Max Pack V": "8.4",
+          "Min Pack V": "5",
+          "Workflow / Derating Steps": "Derate FET [20] VDS and bulk-capacitor voltage rating against Max Pack V with margin (~2x recommended); verify DRV8353S [21] VM range (9-75V) spans Max Pack V; select input protection/reverse-polarity FET rated ≥ Max Pack V.",
+          "BOM Components": "Bulk input capacitor (V rating ≥ Max Pack V); shares FET [20] / gate driver [21] from Amperage sheet",
+          "REFERENCES.md Tags": "[14], [20], [21]",
+          "Status": "Candidate (unverified)"
+        },
+        {
+          "Tier": "4S",
+          "Series Cells": "4",
+          "Nominal Pack V": "14.4",
+          "Max Pack V": "16.8",
+          "Min Pack V": "10",
+          "Workflow / Derating Steps": "Derate FET [20] VDS and bulk-capacitor voltage rating against Max Pack V with margin (~2x recommended); verify DRV8353S [21] VM range (9-75V) spans Max Pack V; select input protection/reverse-polarity FET rated ≥ Max Pack V.",
+          "BOM Components": "Bulk input capacitor (V rating ≥ Max Pack V); shares FET [20] / gate driver [21] from Amperage sheet",
+          "REFERENCES.md Tags": "[14], [20], [21]",
+          "Status": "Candidate (unverified)"
+        },
+        {
+          "Tier": "6S",
+          "Series Cells": "6",
+          "Nominal Pack V": "21.6",
+          "Max Pack V": "25.2",
+          "Min Pack V": "15",
+          "Workflow / Derating Steps": "Derate FET [20] VDS and bulk-capacitor voltage rating against Max Pack V with margin (~2x recommended); verify DRV8353S [21] VM range (9-75V) spans Max Pack V; select input protection/reverse-polarity FET rated ≥ Max Pack V.",
+          "BOM Components": "Bulk input capacitor (V rating ≥ Max Pack V); shares FET [20] / gate driver [21] from Amperage sheet",
+          "REFERENCES.md Tags": "[14], [20], [21]",
+          "Status": "Candidate (unverified)"
+        },
+        {
+          "Tier": "8S",
+          "Series Cells": "8",
+          "Nominal Pack V": "28.8",
+          "Max Pack V": "33.6",
+          "Min Pack V": "20",
+          "Workflow / Derating Steps": "Derate FET [20] VDS and bulk-capacitor voltage rating against Max Pack V with margin (~2x recommended); verify DRV8353S [21] VM range (9-75V) spans Max Pack V; select input protection/reverse-polarity FET rated ≥ Max Pack V.",
+          "BOM Components": "Bulk input capacitor (V rating ≥ Max Pack V); shares FET [20] / gate driver [21] from Amperage sheet",
+          "REFERENCES.md Tags": "[14], [20], [21]",
+          "Status": "Candidate (unverified)"
+        },
+        {
+          "Tier": "12S",
+          "Series Cells": "12",
+          "Nominal Pack V": "43.2",
+          "Max Pack V": "50.4",
+          "Min Pack V": "30",
+          "Workflow / Derating Steps": "Derate FET [20] VDS and bulk-capacitor voltage rating against Max Pack V with margin (~2x recommended); verify DRV8353S [21] VM range (9-75V) spans Max Pack V; select input protection/reverse-polarity FET rated ≥ Max Pack V.",
+          "BOM Components": "Bulk input capacitor (V rating ≥ Max Pack V); shares FET [20] / gate driver [21] from Amperage sheet",
+          "REFERENCES.md Tags": "[14], [20], [21]",
+          "Status": "Candidate (unverified)"
+        }
+      ],
+      "rows_by_key": {
+        "2s": {
+          "Tier": "2S",
+          "Series Cells": "2",
+          "Nominal Pack V": "7.2",
+          "Max Pack V": "8.4",
+          "Min Pack V": "5",
+          "Workflow / Derating Steps": "Derate FET [20] VDS and bulk-capacitor voltage rating against Max Pack V with margin (~2x recommended); verify DRV8353S [21] VM range (9-75V) spans Max Pack V; select input protection/reverse-polarity FET rated ≥ Max Pack V.",
+          "BOM Components": "Bulk input capacitor (V rating ≥ Max Pack V); shares FET [20] / gate driver [21] from Amperage sheet",
+          "REFERENCES.md Tags": "[14], [20], [21]",
+          "Status": "Candidate (unverified)"
+        },
+        "4s": {
+          "Tier": "4S",
+          "Series Cells": "4",
+          "Nominal Pack V": "14.4",
+          "Max Pack V": "16.8",
+          "Min Pack V": "10",
+          "Workflow / Derating Steps": "Derate FET [20] VDS and bulk-capacitor voltage rating against Max Pack V with margin (~2x recommended); verify DRV8353S [21] VM range (9-75V) spans Max Pack V; select input protection/reverse-polarity FET rated ≥ Max Pack V.",
+          "BOM Components": "Bulk input capacitor (V rating ≥ Max Pack V); shares FET [20] / gate driver [21] from Amperage sheet",
+          "REFERENCES.md Tags": "[14], [20], [21]",
+          "Status": "Candidate (unverified)"
+        },
+        "6s": {
+          "Tier": "6S",
+          "Series Cells": "6",
+          "Nominal Pack V": "21.6",
+          "Max Pack V": "25.2",
+          "Min Pack V": "15",
+          "Workflow / Derating Steps": "Derate FET [20] VDS and bulk-capacitor voltage rating against Max Pack V with margin (~2x recommended); verify DRV8353S [21] VM range (9-75V) spans Max Pack V; select input protection/reverse-polarity FET rated ≥ Max Pack V.",
+          "BOM Components": "Bulk input capacitor (V rating ≥ Max Pack V); shares FET [20] / gate driver [21] from Amperage sheet",
+          "REFERENCES.md Tags": "[14], [20], [21]",
+          "Status": "Candidate (unverified)"
+        },
+        "8s": {
+          "Tier": "8S",
+          "Series Cells": "8",
+          "Nominal Pack V": "28.8",
+          "Max Pack V": "33.6",
+          "Min Pack V": "20",
+          "Workflow / Derating Steps": "Derate FET [20] VDS and bulk-capacitor voltage rating against Max Pack V with margin (~2x recommended); verify DRV8353S [21] VM range (9-75V) spans Max Pack V; select input protection/reverse-polarity FET rated ≥ Max Pack V.",
+          "BOM Components": "Bulk input capacitor (V rating ≥ Max Pack V); shares FET [20] / gate driver [21] from Amperage sheet",
+          "REFERENCES.md Tags": "[14], [20], [21]",
+          "Status": "Candidate (unverified)"
+        },
+        "12s": {
+          "Tier": "12S",
+          "Series Cells": "12",
+          "Nominal Pack V": "43.2",
+          "Max Pack V": "50.4",
+          "Min Pack V": "30",
+          "Workflow / Derating Steps": "Derate FET [20] VDS and bulk-capacitor voltage rating against Max Pack V with margin (~2x recommended); verify DRV8353S [21] VM range (9-75V) spans Max Pack V; select input protection/reverse-polarity FET rated ≥ Max Pack V.",
+          "BOM Components": "Bulk input capacitor (V rating ≥ Max Pack V); shares FET [20] / gate driver [21] from Amperage sheet",
+          "REFERENCES.md Tags": "[14], [20], [21]",
+          "Status": "Candidate (unverified)"
+        }
+      }
+    },
+    "amperage": {
+      "sheet": "Amperage",
+      "title": "Amperage Tier Decision Matrix",
+      "subtitle": "Build axis: Amperage (10A / 20A / 30A / 40A / 50A / 80A / 120A)",
+      "header_row": 4,
+      "parameters": {},
+      "key_column": "Tier (A)",
+      "columns": [
+        "Tier (A)",
+        "FET Qty / Phase Leg",
+        "FET Part",
+        "FET Total Rated Capacity (A)",
+        "Margin (x)",
+        "Gate Driver Part",
+        "Shunt R (mΩ)",
+        "Shunt Drop (mV)",
+        "Shunt Power (W)",
+        "Shunt Qty Needed",
+        "Current-Sense Amp (Gain)",
+        "REFERENCES.md Tags",
+        "Status"
+      ],
+      "notes": [
+        "Shunt part: Vishay WSLP2512 [23] (3.0W package rating). \"Shunt Qty Needed\" = ROUNDUP(Shunt Power / 3W, 0); at 80A/120A this correctly computes 2x and 3x devices in parallel (7.2W / 3 tiers exceeds a single package's rating). FET parallel count and gate-driver reuse are a BOM-commonality choice (AGENTS.md §4 judgment call), not a datasheet requirement -- a smaller SO-8 FET would be leaner for the 10A-30A tiers if part-count commonality were not prioritized."
+      ],
+      "rows": [
+        {
+          "Tier (A)": "10",
+          "FET Qty / Phase Leg": "1",
+          "FET Part": "Infineon IRFB4110PBF [20]",
+          "FET Total Rated Capacity (A)": "120",
+          "Margin (x)": "12",
+          "Gate Driver Part": "TI DRV8353S [21]",
+          "Shunt R (mΩ)": "10",
+          "Shunt Drop (mV)": "100",
+          "Shunt Power (W)": "1",
+          "Shunt Qty Needed": "1",
+          "Current-Sense Amp (Gain)": "TI INA240 [22], 20 or 50 V/V",
+          "REFERENCES.md Tags": "[20], [21], [22], [23]",
+          "Status": "Candidate (unverified)"
+        },
+        {
+          "Tier (A)": "20",
+          "FET Qty / Phase Leg": "1",
+          "FET Part": "Infineon IRFB4110PBF [20]",
+          "FET Total Rated Capacity (A)": "120",
+          "Margin (x)": "6",
+          "Gate Driver Part": "TI DRV8353S [21]",
+          "Shunt R (mΩ)": "5",
+          "Shunt Drop (mV)": "100",
+          "Shunt Power (W)": "2",
+          "Shunt Qty Needed": "1",
+          "Current-Sense Amp (Gain)": "TI INA240 [22], 50 V/V",
+          "REFERENCES.md Tags": "[20], [21], [22], [23]",
+          "Status": "Candidate (unverified)"
+        },
+        {
+          "Tier (A)": "30",
+          "FET Qty / Phase Leg": "1",
+          "FET Part": "Infineon IRFB4110PBF [20]",
+          "FET Total Rated Capacity (A)": "120",
+          "Margin (x)": "4",
+          "Gate Driver Part": "TI DRV8353S [21]",
+          "Shunt R (mΩ)": "2",
+          "Shunt Drop (mV)": "60",
+          "Shunt Power (W)": "1.8",
+          "Shunt Qty Needed": "1",
+          "Current-Sense Amp (Gain)": "TI INA240 [22], 100 V/V",
+          "REFERENCES.md Tags": "[20], [21], [22], [23]",
+          "Status": "Candidate (unverified)"
+        },
+        {
+          "Tier (A)": "40",
+          "FET Qty / Phase Leg": "1",
+          "FET Part": "Infineon IRFB4110PBF [20]",
+          "FET Total Rated Capacity (A)": "120",
+          "Margin (x)": "3",
+          "Gate Driver Part": "TI DRV8353S [21]",
+          "Shunt R (mΩ)": "1.5",
+          "Shunt Drop (mV)": "60",
+          "Shunt Power (W)": "2.4",
+          "Shunt Qty Needed": "1",
+          "Current-Sense Amp (Gain)": "TI INA240 [22], 100 V/V",
+          "REFERENCES.md Tags": "[20], [21], [22], [23]",
+          "Status": "Candidate (unverified)"
+        },
+        {
+          "Tier (A)": "50",
+          "FET Qty / Phase Leg": "1",
+          "FET Part": "Infineon IRFB4110PBF [20]",
+          "FET Total Rated Capacity (A)": "120",
+          "Margin (x)": "2.4",
+          "Gate Driver Part": "TI DRV8353S [21]",
+          "Shunt R (mΩ)": "1",
+          "Shunt Drop (mV)": "50",
+          "Shunt Power (W)": "2.5",
+          "Shunt Qty Needed": "1",
+          "Current-Sense Amp (Gain)": "TI INA240 [22], 200 V/V",
+          "REFERENCES.md Tags": "[20], [21], [22], [23]",
+          "Status": "Candidate (unverified)"
+        },
+        {
+          "Tier (A)": "80",
+          "FET Qty / Phase Leg": "2",
+          "FET Part": "Infineon IRFB4110PBF [20]",
+          "FET Total Rated Capacity (A)": "240",
+          "Margin (x)": "3",
+          "Gate Driver Part": "TI DRV8353S [21]",
+          "Shunt R (mΩ)": "0.5",
+          "Shunt Drop (mV)": "40",
+          "Shunt Power (W)": "3.2",
+          "Shunt Qty Needed": "2",
+          "Current-Sense Amp (Gain)": "TI INA240 [22], 200 V/V",
+          "REFERENCES.md Tags": "[20], [21], [22], [23]",
+          "Status": "Candidate (unverified)"
+        },
+        {
+          "Tier (A)": "120",
+          "FET Qty / Phase Leg": "3",
+          "FET Part": "Infineon IRFB4110PBF [20]",
+          "FET Total Rated Capacity (A)": "360",
+          "Margin (x)": "3",
+          "Gate Driver Part": "TI DRV8353S [21]",
+          "Shunt R (mΩ)": "0.5",
+          "Shunt Drop (mV)": "60",
+          "Shunt Power (W)": "7.2",
+          "Shunt Qty Needed": "3",
+          "Current-Sense Amp (Gain)": "TI INA240 [22], 200 V/V",
+          "REFERENCES.md Tags": "[20], [21], [22], [23]",
+          "Status": "Candidate (unverified)"
+        }
+      ],
+      "rows_by_key": {
+        "10": {
+          "Tier (A)": "10",
+          "FET Qty / Phase Leg": "1",
+          "FET Part": "Infineon IRFB4110PBF [20]",
+          "FET Total Rated Capacity (A)": "120",
+          "Margin (x)": "12",
+          "Gate Driver Part": "TI DRV8353S [21]",
+          "Shunt R (mΩ)": "10",
+          "Shunt Drop (mV)": "100",
+          "Shunt Power (W)": "1",
+          "Shunt Qty Needed": "1",
+          "Current-Sense Amp (Gain)": "TI INA240 [22], 20 or 50 V/V",
+          "REFERENCES.md Tags": "[20], [21], [22], [23]",
+          "Status": "Candidate (unverified)"
+        },
+        "20": {
+          "Tier (A)": "20",
+          "FET Qty / Phase Leg": "1",
+          "FET Part": "Infineon IRFB4110PBF [20]",
+          "FET Total Rated Capacity (A)": "120",
+          "Margin (x)": "6",
+          "Gate Driver Part": "TI DRV8353S [21]",
+          "Shunt R (mΩ)": "5",
+          "Shunt Drop (mV)": "100",
+          "Shunt Power (W)": "2",
+          "Shunt Qty Needed": "1",
+          "Current-Sense Amp (Gain)": "TI INA240 [22], 50 V/V",
+          "REFERENCES.md Tags": "[20], [21], [22], [23]",
+          "Status": "Candidate (unverified)"
+        },
+        "30": {
+          "Tier (A)": "30",
+          "FET Qty / Phase Leg": "1",
+          "FET Part": "Infineon IRFB4110PBF [20]",
+          "FET Total Rated Capacity (A)": "120",
+          "Margin (x)": "4",
+          "Gate Driver Part": "TI DRV8353S [21]",
+          "Shunt R (mΩ)": "2",
+          "Shunt Drop (mV)": "60",
+          "Shunt Power (W)": "1.8",
+          "Shunt Qty Needed": "1",
+          "Current-Sense Amp (Gain)": "TI INA240 [22], 100 V/V",
+          "REFERENCES.md Tags": "[20], [21], [22], [23]",
+          "Status": "Candidate (unverified)"
+        },
+        "40": {
+          "Tier (A)": "40",
+          "FET Qty / Phase Leg": "1",
+          "FET Part": "Infineon IRFB4110PBF [20]",
+          "FET Total Rated Capacity (A)": "120",
+          "Margin (x)": "3",
+          "Gate Driver Part": "TI DRV8353S [21]",
+          "Shunt R (mΩ)": "1.5",
+          "Shunt Drop (mV)": "60",
+          "Shunt Power (W)": "2.4",
+          "Shunt Qty Needed": "1",
+          "Current-Sense Amp (Gain)": "TI INA240 [22], 100 V/V",
+          "REFERENCES.md Tags": "[20], [21], [22], [23]",
+          "Status": "Candidate (unverified)"
+        },
+        "50": {
+          "Tier (A)": "50",
+          "FET Qty / Phase Leg": "1",
+          "FET Part": "Infineon IRFB4110PBF [20]",
+          "FET Total Rated Capacity (A)": "120",
+          "Margin (x)": "2.4",
+          "Gate Driver Part": "TI DRV8353S [21]",
+          "Shunt R (mΩ)": "1",
+          "Shunt Drop (mV)": "50",
+          "Shunt Power (W)": "2.5",
+          "Shunt Qty Needed": "1",
+          "Current-Sense Amp (Gain)": "TI INA240 [22], 200 V/V",
+          "REFERENCES.md Tags": "[20], [21], [22], [23]",
+          "Status": "Candidate (unverified)"
+        },
+        "80": {
+          "Tier (A)": "80",
+          "FET Qty / Phase Leg": "2",
+          "FET Part": "Infineon IRFB4110PBF [20]",
+          "FET Total Rated Capacity (A)": "240",
+          "Margin (x)": "3",
+          "Gate Driver Part": "TI DRV8353S [21]",
+          "Shunt R (mΩ)": "0.5",
+          "Shunt Drop (mV)": "40",
+          "Shunt Power (W)": "3.2",
+          "Shunt Qty Needed": "2",
+          "Current-Sense Amp (Gain)": "TI INA240 [22], 200 V/V",
+          "REFERENCES.md Tags": "[20], [21], [22], [23]",
+          "Status": "Candidate (unverified)"
+        },
+        "120": {
+          "Tier (A)": "120",
+          "FET Qty / Phase Leg": "3",
+          "FET Part": "Infineon IRFB4110PBF [20]",
+          "FET Total Rated Capacity (A)": "360",
+          "Margin (x)": "3",
+          "Gate Driver Part": "TI DRV8353S [21]",
+          "Shunt R (mΩ)": "0.5",
+          "Shunt Drop (mV)": "60",
+          "Shunt Power (W)": "7.2",
+          "Shunt Qty Needed": "3",
+          "Current-Sense Amp (Gain)": "TI INA240 [22], 200 V/V",
+          "REFERENCES.md Tags": "[20], [21], [22], [23]",
+          "Status": "Candidate (unverified)"
+        }
+      }
+    },
+    "motor": {
+      "sheet": "Motor",
+      "title": "Motor Type Decision Matrix",
+      "subtitle": "Build axis: Motor (Brushed / Brushless)",
+      "header_row": 4,
+      "parameters": {},
+      "key_column": "Motor Type",
+      "columns": [
+        "Motor Type",
+        "Bridge Topology",
+        "Switch Positions",
+        "Gate Driver Part",
+        "Output Terminals",
+        "Shunt Qty",
+        "Commutation Requirement",
+        "REFERENCES.md Tags",
+        "Status"
+      ],
+      "notes": [],
+      "rows": [
+        {
+          "Motor Type": "Brushless (BLDC / PMSM)",
+          "Bridge Topology": "Three half-bridges (3-phase inverter)",
+          "Switch Positions": "6 (3 high + 3 low)",
+          "Gate Driver Part": "TI DRV8353S, 3-phase smart gate driver, SPI variant [21]",
+          "Output Terminals": "3 (PH_A / PH_B / PH_C)",
+          "Shunt Qty": "3 (one per phase, low-side)",
+          "Commutation Requirement": "Six-step trapezoidal or FOC; rotor position from the Shaft Sensor axis",
+          "REFERENCES.md Tags": "[21]",
+          "Status": "Verified (local PDF)"
+        },
+        {
+          "Motor Type": "Brushed (DC)",
+          "Bridge Topology": "Single H-bridge",
+          "Switch Positions": "4 (2 high + 2 low)",
+          "Gate Driver Part": "TBD -- requires primary-source verification (AGENTS.md Sec.1.3). No H-bridge gate driver has been sourced or verified in this repo. NOTE, not yet vetted: a 3-phase driver such as the DRV8353S [21] can drive an H-bridge by using two of its three half-bridges and leaving the third unused -- this reuses an already-verified part at the cost of wasted silicon and board area, and must be checked against [21] before adoption.",
+          "Output Terminals": "2 (M+ / M-)",
+          "Shunt Qty": "1-2 (bridge-leg or in-line)",
+          "Commutation Requirement": "None -- direction and magnitude set by bridge polarity and duty cycle; no rotor position needed for basic operation",
+          "REFERENCES.md Tags": "-",
+          "Status": "Open / unresolved"
+        }
+      ],
+      "rows_by_key": {
+        "brushless_bldc_pmsm": {
+          "Motor Type": "Brushless (BLDC / PMSM)",
+          "Bridge Topology": "Three half-bridges (3-phase inverter)",
+          "Switch Positions": "6 (3 high + 3 low)",
+          "Gate Driver Part": "TI DRV8353S, 3-phase smart gate driver, SPI variant [21]",
+          "Output Terminals": "3 (PH_A / PH_B / PH_C)",
+          "Shunt Qty": "3 (one per phase, low-side)",
+          "Commutation Requirement": "Six-step trapezoidal or FOC; rotor position from the Shaft Sensor axis",
+          "REFERENCES.md Tags": "[21]",
+          "Status": "Verified (local PDF)"
+        },
+        "brushed_dc": {
+          "Motor Type": "Brushed (DC)",
+          "Bridge Topology": "Single H-bridge",
+          "Switch Positions": "4 (2 high + 2 low)",
+          "Gate Driver Part": "TBD -- requires primary-source verification (AGENTS.md Sec.1.3). No H-bridge gate driver has been sourced or verified in this repo. NOTE, not yet vetted: a 3-phase driver such as the DRV8353S [21] can drive an H-bridge by using two of its three half-bridges and leaving the third unused -- this reuses an already-verified part at the cost of wasted silicon and board area, and must be checked against [21] before adoption.",
+          "Output Terminals": "2 (M+ / M-)",
+          "Shunt Qty": "1-2 (bridge-leg or in-line)",
+          "Commutation Requirement": "None -- direction and magnitude set by bridge polarity and duty cycle; no rotor position needed for basic operation",
+          "REFERENCES.md Tags": "-",
+          "Status": "Open / unresolved"
+        }
+      }
+    },
+    "shaft_sensor": {
+      "sheet": "Shaft Sensor",
+      "title": "Shaft Sensor Decision Matrix",
+      "subtitle": "Build axis: Shaft Sensor (None-sensorless / Hall / Quadrature encoder / Resolver)",
+      "header_row": 4,
+      "parameters": {},
+      "key_column": "Sensor Type",
+      "columns": [
+        "Sensor Type",
+        "Rotor Position Source",
+        "MCU Pins Required",
+        "Additional BOM Component",
+        "Connector",
+        "Firmware Workflow Steps",
+        "REFERENCES.md Tags",
+        "Status"
+      ],
+      "notes": [],
+      "rows": [
+        {
+          "Sensor Type": "None (sensorless)",
+          "Rotor Position Source": "Back-EMF / observer computed from phase voltages and currents; same observer the Control sheet's closed-loop rows already use (TI SLAAE96A [13])",
+          "MCU Pins Required": "3 ADC (one per phase voltage divider). Reuses the current-sense ADC channels already allocated on the Amperage axis.",
+          "Additional BOM Component": "3 resistor dividers (6 R) plus filter capacitors, one per phase. Generic passives, values sized against the pack voltage of the chosen Voltage tier.",
+          "Connector": "None -- no sensor cable leaves the board",
+          "Firmware Workflow Steps": "Implement the observer per [13]; handle open-loop startup ramp, since back-EMF is unusable near zero speed.",
+          "REFERENCES.md Tags": "[13]",
+          "Status": "Candidate (unverified)"
+        },
+        {
+          "Sensor Type": "Hall effect (3-sensor, 120 deg)",
+          "Rotor Position Source": "Three digital Hall outputs giving six commutation states per electrical revolution",
+          "MCU Pins Required": "3 digital in (interrupt-capable), plus a sensor supply rail",
+          "Additional BOM Component": "3 pull-up resistors plus ESD protection on the cable entry. Sensor part: TI DRV5013 is carried from the Control sheet as a fallback candidate, at that sheet's existing status -- it has not been separately verified for this axis.",
+          "Connector": "5-pin (VCC, GND, HA, HB, HC)",
+          "Firmware Workflow Steps": "Decode the 3-bit Hall state into a 6-step commutation table; derive speed from state-transition timing.",
+          "REFERENCES.md Tags": "[1]",
+          "Status": "Open / unresolved"
+        },
+        {
+          "Sensor Type": "Quadrature encoder (incremental)",
+          "Rotor Position Source": "Two phase-quadrature channels A/B, plus optional once-per-rev index Z",
+          "MCU Pins Required": "2 digital in, or 3 with index. Prefer a timer with a hardware quadrature decoder if the chosen MCU has one.",
+          "Additional BOM Component": "Pull-ups for an open-collector encoder, or a differential line receiver for RS-422 encoders -- TBD -- requires primary-source verification (AGENTS.md Sec.1.3)",
+          "Connector": "4-pin (VCC, GND, A, B) or 6-pin with Z and shield",
+          "Firmware Workflow Steps": "Configure the hardware quadrature decoder; establish a zero reference from the index pulse or a homing routine.",
+          "REFERENCES.md Tags": "-",
+          "Status": "Open / unresolved"
+        },
+        {
+          "Sensor Type": "Resolver",
+          "Rotor Position Source": "Ratiometric SIN/COS windings excited by an AC reference; absolute position within one electrical revolution",
+          "MCU Pins Required": "Depends on the converter: an SPI or parallel bus to a resolver-to-digital converter, plus an excitation output",
+          "Additional BOM Component": "Resolver-to-digital converter IC and an excitation amplifier -- TBD -- requires primary-source verification (AGENTS.md Sec.1.3). This is the only shaft-sensor option that adds a whole IC to the BOM.",
+          "Connector": "6-pin (EXC+, EXC-, SIN+, SIN-, COS+, COS-), shielded",
+          "Firmware Workflow Steps": "Drive the excitation reference; read absolute angle from the converter; no startup ramp needed, unlike sensorless.",
+          "REFERENCES.md Tags": "-",
+          "Status": "Open / unresolved"
+        }
+      ],
+      "rows_by_key": {
+        "none_sensorless": {
+          "Sensor Type": "None (sensorless)",
+          "Rotor Position Source": "Back-EMF / observer computed from phase voltages and currents; same observer the Control sheet's closed-loop rows already use (TI SLAAE96A [13])",
+          "MCU Pins Required": "3 ADC (one per phase voltage divider). Reuses the current-sense ADC channels already allocated on the Amperage axis.",
+          "Additional BOM Component": "3 resistor dividers (6 R) plus filter capacitors, one per phase. Generic passives, values sized against the pack voltage of the chosen Voltage tier.",
+          "Connector": "None -- no sensor cable leaves the board",
+          "Firmware Workflow Steps": "Implement the observer per [13]; handle open-loop startup ramp, since back-EMF is unusable near zero speed.",
+          "REFERENCES.md Tags": "[13]",
+          "Status": "Candidate (unverified)"
+        },
+        "hall_effect_3_sensor_120_deg": {
+          "Sensor Type": "Hall effect (3-sensor, 120 deg)",
+          "Rotor Position Source": "Three digital Hall outputs giving six commutation states per electrical revolution",
+          "MCU Pins Required": "3 digital in (interrupt-capable), plus a sensor supply rail",
+          "Additional BOM Component": "3 pull-up resistors plus ESD protection on the cable entry. Sensor part: TI DRV5013 is carried from the Control sheet as a fallback candidate, at that sheet's existing status -- it has not been separately verified for this axis.",
+          "Connector": "5-pin (VCC, GND, HA, HB, HC)",
+          "Firmware Workflow Steps": "Decode the 3-bit Hall state into a 6-step commutation table; derive speed from state-transition timing.",
+          "REFERENCES.md Tags": "[1]",
+          "Status": "Open / unresolved"
+        },
+        "quadrature_encoder_incremental": {
+          "Sensor Type": "Quadrature encoder (incremental)",
+          "Rotor Position Source": "Two phase-quadrature channels A/B, plus optional once-per-rev index Z",
+          "MCU Pins Required": "2 digital in, or 3 with index. Prefer a timer with a hardware quadrature decoder if the chosen MCU has one.",
+          "Additional BOM Component": "Pull-ups for an open-collector encoder, or a differential line receiver for RS-422 encoders -- TBD -- requires primary-source verification (AGENTS.md Sec.1.3)",
+          "Connector": "4-pin (VCC, GND, A, B) or 6-pin with Z and shield",
+          "Firmware Workflow Steps": "Configure the hardware quadrature decoder; establish a zero reference from the index pulse or a homing routine.",
+          "REFERENCES.md Tags": "-",
+          "Status": "Open / unresolved"
+        },
+        "resolver": {
+          "Sensor Type": "Resolver",
+          "Rotor Position Source": "Ratiometric SIN/COS windings excited by an AC reference; absolute position within one electrical revolution",
+          "MCU Pins Required": "Depends on the converter: an SPI or parallel bus to a resolver-to-digital converter, plus an excitation output",
+          "Additional BOM Component": "Resolver-to-digital converter IC and an excitation amplifier -- TBD -- requires primary-source verification (AGENTS.md Sec.1.3). This is the only shaft-sensor option that adds a whole IC to the BOM.",
+          "Connector": "6-pin (EXC+, EXC-, SIN+, SIN-, COS+, COS-), shielded",
+          "Firmware Workflow Steps": "Drive the excitation reference; read absolute angle from the converter; no startup ramp needed, unlike sensorless.",
+          "REFERENCES.md Tags": "-",
+          "Status": "Open / unresolved"
+        }
+      }
+    },
+    "protocol": {
+      "sheet": "Protocol",
+      "title": "Protocol Interface Decision Matrix",
+      "subtitle": "Build axis: Protocol (11 options)",
+      "header_row": 4,
+      "parameters": {},
+      "key_column": "Protocol",
+      "columns": [
+        "Protocol",
+        "MCU Native Peripheral?",
+        "Additional BOM Component",
+        "Workflow Steps",
+        "REFERENCES.md Tags",
+        "Status"
+      ],
+      "notes": [],
+      "rows": [
+        {
+          "Protocol": "PWM",
+          "MCU Native Peripheral?": "Yes -- TIMx advanced/general-purpose timers [1] §8.29",
+          "Additional BOM Component": "None",
+          "Workflow Steps": "Configure MCU timer capture/compare input; map duty-cycle/period per protocol variant.",
+          "REFERENCES.md Tags": "[1]",
+          "Status": "No part needed"
+        },
+        {
+          "Protocol": "SBus",
+          "MCU Native Peripheral?": "No native RX/TX invert (checked [1] p.67 §8.23, Table 8-15 -- no polarity-select feature listed)",
+          "Additional BOM Component": "External signal inverter (single-transistor or logic buffer) -- part not yet selected",
+          "Workflow Steps": "Source Futaba SBus signaling spec (proprietary, no official spec located); build/verify external inversion circuit for the MCU's native UART RX; mark implementation UNVERIFIED per REFERENCES.md.",
+          "REFERENCES.md Tags": "[1]",
+          "Status": "Open / unresolved"
+        },
+        {
+          "Protocol": "DBus",
+          "MCU Native Peripheral?": "Same as SBus -- no native invert",
+          "Additional BOM Component": "Same external inverter approach as SBus -- part not yet selected",
+          "Workflow Steps": "Same treatment as SBus: proprietary protocol, no official spec located; external inversion hardware needed.",
+          "REFERENCES.md Tags": "[1]",
+          "Status": "Open / unresolved"
+        },
+        {
+          "Protocol": "UART",
+          "MCU Native Peripheral?": "Yes -- UART0-3 [1] §8.23, p.67",
+          "Additional BOM Component": "None (logic-level only)",
+          "Workflow Steps": "Configure MCU UART peripheral (baud, parity, stop bits) per protocol variant.",
+          "REFERENCES.md Tags": "[1]",
+          "Status": "No part needed"
+        },
+        {
+          "Protocol": "TTL",
+          "MCU Native Peripheral?": "Yes -- shares UART peripheral [1] §8.23",
+          "Additional BOM Component": "None (logic-level only)",
+          "Workflow Steps": "Same as UART; TTL refers to the logic-level signaling, not a distinct peripheral.",
+          "REFERENCES.md Tags": "[1]",
+          "Status": "No part needed"
+        },
+        {
+          "Protocol": "SPI",
+          "MCU Native Peripheral?": "Yes -- two SPI peripherals [1] §8.25",
+          "Additional BOM Component": "None",
+          "Workflow Steps": "Configure MCU SPI peripheral (mode, clock rate up to 32 Mbit/s on one instance).",
+          "REFERENCES.md Tags": "[1]",
+          "Status": "No part needed"
+        },
+        {
+          "Protocol": "RS-232",
+          "MCU Native Peripheral?": "No -- needs 3.3V-to-RS-232 level shifting",
+          "Additional BOM Component": "ADM3232E [12] (candidate; alt. considered: TI MAX3232)",
+          "Workflow Steps": "Select RS-232 transceiver; verify ±15kV ESD and 3.3V-native supply match MCU rail; per [3].",
+          "REFERENCES.md Tags": "[1], [3], [12]",
+          "Status": "Candidate (unverified)"
+        },
+        {
+          "Protocol": "RS-485",
+          "MCU Native Peripheral?": "No -- needs isolated RS-485 transceiver",
+          "Additional BOM Component": "ADM2582E / ADM2587E [9] (candidate)",
+          "Workflow Steps": "Select isolated RS-485 transceiver; verify ANSI/TIA/EIA-485-A-98 compliance and isolation voltage; per [4].",
+          "REFERENCES.md Tags": "[4], [9]",
+          "Status": "Candidate (unverified)"
+        },
+        {
+          "Protocol": "CAN2.0",
+          "MCU Native Peripheral?": "Yes -- CAN peripheral supports CAN2.0A/B [1] §8.26, p.68",
+          "Additional BOM Component": "ADM3055E / ADM3057E [10] (isolated transceiver, candidate)",
+          "Workflow Steps": "Configure MCU CAN peripheral for classic frames; select isolated CAN transceiver; per [5].",
+          "REFERENCES.md Tags": "[1], [5], [10]",
+          "Status": "Candidate (unverified)"
+        },
+        {
+          "Protocol": "CAN-FD",
+          "MCU Native Peripheral?": "Yes -- CAN peripheral supports CAN-FD, ISO 11898-1:2015 [1] §8.26, p.68",
+          "Additional BOM Component": "ADM3055E / ADM3057E [10] (isolated transceiver, candidate)",
+          "Workflow Steps": "Configure MCU CAN peripheral for FD frames (up to 5Mbit/s); select isolated CAN-FD transceiver; per [6].",
+          "REFERENCES.md Tags": "[1], [6], [10]",
+          "Status": "Candidate (unverified)"
+        },
+        {
+          "Protocol": "MIL-STD-1553B",
+          "MCU Native Peripheral?": "No -- needs dedicated 1553 interface module",
+          "Additional BOM Component": "Alta MEZ-E1553 [11] (candidate host-interface module)",
+          "Workflow Steps": "Select 1553 interface module; confirm target revision (1553B vs. 1553C, open per TODO.md 1.7); per [7].",
+          "REFERENCES.md Tags": "[7], [11]",
+          "Status": "Candidate (unverified)"
+        }
+      ],
+      "rows_by_key": {
+        "pwm": {
+          "Protocol": "PWM",
+          "MCU Native Peripheral?": "Yes -- TIMx advanced/general-purpose timers [1] §8.29",
+          "Additional BOM Component": "None",
+          "Workflow Steps": "Configure MCU timer capture/compare input; map duty-cycle/period per protocol variant.",
+          "REFERENCES.md Tags": "[1]",
+          "Status": "No part needed"
+        },
+        "sbus": {
+          "Protocol": "SBus",
+          "MCU Native Peripheral?": "No native RX/TX invert (checked [1] p.67 §8.23, Table 8-15 -- no polarity-select feature listed)",
+          "Additional BOM Component": "External signal inverter (single-transistor or logic buffer) -- part not yet selected",
+          "Workflow Steps": "Source Futaba SBus signaling spec (proprietary, no official spec located); build/verify external inversion circuit for the MCU's native UART RX; mark implementation UNVERIFIED per REFERENCES.md.",
+          "REFERENCES.md Tags": "[1]",
+          "Status": "Open / unresolved"
+        },
+        "dbus": {
+          "Protocol": "DBus",
+          "MCU Native Peripheral?": "Same as SBus -- no native invert",
+          "Additional BOM Component": "Same external inverter approach as SBus -- part not yet selected",
+          "Workflow Steps": "Same treatment as SBus: proprietary protocol, no official spec located; external inversion hardware needed.",
+          "REFERENCES.md Tags": "[1]",
+          "Status": "Open / unresolved"
+        },
+        "uart": {
+          "Protocol": "UART",
+          "MCU Native Peripheral?": "Yes -- UART0-3 [1] §8.23, p.67",
+          "Additional BOM Component": "None (logic-level only)",
+          "Workflow Steps": "Configure MCU UART peripheral (baud, parity, stop bits) per protocol variant.",
+          "REFERENCES.md Tags": "[1]",
+          "Status": "No part needed"
+        },
+        "ttl": {
+          "Protocol": "TTL",
+          "MCU Native Peripheral?": "Yes -- shares UART peripheral [1] §8.23",
+          "Additional BOM Component": "None (logic-level only)",
+          "Workflow Steps": "Same as UART; TTL refers to the logic-level signaling, not a distinct peripheral.",
+          "REFERENCES.md Tags": "[1]",
+          "Status": "No part needed"
+        },
+        "spi": {
+          "Protocol": "SPI",
+          "MCU Native Peripheral?": "Yes -- two SPI peripherals [1] §8.25",
+          "Additional BOM Component": "None",
+          "Workflow Steps": "Configure MCU SPI peripheral (mode, clock rate up to 32 Mbit/s on one instance).",
+          "REFERENCES.md Tags": "[1]",
+          "Status": "No part needed"
+        },
+        "rs_232": {
+          "Protocol": "RS-232",
+          "MCU Native Peripheral?": "No -- needs 3.3V-to-RS-232 level shifting",
+          "Additional BOM Component": "ADM3232E [12] (candidate; alt. considered: TI MAX3232)",
+          "Workflow Steps": "Select RS-232 transceiver; verify ±15kV ESD and 3.3V-native supply match MCU rail; per [3].",
+          "REFERENCES.md Tags": "[1], [3], [12]",
+          "Status": "Candidate (unverified)"
+        },
+        "rs_485": {
+          "Protocol": "RS-485",
+          "MCU Native Peripheral?": "No -- needs isolated RS-485 transceiver",
+          "Additional BOM Component": "ADM2582E / ADM2587E [9] (candidate)",
+          "Workflow Steps": "Select isolated RS-485 transceiver; verify ANSI/TIA/EIA-485-A-98 compliance and isolation voltage; per [4].",
+          "REFERENCES.md Tags": "[4], [9]",
+          "Status": "Candidate (unverified)"
+        },
+        "can2_0": {
+          "Protocol": "CAN2.0",
+          "MCU Native Peripheral?": "Yes -- CAN peripheral supports CAN2.0A/B [1] §8.26, p.68",
+          "Additional BOM Component": "ADM3055E / ADM3057E [10] (isolated transceiver, candidate)",
+          "Workflow Steps": "Configure MCU CAN peripheral for classic frames; select isolated CAN transceiver; per [5].",
+          "REFERENCES.md Tags": "[1], [5], [10]",
+          "Status": "Candidate (unverified)"
+        },
+        "can_fd": {
+          "Protocol": "CAN-FD",
+          "MCU Native Peripheral?": "Yes -- CAN peripheral supports CAN-FD, ISO 11898-1:2015 [1] §8.26, p.68",
+          "Additional BOM Component": "ADM3055E / ADM3057E [10] (isolated transceiver, candidate)",
+          "Workflow Steps": "Configure MCU CAN peripheral for FD frames (up to 5Mbit/s); select isolated CAN-FD transceiver; per [6].",
+          "REFERENCES.md Tags": "[1], [6], [10]",
+          "Status": "Candidate (unverified)"
+        },
+        "mil_std_1553b": {
+          "Protocol": "MIL-STD-1553B",
+          "MCU Native Peripheral?": "No -- needs dedicated 1553 interface module",
+          "Additional BOM Component": "Alta MEZ-E1553 [11] (candidate host-interface module)",
+          "Workflow Steps": "Select 1553 interface module; confirm target revision (1553B vs. 1553C, open per TODO.md 1.7); per [7].",
+          "REFERENCES.md Tags": "[7], [11]",
+          "Status": "Candidate (unverified)"
+        }
+      }
+    },
+    "control": {
+      "sheet": "Control",
+      "title": "Control Loop Decision Matrix",
+      "subtitle": "Build axis: Control (Open / Closed-Diff / Closed-PID)",
+      "header_row": 4,
+      "parameters": {},
+      "key_column": "Control Mode",
+      "columns": [
+        "Control Mode",
+        "Feedback Method",
+        "Additional BOM Component",
+        "Firmware Workflow Steps",
+        "REFERENCES.md Tags",
+        "Status"
+      ],
+      "notes": [],
+      "rows": [
+        {
+          "Control Mode": "Open-loop",
+          "Feedback Method": "None -- fixed commanded duty cycle, no feedback",
+          "Additional BOM Component": "None",
+          "Firmware Workflow Steps": "Map input protocol command directly to PWM duty cycle; no observer or control-law firmware needed.",
+          "REFERENCES.md Tags": "-",
+          "Status": "No part needed"
+        },
+        {
+          "Control Mode": "Closed-loop differential",
+          "Feedback Method": "Sensorless FOC observer (TI SLAAE96A [13]) using MCU's own ADC / OPA / COMP peripherals ([1] p.77, Table 10-1: 2xADC, 2xOPA, 3xCOMP)",
+          "Additional BOM Component": "None (sensorless); fallback candidate: TI DRV5013 Hall sensor [13]",
+          "Firmware Workflow Steps": "Implement rotor position/speed observer per SLAAE96A; compute differential (measured vs. commanded) speed error each control cycle; no proportional/integral tuning beyond differential term.",
+          "REFERENCES.md Tags": "[1], [13]",
+          "Status": "Candidate (unverified)"
+        },
+        {
+          "Control Mode": "Closed-loop PID",
+          "Feedback Method": "Same sensorless FOC observer as Closed-loop differential ([13])",
+          "Additional BOM Component": "None (sensorless); fallback candidate: TI DRV5013 Hall sensor [13]",
+          "Firmware Workflow Steps": "Same observer as above; add integral and derivative terms to the control law; tune PID gains against the amperage/voltage tier's motor and load characteristics.",
+          "REFERENCES.md Tags": "[1], [13]",
+          "Status": "Candidate (unverified)"
+        }
+      ],
+      "rows_by_key": {
+        "open_loop": {
+          "Control Mode": "Open-loop",
+          "Feedback Method": "None -- fixed commanded duty cycle, no feedback",
+          "Additional BOM Component": "None",
+          "Firmware Workflow Steps": "Map input protocol command directly to PWM duty cycle; no observer or control-law firmware needed.",
+          "REFERENCES.md Tags": "-",
+          "Status": "No part needed"
+        },
+        "closed_loop_differential": {
+          "Control Mode": "Closed-loop differential",
+          "Feedback Method": "Sensorless FOC observer (TI SLAAE96A [13]) using MCU's own ADC / OPA / COMP peripherals ([1] p.77, Table 10-1: 2xADC, 2xOPA, 3xCOMP)",
+          "Additional BOM Component": "None (sensorless); fallback candidate: TI DRV5013 Hall sensor [13]",
+          "Firmware Workflow Steps": "Implement rotor position/speed observer per SLAAE96A; compute differential (measured vs. commanded) speed error each control cycle; no proportional/integral tuning beyond differential term.",
+          "REFERENCES.md Tags": "[1], [13]",
+          "Status": "Candidate (unverified)"
+        },
+        "closed_loop_pid": {
+          "Control Mode": "Closed-loop PID",
+          "Feedback Method": "Same sensorless FOC observer as Closed-loop differential ([13])",
+          "Additional BOM Component": "None (sensorless); fallback candidate: TI DRV5013 Hall sensor [13]",
+          "Firmware Workflow Steps": "Same observer as above; add integral and derivative terms to the control law; tune PID gains against the amperage/voltage tier's motor and load characteristics.",
+          "REFERENCES.md Tags": "[1], [13]",
+          "Status": "Candidate (unverified)"
+        }
+      }
+    },
+    "emi_hardening": {
+      "sheet": "EMI Hardening",
+      "title": "EMI Hardening Tier Decision Matrix",
+      "subtitle": "Build axis: EMI Hardening (None / Isolation / Grounding / Faraday)",
+      "header_row": 4,
+      "parameters": {},
+      "key_column": "Tier",
+      "columns": [
+        "Tier",
+        "Governing Standard(s)",
+        "BOM Component",
+        "Purchasable Part?",
+        "Workflow Steps",
+        "REFERENCES.md Tags",
+        "Status"
+      ],
+      "notes": [],
+      "rows": [
+        {
+          "Tier": "None",
+          "Governing Standard(s)": "-",
+          "BOM Component": "None",
+          "Purchasable Part?": "No",
+          "Workflow Steps": "No additional EMI mitigation beyond standard PCB layout practice.",
+          "REFERENCES.md Tags": "-",
+          "Status": "No part needed"
+        },
+        {
+          "Tier": "Isolation",
+          "Governing Standard(s)": "IEC 62368-1:2018 [16] (basic/reinforced insulation classification)",
+          "BOM Component": "ADuM4221 isolated gate driver [18] (candidate)",
+          "Purchasable Part?": "Yes",
+          "Workflow Steps": "Select isolated gate driver / digital isolator for gate-drive and/or feedback signal paths; verify UL1577 proof-test rating and creepage/clearance per [16]; scope which signal class(es) the tier covers before final part selection.",
+          "REFERENCES.md Tags": "[16], [18]",
+          "Status": "Candidate (unverified)"
+        },
+        {
+          "Tier": "Grounding",
+          "Governing Standard(s)": "MIL-STD-461G [15] (general bonding requirements); IEC/TR 61000-5-2:1997 [17] (earthing/cabling installation guideline)",
+          "BOM Component": "None -- layout/practice only",
+          "Purchasable Part?": "No",
+          "Workflow Steps": "Apply single-point ground topology, continuous ground-plane layout, and star-grounding of high-di/dt power-stage return paths per [15]/[17]; no purchasable component implements this tier.",
+          "REFERENCES.md Tags": "[15], [17]",
+          "Status": "No part needed"
+        },
+        {
+          "Tier": "Faraday",
+          "Governing Standard(s)": "MIL-STD-461G [15] (shielding/radiated-emissions rationale, e.g. RE102/CE102 test methods)",
+          "BOM Component": "Würth Elektronik WE-SHC 3671375 shielding cabinet [19] (candidate)",
+          "Purchasable Part?": "Yes",
+          "Workflow Steps": "Select board-level shielding can sized to cover the gate-drive / high-di/dt switching node area; verify shielding effectiveness (dB) over the target frequency range per [15]'s emissions rationale.",
+          "REFERENCES.md Tags": "[15], [19]",
+          "Status": "Candidate (unverified)"
+        }
+      ],
+      "rows_by_key": {
+        "none": {
+          "Tier": "None",
+          "Governing Standard(s)": "-",
+          "BOM Component": "None",
+          "Purchasable Part?": "No",
+          "Workflow Steps": "No additional EMI mitigation beyond standard PCB layout practice.",
+          "REFERENCES.md Tags": "-",
+          "Status": "No part needed"
+        },
+        "isolation": {
+          "Tier": "Isolation",
+          "Governing Standard(s)": "IEC 62368-1:2018 [16] (basic/reinforced insulation classification)",
+          "BOM Component": "ADuM4221 isolated gate driver [18] (candidate)",
+          "Purchasable Part?": "Yes",
+          "Workflow Steps": "Select isolated gate driver / digital isolator for gate-drive and/or feedback signal paths; verify UL1577 proof-test rating and creepage/clearance per [16]; scope which signal class(es) the tier covers before final part selection.",
+          "REFERENCES.md Tags": "[16], [18]",
+          "Status": "Candidate (unverified)"
+        },
+        "grounding": {
+          "Tier": "Grounding",
+          "Governing Standard(s)": "MIL-STD-461G [15] (general bonding requirements); IEC/TR 61000-5-2:1997 [17] (earthing/cabling installation guideline)",
+          "BOM Component": "None -- layout/practice only",
+          "Purchasable Part?": "No",
+          "Workflow Steps": "Apply single-point ground topology, continuous ground-plane layout, and star-grounding of high-di/dt power-stage return paths per [15]/[17]; no purchasable component implements this tier.",
+          "REFERENCES.md Tags": "[15], [17]",
+          "Status": "No part needed"
+        },
+        "faraday": {
+          "Tier": "Faraday",
+          "Governing Standard(s)": "MIL-STD-461G [15] (shielding/radiated-emissions rationale, e.g. RE102/CE102 test methods)",
+          "BOM Component": "Würth Elektronik WE-SHC 3671375 shielding cabinet [19] (candidate)",
+          "Purchasable Part?": "Yes",
+          "Workflow Steps": "Select board-level shielding can sized to cover the gate-drive / high-di/dt switching node area; verify shielding effectiveness (dB) over the target frequency range per [15]'s emissions rationale.",
+          "REFERENCES.md Tags": "[15], [19]",
+          "Status": "Candidate (unverified)"
+        }
+      }
+    }
+  }
+}

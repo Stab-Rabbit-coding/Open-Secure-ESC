@@ -1558,6 +1558,191 @@ Date accessed: 2026-08-09.
 
 ## Pending Verification — Not Yet Cited
 
+### IPC-2152 and IPC-2221 — conductor current capacity and spacing — STANDARDS NOT OBTAINED; open secondary sources corroborated 2026-08-19
+
+**Neither standard has been read. No numbered citation tag is issued for
+either**, per `AGENTS.md` §1.3. What follows is the corroborated secondary
+basis currently used, recorded so it can be replaced wholesale when a primary
+copy is obtained.
+
+**What they are needed for.**
+
+- **IPC-2152** (*Standard for Determining Current Carrying Capacity in Printed
+  Board Design*, IPC, 2009) — conductor and via current capacity. Closes
+  `TODO.md` 12.5.aw and 12.5.ba: how many vias the 50 A pack terminals need,
+  and whether the phase conductors are sized. IPC-2152 superseded the older
+  closed-form method for this purpose.
+- **IPC-2221** (*Generic Standard on Printed Board Design*, IPC) Table 6-1 —
+  conductor spacing by voltage, behind the clearance values in
+  `builds/6s/50A/CAN_485_faraday/kicad/open_secure_esc_6s_50a_can485_faraday.kicad_dru`.
+  **Revision matters here:** IPC-2221C (2023) changed conductor-spacing
+  guidance as a function of **altitude**. This is an airborne ESC, so the
+  altitude column is the applicable one, not the sea-level column. Logged as
+  `TODO.md` 12.5.bb.
+
+**Secondary sources actually used, with validated URLs.** These are vendor
+educational articles — dated, attributed, and openly accessible, which makes
+them checkable, but they are **not** the standard and under `AGENTS.md` §1.1
+may not stand in for it.
+
+- **[S-A]** Z. Peterson, "PCB Trace Width vs. Current Table for High Power
+  Designs," *Altium Resources*, created 2019-12-01, updated 2025-06-27.
+  <https://resources.altium.com/p/pcb-trace-width-vs-current-table-high-voltage-design>
+  Used for: the trace-width table at 1 oz copper, 10 °C rise — 1 A → 10 mil,
+  2 A → 30 mil, 5 A → 110 mil, 10 A → 300 mil.
+- **[S-B]** Z. Peterson, "PCB Via Current-Carrying Capacity: Is My PCB Too
+  Hot?," *Altium Resources*, updated 2025-09-09.
+  <https://resources.altium.com/p/pcb-current-carrying-capacity-how-hot-too-hot>
+  Used for: the working rule of thumb — "If you set a less-conservative limit
+  of 1 A per via, and you need to supply 5 A instantaneously, then 5 large
+  vias with thick plating should be fine," noted as "much less than the 0.5 A
+  rule of thumb sometimes seen on forums." **This article gives no via-area
+  formula.**
+- **[S-C]** Z. Peterson, "IPC-2221 Calculator for PCB Trace Current and
+  Heating," *Altium Resources*, updated 2025-06-26.
+  <https://resources.altium.com/p/ipc-2221-calculator-pcb-trace-current-and-heating>
+  Used for: "the minimum width value that you calculate from IPC-2221 is
+  probably an overestimate, thus the IPC-2152 standard attempted to expand the
+  available set of data." — i.e. IPC-2221 demands *more* copper than IPC-2152,
+  so figures derived from it err conservatively.
+- **[S-D]** Z. Peterson, "Using an IPC-2221 PCB Clearance Calculator for High
+  Voltage Design," *Altium Resources*, updated 2025-09-09.
+  <https://resources.altium.com/p/using-an-ipc-2221-calculator-for-high-voltage-design>
+  Used for: IPC-2221 specifies fixed spacing only up to 500 V, above which a
+  per-volt increment applies (worked example given: 580 V on column B1 →
+  0.25 mm + (80 V × 0.0025 mm/V) = 0.45 mm); and the note that IPC-2221C
+  (2023) revised spacing versus altitude.
+- **[S-F]** "Via Calculator," *CircuitsLab Wiki*, retrieved 2026-08-19.
+  <https://circuitslab.wiki/via-calculator/>
+  The most directly applicable secondary source found so far: it publishes
+  **IPC-2221 and IPC-2152 side by side for vias specifically**, and settles
+  two questions the other sources leave open.
+  Used for:
+  - **Barrel area**: `Area = π × ((d/2)² − ((d/2) − t)²)` — the plating grows
+    **inward** from the drilled wall, so the copper is the ring between the
+    drilled radius and the finished radius. This **corrected an error in this
+    project's own model**, which had the plating growing outward into the
+    laminate and overstated barrel area by ~7 %.
+  - **Which constant applies to a via**: the **outer-layer** constant,
+    *k* = 0.048, not the internal 0.024. This project had been using the
+    internal constant for load-bearing figures and was therefore roughly
+    2× over-conservative.
+  - **IPC-2152 for vias**: *k* = 0.064, with "IPC-2152 typically rates vias
+    25–35 % higher for the same geometry because it accounts for plane
+    proximity heat-sinking." (0.064/0.048 = 1.33, inside that band, and
+    consistent in direction with [S-C].)
+  - **Plating minima**: IPC Class 2 = 20 µm, Class 3 = 25 µm.
+  - **Design margin**: "Apply 20–25 % safety margin above the IPC-2221
+    minimum current" — stated as advice to the designer; the calculator does
+    not apply it internally.
+  - **Array sizing**: `N = ⌈I_required / I_max_single⌉`.
+  **KNOWN INTERNAL INCONSISTENCY, recorded so it is not taken on trust.** The
+  page's own reference table disagrees with the page's own formula. Its table
+  gives ~0.65 A (IPC-2221) for a 0.30 mm via at 25 µm and ΔT 10 °C; its
+  formula and constants give 1.69 A for the same inputs — a factor of 2.6.
+  The table's two columns are self-consistent with each other
+  (0.87/0.65 = 1.34 ≈ 0.064/0.048), so the ratio between the standards is
+  sound and only the absolute scale is in question. **The two readings
+  straddle the design answer** for this build: on the formula basis the 7 mm
+  pack pad needs 28 vias with margin against 36 that fit (OK); on the table
+  basis it needs ~61 (SHORT). This project uses the formula, because its
+  constants are corroborated by [S-A]/[S-E] while the table's are not
+  reproducible from anything published on the page. **Resolving this is one
+  of the things a primary copy of IPC-2152 would settle.**
+- **[S-E]** `~/.claude/skills/pcb-engineer/references/design-rules.md`,
+  "Trace Width Calculator" (local tool documentation, not published).
+  Used for: the conductor equation and its constants —
+  *I* = *k* · Δ*T*^*b* · *A*^*c*, with *k* = 0.048 external / 0.024 internal,
+  *b* = 0.44, *c* = 0.725, *A* in mil², *I* in A, Δ*T* in °C.
+  **This file mislabels those constants "IPC-2152 methodology"; they are the
+  IPC-2221 conductor equation.**
+
+**Corroboration performed 2026-08-19.** [S-A]'s table was recomputed from
+[S-E]'s equation using the **external** constants, 1 oz = 1.378 mil, ΔT =
+10 °C. Agreement: −1.8 %, +0.7 %, +4.3 % on the 2 A, 5 A and 10 A rows
+(−11.4 % on the 1 A row, a rounded table entry). Two sources that do not cite
+each other produce the same numbers, so the **external** constants are treated
+as sound. Reproduce with
+`builds/6s/50A/CAN_485_faraday/kicad/tools/via_current_budget.py`.
+
+**What remains uncorroborated, and must not be presented as settled:**
+
+1. The **internal-layer constant** (*k* = 0.024) rests on [S-E] alone. [S-A]'s
+   table is external-layer data and cannot confirm it.
+2. The **annular via-barrel model** (*A* = π/4 (*D*ₒᵤₜ² − *D*ᵢₙ²),
+   *D*ₒᵤₜ = drill + 2 × plating) is this project's own construction. **No
+   source consulted states it** — [S-B], the one article specifically about
+   via current, offers only a rule of thumb.
+3. Whether external or internal constants apply to a via barrel. This project
+   uses internal for anything load-bearing.
+
+Against that, three independent bases — [S-B]'s 1 A/via, this project's
+IPC-2221 internal figure with a 50 % array derate, and [S-B]'s 0.5 A/via
+forum figure — all put the 50 A pack return between **50 and 100 vias**. The
+engineering conclusion does not depend on the paywalled text; only its
+precision does.
+
+**Access status:** open. The repo owner is seeking access under a cost ceiling
+of USD 200 as of 2026-08-19. **No price, vendor, or availability claim is made
+here**, because none has been verified against the issuing body. When a copy
+is obtained: read it, re-run `tools/via_current_budget.py`, replace the
+figures in `TODO.md` 12.5.ba, and promote this section to a numbered citation.
+
+### Assembly and fabrication capability envelope — REQUIRES VERIFICATION
+
+Added 2026-08-19 when the repo owner specified professional reflow assembly at
+"JLCPCB or another similar manufacturer" — **no vendor has been chosen**, and
+no vendor capability document has been read.
+
+Because the house is not selected, this build should stay inside the envelope
+that mainstream prototype-assembly vendors have in common (JLCPCB, PCBWay,
+Aisler, Eurocircuits and similar) rather than being tuned to any one of them.
+The questions below must be answered against whichever house is finally used,
+and each answer recorded here with a validated URL to that vendor's own
+published capability page:
+
+- **Fiducial policy** — whether global fiducials are required, and the
+  accepted size, count and clearance. `tools/prep_for_assembly.py` placed
+  3 per side at 1 mm copper / 2 mm mask opening as ordinary industry
+  practice, explicitly NOT as a sourced requirement from any vendor.
+- **4-layer 2 oz copper availability and stackup** — `docs/tools/
+  conductor_sizing.py` argues 2 oz minimum for the 50 A phase pours. 2 oz on
+  a 4-layer board is a non-default option; confirm it is offered, on which
+  layers, and what it does to the minimum trace/space.
+- **Minimum trace/space, drill, and annular ring for the chosen tier**, to
+  check against this board's measured minimums (0.300 mm drill, 0.150 mm
+  annular ring on U5's thermal vias — the board's tightest features).
+- **Double-sided assembly** — this board places 18 footprints on F.Cu and 41
+  on B.Cu; confirm both-side SMT is supported and what it implies for cost
+  and for parts that must survive two reflow passes.
+- **Shield frame WE-SHC 3670209 (SH1, 22.8 × 17.1 mm)** — confirm whether the
+  house will place a part this size, or whether it must be consigned or
+  fitted by hand after assembly. This is the item most likely to differ
+  between vendors, so it is worth asking before choosing one.
+- **Part availability** — a vendor-stocked library (e.g. JLCPCB's) will not
+  carry every part here; anything not stocked must be consigned. That answer
+  differs per house and may drive the choice.
+
+**This board's tightest features, for checking against any candidate vendor:**
+
+| Feature | This board | Where |
+| ------- | ---------- | ----- |
+| Min drill | 0.300 mm | U5.41 thermal vias |
+| Min annular ring | 0.150 mm | U5.41 thermal vias |
+| Min pad pitch | 0.500 mm | U5 WQFN-40, U1 LQFP-64 |
+| Board outline | 32.00 × 66.10 mm, 4 layer, 1.6 mm | — |
+| Largest part | 22.8 × 17.1 mm | SH1 shield frame |
+| Assembly sides | both (18 F.Cu, 41 B.Cu) | — |
+| Copper weight sought | 2 oz | `docs/tools/conductor_sizing.py` |
+
+Trace and space are not listed because the board is **not yet routed**
+(TODO.md 12.5.w) — the routing that eventually lands will set them, and it
+should be routed to the common envelope, not to one vendor's floor.
+
+Until each item is verified against the chosen house, no claim of compliance
+with any specific manufacturer may appear in this repository. See
+TODO.md 12.5.au.
+
 The following items are named in `README.md` but currently have **no**
 authoritative published specification and MUST NOT be cited as conforming
 to a standard until one is located and verified (see `AGENTS.md` §1.3):
@@ -1638,5 +1823,230 @@ re-attempt is now *worth making* for the non-Infineon sources
 which was pointless under the earlier blanket block. That re-attempt has
 **not** been made yet; those entries remain secondary-sourced only and
 must not be cited as verified until it is. Tracked in `TODO.md` 1.10.
+
+**[46]** IPC, *Standard for Determining Current Carrying Capacity in
+Printed Board Design*, IPC-2152, IPC, Bannockburn, IL, USA, August 2009.
+Developed by the Current Carrying Capacity Task Group (1-10b) of the Printed
+Board Design Committee (1-10) of IPC. [Online]. Available:
+https://www.ipc.org/TOC/IPC-2152.pdf
+**Partially verified — front matter and full Table of Contents only.** The
+linked PDF was fetched directly on 2026-08-15 (HTTP 200, 5 pp.) and read; it
+is IPC's own published front matter and carries the title, document number,
+issuing committee, publisher address and issue date quoted above, plus the
+complete section listing. The STANDARD BODY IS PAYWALLED and has **not** been
+read: `https://shop.ipc.org/ipc-2152-english-d` returned HTTP 403 on the same
+date. A local copy is therefore **not** held in `docs/datasheets/`.
+Section/page: the following section numbers and page numbers are read
+directly from the verified Table of Contents and are the sections this repo
+relies on — §4 "Conductor Sizing Design Guidelines" (p. 2); §5 "Conductor
+Sizing Charts" (p. 3); §5.1 "Conductor Sizing Charts for Still Air
+Environments" (p. 6), with §5.1.1 imperial (p. 6) and §5.1.2 SI/metric
+(p. 9); Appendix A §A.3.4 "Vias" (p. 26); §A.4.3 "Copper Weight" (p. 28);
+§A.4.6 "Copper Planes" (p. 29), with §A.4.6.1 "Single Plane" (p. 29).
+**No chart value, derating factor, temperature-rise figure or conductor
+width from this standard is quoted anywhere in this repository**, because the
+charts themselves are in the paywalled body. Per `AGENTS.md` §1.3, every
+conductor width in
+`builds/6s/50A/CAN_485_faraday/kicad/tools/set_netclasses.py` and every
+plane/pour geometry in `.../tools/build_pcb.py` is recorded as an
+`ENGINEERING DEFAULT`, not as an IPC-2152 result. This entry exists so that
+the standard that governs those numbers is named and locatable, not so that
+the numbers can be presented as verified. Closing that gap requires
+purchasing the standard — tracked in `TODO.md` §12.1.
+
+**[47]** Vimdrones, *Vimdrones ESC S50 DroneCAN — Specification and Test
+Report*, product documentation, Vimdrones, 2026. [Online]. Available:
+https://dev.vimdrones.com/products/vimdrones_esc_s50/
+Fetched directly 2026-08-15 (HTTP 200) and read; the linked test-report images
+`vimdrones_esc_s50_continuous_load_test.png` and
+`vimdrones_esc_s50_62_50C_100C_battery_test.png` were fetched from the same
+host (HTTP 200) and read.
+Section/page: product page "Specification" table — Power supply 2S–6S; MCU ST
+STM32L431KCU6; MOSFET **Toshiba TPHR8504PL**; **Continuous current 50 A
+(cooling required above 30 A)**; CAN termination 120 Ω with **Solder PAD**
+switch; **CAN Port Connector: Solder PAD**; **Board outline 40 mm × 17 mm**;
+firmware AM32. "Test Report / 50A Continuous Test" figure — instrumented
+continuous-load run: current 10.39 / 20.74 / 31.09 / 40.62 / **50.18 A**
+against board temperature 54.7 / 64.2 / 73.6 / 88.3 / **103 °C**, push force
+672–2108 g, RPM 12 760–22 220; setup stated as Wanptek KPS3060D at 25.2 V
+(voltage spike < 27.5 V), AM32 2.18 DroneCAN, XQ QF3748 90 mm 1450 kV EDF
+load, FLIR One Pro thermal camera, Mayatech MT5 force meter, **63 V 470 µF
+external capacitance**, **air cooling from EDF airflow**, ambient 29 °C.
+**WHAT THIS IS AND IS NOT.** This is a manufacturer's own documentation of a
+shipping product, with named instruments and stated conditions — it is primary
+for facts *about the S50*. It is **not** a standard, and nothing in this
+repository may derive a conductor width, a creepage figure, or any other
+design value from it. It is cited for three things only: an existence proof
+that 6S/50 A fits in 40 × 17 mm; the measured thermal reality of that rating;
+and construction techniques (mask-free solder-reinforced copper, solder-pad
+connectors) visible in its published board photographs.
+**ORIGIN WARNING.** The S50's gate driver is a **Fortior FD62880** (read from
+the product's own board photograph), and Fortior Technology is Shenzhen, PRC.
+Under the repo owner's 2026-08-15 constraint that no IC may originate in the
+PRC or other restricted countries, that part **must not** be adopted here.
+This project's gate driver remains the TI DRV8353S [21]. Mine this reference
+for technique, not for parts.
+
+**[48]** Texas Instruments Incorporated, *CSD19532Q5B 100 V N-Channel NexFET™
+Power MOSFET*, SLPS414B, Dallas, TX, USA, Dec. 2013, rev. May 2017. [Online].
+Available: https://www.ti.com/lit/ds/symlink/csd19532q5b.pdf
+Local verified copy: `docs/datasheets/csd19532q5b.pdf` — fetched directly
+2026-08-15 (HTTP 200, 934 kB) and read.
+Section/page: title page and §3 Description — 100 V, 4 mΩ, SON 5 mm × 6 mm;
+§4 Pin Configuration and Functions — pins 1/2/3 = S, 4 = G, 5/6/7/8 = D;
+§6 — V_DS 100 V, continuous drain current 100 A (package limited), I_DM 400 A,
+P_D 195 W at T_C = 25 °C, R_θJC 0.8 °C/W, R_θJA 50 °C/W; §7.1 Q5B Package
+Dimensions; §7.2 Recommended PCB Pattern; §7.3 Recommended Stencil Pattern.
+**EVALUATED 2026-08-15, NOT ADOPTED.** Selected first as the SMD replacement
+for the IRFB4110PBF [20] because it preserved that part's 100 V rating
+exactly. The repo owner chose the Toshiba TPHR8504PL [49] instead, accepting a
+reduction in voltage margin (3.97× → 1.59× over a 6S pack) for a 5.7×
+improvement in conduction loss (10 W → 1.75 W per device at 50 A). This entry
+and its local datasheet are retained as the documented alternative, in the
+same spirit as [26]–[29]; no symbol or footprint for it remains in the tree.
+
+**[49]** Toshiba Electronic Devices & Storage Corporation, *TPHR8504PL — MOSFETs
+Silicon N-channel MOS (U-MOS-H)*, datasheet, rev. 5.0.A, Japan, 2026-04-14.
+Local verified copy: `docs/datasheets/TPHR8504PL_datasheet_en_20191024.pdf`
+(10 pp.) — supplied by the repo owner 2026-08-15 and read in full.
+[Online]. Available: https://toshiba.semicon-storage.com/ap-en/semiconductor/product/mosfets/detail.TPHR8504PL.html
+(a direct fetch of the PDF returned HTTP 403; the local copy is the source
+relied on.)
+Section/page: §2 Features — R_DS(ON) 0.7 mΩ typ. at V_GS = 10 V, Q_SW 23 nC
+typ., Q_oss 85.4 nC typ., V_th 1.4–2.4 V; §3 Packaging and Internal Circuit —
+pins 1/2/3 = Source, 4 = Gate, 5/6/7/8 = Drain, and **two packages offered
+under one part number**, 2-5Q1S "SOP Advance" (p. 8) and 2-5W1A "SOP
+Advance(N)" (p. 9); §4 Absolute Maximum Ratings — V_DSS **40 V**, V_GSS ±20 V,
+I_D 150 A (DC, T_c = 25 °C, package limited), 340 A silicon limit, I_DP 500 A,
+P_D 170 W, E_AS 336 mJ, I_AS 120 A, T_ch 175 °C; §5 Thermal — R_th(ch-c)
+0.88 °C/W, R_th(ch-a) 50 °C/W on glass-epoxy board (a).
+**NO LAND PATTERN IN THIS DOCUMENT.** All 10 pages were searched: the words
+"land", "mounting" and "recommend" do not appear. The land pattern is
+published separately in the product catalog — see [50]. An IPC-7351-style
+derivation made before [50] was located proved 46 % short on drain-land area
+and 86 % short on lead-pad area, and was replaced.
+**Related documents also held locally, not separately tagged** because nothing
+in this repository cites them yet: 15 Toshiba application notes under
+`docs/datasheets/TPHR8504PL_application_note_*.pdf`, supplied by the repo
+owner 2026-08-15/16.
+
+**[50]** Toshiba Electronic Devices & Storage Corporation, *MOSFET Product
+Catalog*, ALQ00024, Japan, 2026-07-06. Local verified copy:
+`docs/datasheets/TPHR8504PL_catalog_20260706_ALQ00024.pdf` (52 pp.) — supplied
+by the repo owner 2026-08-16 and read.
+Section/page: **p. 46 "Surface Mount Type"** — package dimensions and
+"Land pattern example" published side by side for the whole surface-mount
+family (DSOP Advance(WF)L/M, SOP Advance, SOP Advance(N), SOP Advance(E),
+SOP Advance(EWF)). The **SOP Advance(N) (4.9 × 6.1)** cell gives the land used
+by `symbols/tools/gen_tphr8504pl_footprint.py`: overall width 4.7; pad width
+0.85; pitch 1.27; drain land 4.8 total height with a 1.05 castellated depth
+over a 3.75 solid body; gap to lead pads 0.7; lead pad height 1.45 — total
+land 4.7 × 6.95 mm.
+**This is the reference to use for ANY Toshiba MOSFET package this project
+adopts.** Toshiba does not put land patterns in its part datasheets; p. 46 is
+where they live.
+
+**[51]** Würth Elektronik eiSos GmbH & Co. KG, *WE-SHC Two-piece Seamless
+Shielding Cabinet — FRAME*, order code 3670209, Waldenburg, Germany.
+Local verified copy: `docs/datasheets/3670209.pdf` — read directly.
+Section/page: p. 1 "Dimensions: [mm]" — inner 20.5 ± 0.2 × 14.9 ± 0.2, outer
+20.9 ± 0.2 × 15.3 ± 0.2 (wall 0.2 mm), height 1.7 ± 0.2 mm; p. 1 "Recommended
+Land Pattern: [mm]" — outer 22.2 × 16.6, ring width 1.5, outer corner R 2.15,
+0.5 mm recommended tin paste mask layer. The land drawing shows **no board
+holes**; the "4× ⌀0.6" callout on the same page belongs to the frame's own
+Dimensions drawing, a feature of the metal part.
+Cross-check: ring centreline from the land ((22.2−1.5)/2 = 10.35,
+(16.6−1.5)/2 = 7.55) equals wall centreline from the body ((20.9+20.5)/4 =
+10.35, (15.3+14.9)/4 = 7.55) exactly — the same two-way check that validated
+[30]. Adopted 2026-08-16 in place of [30] for the 30 × 60 mm respin, saving
+812 mm². **Height caution:** at 1.7 mm this frame clears the DRV8353S
+(0.8 mm) and 0805 ceramics but cannot cover the MOSFETs.
+
+**[52]** Würth Elektronik eiSos GmbH & Co. KG, *WE-SHC Two-piece Seamless
+Shielding Cabinet — COVER*, order code 3671209, Waldenburg, Germany.
+Local verified copy: `docs/datasheets/3671209.pdf` — read directly.
+Section/page: p. 1 "Dimensions: [mm]" — inner 20.9 ± 0.2 × 15.3 ± 0.2, outer
+21.3 ± 0.2 × 15.7 ± 0.2, height 1.7 mm ref.; "Assembly with Frame:
+Frame(3670209), Cover(3671209)".
+As with [19]/[30], the cover has **no land pattern** because nothing about it
+is soldered — it clips onto the frame [51]. It is carried in the BOM and
+marked "exclude from board".
+
+**[53]** Murata Manufacturing Co., Ltd., *GHz Noise Suppression Chip Ferrite
+Bead for Consumer equipment & Industrial equipment — BLM15H□□□□SN1□ Reference
+Specification*, spec no. JENF243A_0024Q-01, Kyoto, Japan.
+Local verified copy: `docs/datasheets/ENFA0024.pdf` — read directly
+2026-08-17.
+Product page: https://www.murata.com/en-global/products/productdetail?partno=BLM15HD182SN1D
+Sections applied — §3 "Part Number and Rating" (BLM15HD182SN1D row): impedance
+1800 Ω ±25 % at 100 MHz and 2700 Ω ±40 % at 1 GHz, rated current 200 mA, DC
+resistance 2.2 Ω max initial / 2.3 Ω max after testing, remark "For high speed
+signal line"; operating and storage temperature −55 °C to +125 °C. §5
+"Appearance and Dimensions": 1.0 ± 0.05 mm × 0.5 ± 0.05 mm × 0.5 ± 0.05 mm,
+electrode band 0.25 ± 0.1 mm, unit mass 0.001 g typical, no polarity, no
+marking; equivalent circuit is L in series with R, "Resistance element becomes
+dominant at high frequencies". §7.1 impedance measured per Keysight 4291A at
+100 MHz / 1 GHz.
+Used for: the four isolated-supply filter beads on `U3` (ADM3055E, CAN) and
+`U4` (ADM2582E, RS-485) — see [10] p. 25 "Radiated Emissions and PCB Layout"
+and its Table 12, which names **BLM15HD182SN1** by part number as an example
+bead for exactly this role, and [9] p. 17, which specifies "approximately
+2 kΩ between the 100 MHz and 1 GHz frequency range". The 1800 Ω / 2700 Ω
+figures above satisfy that requirement across the band.
+Land pattern: **not authored** — this part uses KiCad 9's stock
+`Inductor_SMD:L_0402_1005Metric`, an IPC-7351-nominal 1005-metric land
+(pads 0.59 × 0.64 mm on a 0.97 mm centre pitch), verified against §5's body
+and electrode dimensions rather than assumed.
+**Verification caveat (AGENTS.md §3):** `ENFA0024.pdf` is headed "Reference
+Only" and is Murata's *reference* specification, not a delivery/product
+specification. Every value above is read directly from it, but the delivery
+spec must be obtained and re-checked before production release.
+
+**[54]** Texas Instruments Incorporated, *MSPM0 G-Series 80MHz
+Microcontrollers Technical Reference Manual*.
+**NOT YET OBTAINED — `UNVERIFIED` per AGENTS.md §3.** No local copy exists in
+`docs/datasheets/`, and no document number is quoted here because the
+MSPM0G3507 datasheet [1] refers to it only by title (e.g. p. 73 §8.32, "see
+the debug chapter of the technical reference manual"), never by number.
+Guessing a SLAU number would be a fabricated citation.
+Needed for: the permanent debug/write lock in TODO.md 12.5.ag. [1] establishes
+that the mechanism exists and where its configuration lives, but defers every
+register-level detail to this manual.
+What [1] DOES verify locally (read 2026-08-18 from
+`docs/datasheets/mspm0g3507.pdf`):
+
+- §8.32 "Serial Wire Debug Interface", p. 73 — SWD is a two-wire Arm SW-DP;
+  full debug functionality is described only in the TRM.
+- §8.33 "Bootstrap Loader (BSL)", p. 73 — "Access to the device memory and
+  configuration through the BSL is protected by a 256-bit user-defined
+  password, and **it is possible to completely disable the BSL in the device
+  configuration, if desired**. The BSL is enabled by default from TI."
+- §7 memory map — the NONMAIN configuration NVM occupies
+  0x41C0.0000–0x41C0.0200 (512 bytes), separate from main flash. This is the
+  region that holds boot/debug configuration.
+
+Obtain from https://www.ti.com/ (product folder for MSPM0G3507, "Technical
+documentation") and re-cite by number and section before the lock policy is
+implemented.
+
+**[55]** XFly-Model, *EDF Ducted Fan XFly Galaxy X5 — 50 mm, 12 blades, 6S
+motor 3200 KV*, product specification page.
+URL: https://www.xfly-model.eu/en/edf-units/4833-edf-ducted-fan-xfly-galaxy-x5-xfly-model-50mm-12-blades-6s-motor-3200kv.html
+— read 2026-08-18.
+Figures as printed: thrust **1240 g**; current **38 A**; power **843 W**;
+battery **6S (22.2 V)**, 2200 mAh recommended; motor 3200 KV out-runner,
+26 mm diameter, 3 mm shaft; 12 blades; 50 mm class; weight **75 g**.
+**Recommended ESC: 50 A**, with the manufacturer's note "The controller
+should be chosen 20% over rated due to the long lasting load."
+Internal consistency check: 843 W / 22.2 V = 38.0 A, matching the printed
+current exactly.
+Used for: validating this repository's 50 A build rating (TODO.md 12.5.ai).
+38 A x 1.20 = 45.6 A required, so 50 A is the manufacturer's own answer and
+this build matches it at 1.32x the draw.
+**Verification caveat (AGENTS.md §3):** this is a distributor/manufacturer
+product page, not a datasheet PDF. No local copy exists in
+`docs/datasheets/`. Obtain a manufacturer datasheet and re-verify before
+production release; in particular the page states a single "current" figure
+without distinguishing continuous from peak.
 
 Track resolution of these items in `TODO.md`.

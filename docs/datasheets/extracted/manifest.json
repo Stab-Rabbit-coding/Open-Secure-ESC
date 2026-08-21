@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "last_updated": "2026-08-16T00:23:47-04:00",
+  "extractions": {
+    "TPHR8504PL_2859e6": {
+      "file": "TPHR8504PL_2859e6.json",
+      "mpn": "TPHR8504PL",
+      "category": "power_management",
+      "source_pdf": "TPHR8504PL_datasheet_en_20191024.pdf",
+      "source_pdf_hash": "sha256:1423461f6abc4f396fcd634050c815a7ac42f85bb8fe1dfe8783925140a154f5",
+      "extraction_date": "2026-08-16T04:22:19.049817+00:00",
+      "extraction_score": 7.1,
+      "extraction_version": 2,
+      "pin_count": 8
+    },
+    "DRV8353S_20b94f": {
+      "file": "DRV8353S_20b94f.json",
+      "mpn": "DRV8353S",
+      "category": "motor_driver",
+      "source_pdf": "drv8353.pdf",
+      "source_pdf_hash": "sha256:f440d3fae4c79d04078679ee6f3122d9aae2e169833a577fd993780204c3849e",
+      "extraction_date": "2026-08-16T04:22:19.078664+00:00",
+      "extraction_score": 7.1,
+      "extraction_version": 2,
+      "pin_count": 41
+    }
+  }
+}
