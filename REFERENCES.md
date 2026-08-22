@@ -1335,7 +1335,10 @@ section/page citation for the INITDONE-availability claim itself would
 upgrade this from attributed-finding to independently `VERIFIED`).
 p.37, §4.7 "Hardware Monotonic Counter" — anti-rollback protection
 mechanism for firmware updates.
-Cited in: `docs/security-mcu-comparison.md` §8.7 and §9.
+Cited in: `docs/security-mcu-comparison.md` §8.7 and §9;
+`docs/secure-element-architecture.md` §1.1/§2/§4 C-08 (Keystore access model,
+software-only ECDSA-P256/SHA-256, hardware monotonic counter — added
+2026-08-22 during the `TODO.md` §13 verification pass).
 Date accessed: 2026-08-03.
 
 ---
@@ -1453,7 +1456,12 @@ correcting two symbols that were mistakenly citing [44] for the OPTIGA™ Trust 
 local PDF and from the citing script's own recorded section/drawing numbers.
 Per `AGENTS.md` §2.5 the tag was **not** renumbered or reassigned.
 Cited in: `symbols/tools/gen_rhb0032t_footprint.py`;
-`symbols/MSPM0G3518_Q1_RHB.kicad_sym`.
+`symbols/MSPM0G3518_Q1_RHB.kicad_sym`; `symbols/specs/MSPM0G3518_Q1_PM.json`;
+`symbols/MSPM0G3518_Q1_PM.kicad_sym` (the active PM/LQFP-64 project MCU
+symbol, pin map VERIFIED against this datasheet's Fig 6-3 / Table 6-2 /
+§6.3 signal tables — added 2026-08-22 to close the gap where this citation
+was in use but unrecorded here); `docs/secure-element-architecture.md`
+§1.1/§4/§6 (added same pass).
 Date accessed: 2026-08-10.
 
 ---

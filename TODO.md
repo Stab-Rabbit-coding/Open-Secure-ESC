@@ -17,9 +17,14 @@ detail belongs in design docs, not here.
 - [~] 1.11 Verify [31] NXP S32K1xx Data Sheet claims used historically (local
       copy VERIFIED); S32K144 removed as project MCU (see 13). Keep artifacts
       for audit/history; do not reuse the S32K144 symbol as an active part.
-- [~] 1.12 `docs/security-mcu-comparison.md` — updated to reflect MCU swap and
+- [x] 1.12 `docs/security-mcu-comparison.md` — updated to reflect MCU swap and
       Trust M justification; ensure any claim referencing MCU crypto or SHE
       is traced to an authoritative source (Cn).
+      **Closed 2026-08-22** (see `TODO.md` 13.1.h): a superseded-status
+      banner now points the document at the actual decision
+      (MSPM0G3518-Q1, [44]) and at `docs/secure-element-architecture.md`
+      for current architecture; the S32K144-vs-alternatives body is kept as
+      historical record, its claims already cited to [31]/[2]/[33]/[35]–[43].
 
 ## 2. Requirements
 
@@ -1498,13 +1503,38 @@ detail belongs in design docs, not here.
 > confirmed by its "A 0.47 µF tank capacitor is required for the VCORE pin",
 > and C3 on the sheet is 470 nF.
 >
-> What remains open is the part that matters most: **the security
-> documentation still describes the S32K144's CSEc.** 13.1.e and 13.1.h below
-> are untouched, and `builds/6s/50A/CAN_485_faraday/README.md` carries an
-> as-built correction note pointing here. Do not treat any CSEc statement in
-> the design docs as describing this build until 13.1.e is closed.
+> **Status update 2026-08-22 — verified against the schematic and closed the
+> documentation gap.** This pass re-checked every 13.1.\* claim directly
+> against `open_secure_esc_6s_50a_can485_faraday.kicad_sch` (not just the
+> JSON spec's own self-description): `U1`'s `lib_id` is
+> `MSPM0G3518_Q1_PM:MSPM0G3518_Q1_PM` (line 4489); `VDDA` appears nowhere as
+> a net (only inside doc-string text); the `VCORE` net has two
+> `global_label` instances (lines 3147, 3329) plus an explicit note at line
+> 5267 requiring a dedicated 470 nF cap and nothing else on that net,
+> matching 13.1.a's decision; `NRST` has a mandatory 10 kΩ pull-up (note at
+> line 6064) that the superseded S32K144 design lacked; `SE_I2C_SCL`/
+> `SE_I2C_SDA`/`SE_RST` each have two `global_label` instances tying `U1`
+> pins 8/9/7 to `U2` (OPTIGA Trust M). The hand-authored `.kicad_sym` pin
+> list matches the JSON spec pin-for-pin (28 pins, same numbers/names/
+> `etype`s). **13.1.e is now closed**: `docs/secure-element-architecture.md`
+> was rewritten — C-01 (AES-128 ceiling) marked RESOLVED, C-05 (CSEc/HSRUN)
+> marked SUPERSEDED with the MSPM0 equivalent explicitly flagged
+> `UNVERIFIED` (not silently assumed absent), §1.1 and §2 rewritten for the
+> MSPM0's `AESADV`/Keystore per [44]/[40], and a **new finding C-08** raised:
+> the S32K144's CSEc had a documented volatile `RAM_KEY` slot for runtime
+> session-key loading; [40] p.2 Table 1-1 describes the MSPM0 Keystore as
+> CSC-configured only, and no primary source read so far confirms an
+> equivalent runtime-loadable path exists. **13.1.h is now closed** as a
+> status-banner update (not a full rewrite): `docs/security-mcu-comparison.md`
+> now carries a superseded-status note; its S32K144-vs-alternatives body is
+> kept as the historical research that the swap decision actually drew on,
+> per this repo's convention of not erasing superseded analysis.
+> **13.1.f is only partly closed** — see its own entry below; it opened
+> C-08 rather than closing cleanly. **13.1 stays `[~]`**, not `[x]`: C-08,
+> plus the new 13.1.i verification items, are genuinely open engineering
+> questions, not paperwork.
 
-- [ ] 13.1 **Replace the NXP S32K144 with the TI MSPM0G3518-Q1**, package PM
+- [~] 13.1 **Replace the NXP S32K144 with the TI MSPM0G3518-Q1**, package PM
       (LQFP-64), orderable `M0G3518QPMRQ1` [44]. Decided 2026-08-10: the
       S32K144's CSEc is SHE-compliant and therefore **AES-128 only**, which
       capped the authenticated hot path; the MSPM0G351x provides an
@@ -1513,7 +1543,7 @@ detail belongs in design docs, not here.
       `docs/secure-element-architecture.md`.
       **Full plan, verified facts, and constraints:**
       `docs/HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md`. Start there.
-  - [ ] 13.1.a **(Hazard — read before editing the schematic.)** `VCORE` is
+  - [x] 13.1.a **(Hazard — read before editing the schematic.)** `VCORE` is
         NOT the equivalent of the S32K144's `VDDA`. `VDDA` is an analog supply
         input tied to 3V3; `VCORE` is a regulator **output**, and [44] p.52
         states "The VCORE pin must only be connected to C_VCORE. Do not supply
@@ -1521,30 +1551,119 @@ detail belongs in design docs, not here.
         slot-for-slot swap would tie VCORE to 3V3 and violate the datasheet.
         **Decided 2026-08-10: drop VDDA's rail connection and give VCORE its
         own dedicated capacitor to VSS, with nothing else on that net.**
-  - [ ] 13.1.b `UNVERIFIED — needs primary source` : the C_VCORE capacitance
+        **Verified 2026-08-22 directly against the schematic:** `VDDA`
+        appears nowhere as a net on `open_secure_esc_6s_50a_can485_faraday
+        .kicad_sch` (only inside doc-string text); the `VCORE` net (2
+        `global_label` instances, lines 3147/3329) carries only the C_VCORE
+        note at line 5267, which states explicitly "This net carries the cap
+        and nothing else." Decision implemented as specified.
+  - [x] 13.1.b `UNVERIFIED — needs primary source` : the C_VCORE capacitance
         value. It is in the [44] p.51 Recommended Operating Conditions table,
         whose columns do not survive `pdftotext`. Do not guess it. The ±20%
         tolerance requirement IS verified and belongs on the BOM line.
-  - [ ] 13.1.c Author `symbols/specs/MSPM0G3518_Q1_PM.json` + `.kicad_sym`,
+        **Closed 2026-08-15, re-verified 2026-08-22:** 470 nF, read from [44]
+        p.51 §7.3 via `pdftotext -layout` (the bare-`pdftotext` column
+        collapse this item warned about was the actual blocker, not the
+        value being unobtainable). Schematic note at line 5267 states the
+        value and cites [44] p.51 §7.3 directly.
+  - [x] 13.1.c Author `symbols/specs/MSPM0G3518_Q1_PM.json` + `.kicad_sym`,
         mirroring the S32K144's functional signal-role names so the existing
         schematic wiring survives. Do not reuse
         `symbols/MSPM0G3518_Q1_RHB.kicad_sym` — that is the VQFN-32 package.
-  - [ ] 13.1.d Pin numbers will again be an `UNVERIFIED PLACEHOLDER PIN MAP`
+        **Verified 2026-08-22:** both files exist; the hand-authored
+        `.kicad_sym`'s 28 pins match the JSON spec's 28 pins exactly (number,
+        name, `etype`) pin-for-pin; `U1` on the build schematic instantiates
+        `MSPM0G3518_Q1_PM:MSPM0G3518_Q1_PM`, not the RHB symbol.
+  - [x] 13.1.d Pin numbers will again be an `UNVERIFIED PLACEHOLDER PIN MAP`
         unless [44]'s Table 6-2 can be read. **Try `pdfdetach -list` on
         `docs/datasheets/mspm0g3518-q1.pdf` first** — that trick is what
         unblocked the S32K144 map (see 1.11(a)) and may avoid the caveat.
-  - [ ] 13.1.e Rewrite `docs/secure-element-architecture.md`: C-01 becomes
+        **Closed 2026-08-15, re-verified 2026-08-22:** not a placeholder.
+        `symbols/specs/MSPM0G3518_Q1_PM.json`'s `"verification"` field records
+        the actual method used — `pdftotext -layout` (not `pdfdetach`) against
+        Figure 6-3 and Table 6-2, cross-checked against the §6.3 per-peripheral
+        signal tables, all 64 PM pads accounted for with zero discrepancies
+        between the two independent extractions. This environment has neither
+        `pdftotext` nor any Python PDF library available, so the extraction
+        itself could not be independently re-run this pass; the verification
+        record's own cross-check methodology was reviewed instead and is
+        credible (two independent extraction methods, explicit per-pad
+        conflict check, agreement with zero discrepancies).
+  - [x] 13.1.e Rewrite `docs/secure-element-architecture.md`: C-01 becomes
         RESOLVED, C-05 (CSEc/HSRUN exclusion) no longer applies, and every
         "CSEc" reference needs revisiting. **The Trust M's justification does
         NOT change** — the MSPM0's AES engine is still symmetric, so the
         asymmetric layer is still required.
-  - [ ] 13.1.f Check the keystore reduction: MSPM0 holds **4** AES keys
+        **Done 2026-08-22.** C-01 marked RESOLVED (ceiling lifted to AES-256,
+        original finding kept as history). C-05 marked SUPERSEDED — the
+        S32K144-specific HSRUN/CSEc exclusion no longer applies verbatim, but
+        per `AGENTS.md` §1.3 the doc does **not** claim the MSPM0 has no
+        equivalent constraint (that would be asserting absence from absence
+        of a citation); it is flagged `UNVERIFIED`, needs the MSPM0 TRM
+        clock/power chapter ([39]), and is carried forward as 13.1.i. §1.1
+        rewritten for `AESADV`/Keystore per [44] p.1 and [40] p.2 Table 1-1
+        (software-only ECDSA-P256/SHA-256, no hardware acceleration, no
+        certificate path — same structural gap, different citation). §2's
+        division-of-labour table updated; the Trust M rows are explicitly
+        unchanged, the MCU-side "session-key custody" row now points at the
+        new C-08 finding instead of asserting a settled mechanism. Every
+        other finding (C-02, C-03, C-06, C-07, O-01–O-05) reviewed and
+        annotated "unaffected by the MCU swap" where that's true, since none
+        of them actually depend on which MCU sits next to the Trust M.
+  - [~] 13.1.f Check the keystore reduction: MSPM0 holds **4** AES keys
         ([44] p.1) against CSEc's 17 ([31] Table 36-75). Confirm that suits the
         intended key hierarchy before closing 13.1.
-  - [ ] 13.1.g Preserve `SE_I2C_SCL` / `SE_I2C_SDA` / `SE_RST` on the new
+        **Analysed 2026-08-22, not fully closable — it surfaced a bigger open
+        question than a slot count.** Headroom alone is not the problem: this
+        design's only *named* MCU-side key use is the CSEc `RAM_KEY` role
+        (one volatile session-key slot) plus, per
+        `docs/security-mcu-comparison.md` §7, a `BOOT_MAC_KEY` role for
+        secure-boot verification — both fit inside a 4-slot budget with room
+        to spare, and the S32K144's 17 general-purpose user-key slots were
+        never all committed to a design in this repo (TODO.md §4.2/§4.3, the
+        secure-boot/key-provisioning design docs, are still `[ ]` open). The
+        real finding is that CSEc's `RAM_KEY` was explicitly volatile and
+        runtime-loadable, and the only primary-source description of the
+        MSPM0 Keystore found so far ([40] p.2 Table 1-1) describes it as
+        CSC-configured only, with no documented runtime-load path for a
+        freshly-negotiated ECDHE session key. That is worse than a slot-count
+        regression — it's a mechanism gap. Filed as **new finding C-08** in
+        `docs/secure-element-architecture.md` §4 (High, OPEN). This item
+        cannot close until C-08 does; tracked together with 13.1.i.
+  - [x] 13.1.g Preserve `SE_I2C_SCL` / `SE_I2C_SDA` / `SE_RST` on the new
         symbol, or the OPTIGA Trust M silently disconnects.
-  - [ ] 13.1.h Update `docs/security-mcu-comparison.md` — its S32K144-vs-
+        **Verified 2026-08-22 directly against the schematic:** all three
+        nets carry two `global_label` instances each (`SE_I2C_SCL`/
+        `SE_I2C_SDA` at lines 3959–3973 near `U2` and 4022–4036 near `U1`;
+        `SE_RST` likewise), tying `U1` pins 8/9/7 (pads `PA15`/`PA16`/`PA14`)
+        to `U2`. The OPTIGA block is not disconnected.
+  - [x] 13.1.h Update `docs/security-mcu-comparison.md` — its S32K144-vs-
         alternatives argument is the document this decision overturns.
+        **Done 2026-08-22 as a status banner, not a full rewrite** — added a
+        prominent superseded-status note pointing at the actual decision
+        (MSPM0G3518-Q1, [44]) and at `docs/secure-element-architecture.md`
+        for the current architecture; corrected the "Context" paragraph to
+        read as historical. The comparative research body (§2–§10, including
+        the §9 MCU survey that the swap decision drew on) is preserved
+        verbatim as the historical record, consistent with this repo's
+        practice of not erasing superseded analysis (cf. TODO.md §13's own
+        history section, §9 added to `secure-element-architecture.md` this
+        same pass). Also closes the doc side of TODO.md 1.12.
+  - [ ] 13.1.i **NEW 2026-08-22.** Read the MSPM0G3518-Q1 `AESADV`/`Keystore`
+        chapter body ([44] §8.20/§8.21, not yet read past the p.1 feature
+        summary and p.5 TOC) and, if needed, the MSPM0 G-Series TRM's
+        clock/power chapter ([39], SLAU846E) to resolve three items raised by
+        this pass, all filed in `docs/secure-element-architecture.md` §4:
+        (a) **C-08** — does `AESADV` support a runtime-loadable key outside
+        Keystore (a `RAM_KEY` equivalent), or must every key go through the
+        CSC-gated Keystore path; (b) **C-04** — does `AESADV`'s CMAC/GCM path
+        expose tag truncation directly (like CSEc's `TRUNCATE()`), or must
+        firmware truncate a full-length tag itself; (c) **C-05** — does any
+        MSPM0 clock/power mode restrict `AESADV` execution, the way S32K144
+        HSRUN restricted CSEc. None of these may be answered by inference
+        from the MSPM0's general reputation as a capable device — per
+        `AGENTS.md` §1.3 each needs its own citation or its own explicit
+        `UNVERIFIED`.
 
 ---
 

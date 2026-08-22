@@ -38,15 +38,23 @@ KiCad symbols and their own pin-map verification status are in
 > "UNVERIFIED PLACEHOLDER PIN MAP" caveat below no longer applies to the part
 > actually in the design.
 >
-> The text below is left in place rather than rewritten because the swap's
-> *security* consequences are genuinely unfinished work, not a documentation
-> lag: TODO.md §13.1.e requires `docs/secure-element-architecture.md` to be
-> revisited (C-01 resolved, the CSEc/HSRUN exclusion C-05 no longer applies),
-> and §13.1.f requires checking the keystore reduction from CSEc's 17 keys to
-> the MSPM0's 4. Every "CSEc" statement below therefore describes a part that
-> is no longer in this build and must not be relied on until §13.1.e is
-> closed. The OPTIGA Trust M's justification is unaffected — the MSPM0's AES
-> engine is still symmetric, so the asymmetric layer is still required.
+> The text below is left in place rather than rewritten, because it is
+> historical BOM record for a part no longer on the schematic, not because
+> the swap's documentation is still lagging. **Update 2026-08-22: TODO.md
+> §13.1.e is closed** — `docs/secure-element-architecture.md` has been
+> rewritten for the MSPM0's `AESADV`/Keystore (C-01 RESOLVED; the CSEc/HSRUN
+> exclusion C-05 marked SUPERSEDED, with the MSPM0's own clock/crypto
+> interaction explicitly flagged `UNVERIFIED` rather than assumed absent).
+> **§13.1.f raised a new finding (C-08) rather than closing cleanly:** the
+> keystore slot count (4 vs. CSEc's 17) was not the real problem — the real
+> gap is that CSEc's runtime-loadable volatile `RAM_KEY` has no confirmed
+> MSPM0 equivalent, so how a freshly ECDHE-negotiated session key reaches the
+> MCU's AES engine is undesigned. See `docs/secure-element-architecture.md`
+> §4 C-08 and `TODO.md` 13.1.f/13.1.i. Every "CSEc" statement below therefore
+> still describes a part that is no longer in this build; read it as history,
+> not as this build's current security architecture. The OPTIGA Trust M's
+> justification is unaffected — the MSPM0's AES engine is still symmetric, so
+> the asymmetric layer is still required.
 >
 > Two other things below are also now stale: `C_VCORE` is **verified at
 > 470 nF, +/-20%** ([44] Recommended Operating Conditions, and "A 0.47 µF tank
