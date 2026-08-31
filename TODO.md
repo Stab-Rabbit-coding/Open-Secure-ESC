@@ -1656,3 +1656,59 @@ the skill must refuse rather than extrapolate, per `AGENTS.md` §1.3.
 
 **Deferred.** Firmware generation, gerber/CPL emission, and BOM sourcing are
 out of scope; the skill stops at a DRC-clean routed board.
+
+## 15. Single-End Wire Egress Variant (planned — not started)
+
+Design plan: `docs/design-single-end-wire-egress-variant.md`. A pocket-mount
+variant in which the pack conductors and the three phase conductors both
+terminate at the same board end, on opposite long edges. Not a connector
+move — a board re-partition that swaps the logic cluster (`U1`/`U2`/`J1`)
+with the pack input.
+
+- [ ] 15.1 **(Blocking) Confirm the egress reading.** "Opposite sides" =
+      the two long edges near one end, or the two board faces? Everything
+      below assumes long edges (plan §1.1); the faces reading is rejected in
+      plan §7.1 and reopens §3–§6 if it was the intent.
+- [ ] 15.2 **Add a Wire Egress axis to `docs/decision-matrix.xlsx`** with
+      values `split-end` (as-built default) and `single-end`. Re-run
+      `docs/tools/decision_matrix_to_json.py --check`; add the axis to root
+      `README.md`; instantiate `builds/6s/50A/CAN_485_faraday_singleend/`.
+- [ ] 15.3 **(High, blocks layout) Select the power connectors.** Promotes
+      §12.4.l from a fab blocker to a layout gate: single-end egress budgets
+      connector *body length along the long edge*, a dimension the baseline
+      never constrained. Cite the part in `REFERENCES.md` before use (Cn).
+- [ ] 15.4 **Re-place: swap logic cluster and pack input.** `U1`/`U2`/`J1`
+      to Y ~25–45 mm; `J5A/B` to the −X long edge and `J4A/B/C` to the +X
+      long edge at Y ~76–86 mm. **Re-run `isolation_envelope.py` with the
+      new widest non-isolated part** — the LQFP-64 may displace the 12.90 mm
+      input and push the minimum width past the as-built 32.00 mm, which
+      would invalidate the partition rather than justify a wider board.
+- [ ] 15.5 **Re-run `docs/tools/conductor_sizing.py`** for the new
+      pour-edge-to-terminal gaps on both edges. Its standing conclusion
+      holds: the gap is pour, not track, or the terminals move onto the
+      pour's layer. No "TBD" copper weight.
+- [ ] 15.6 **Common-mode choke on the pack input** — new for this variant.
+      Single-end egress puts the pack and phase harnesses in one bundle,
+      deleting the physical separation the split-end layout gave free. Quote
+      insertion loss from the part's own datasheet; do not estimate (Cn).
+- [ ] 15.7 **Split the phase-terminal rule area** (X 20.8–51.1, Y 76.5–86.5)
+      into a −X `VBATT` area and a +X `PHASE` area. **Each new rule needs a
+      negative control before it is trusted** — see `CLAUDE-MEMORY.md`
+      *kicad-dru-silent-failure*: one-line conditions only, and clause order
+      is not commutative. Record the control procedure beside the rule.
+- [ ] 15.8 **Thermal re-run** over the new placement. Five wire terminals at
+      one end redistributes the conduction path out of the board. Quote
+      junction temperatures for `Q1`–`Q6`, `U5`, `U1`; no "TBD".
+- [ ] 15.9 **Conducted-emissions pre-compliance for this variant.** The
+      baseline §7.3 result does not transfer. Add this variant and its
+      harness dress (twisted phase triplet, twisted pack pair, stated bundle
+      separation) to the §7.3 test plan — the test is meaningless without a
+      defined harness.
+
+**Sequencing.** 15.1 → 15.2 → 15.3 → 15.4 → 15.5 → 15.7 → 15.6 → 15.8 →
+15.9. 15.1 gates all of it.
+
+**Open, non-blocking.** IPC-2221 Table 6-1 conductor spacing is used
+nowhere as an asserted value — no primary copy exists and no tag is issued
+(`REFERENCES.md`, "Pending Verification"). Mechanics, not spacing, decides
+the terminal pitch (plan §3.1).
