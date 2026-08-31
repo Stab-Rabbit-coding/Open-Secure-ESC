@@ -45,7 +45,7 @@ Open-Secure-ESC/
 | `tools/decision_matrix_to_json.py` | Exports the workbook to JSON; `--check` fails if the JSON is stale. |
 | `tools/add_wire_egress_sheet.py` | Adds the Wire Egress axis sheet (Opposite-end / Same-end opposite faces). Idempotent; backs up to a timestamped file so the existing `.xlsx.bak` is not clobbered. |
 | `solutions/` | Documented learnings, organized by category with YAML frontmatter (`module`, `tags`, `problem_type`). |
-| `design-single-end-wire-egress-variant.md` | Plan for the pocket-mount variant: all five 50 A conductors exit one board end, phases on F.Cu and pack on B.Cu, shielded by the two inner GND planes. Records that the board has no stackup, and that the terminal-end rule area currently cuts the inner planes where the shield is needed. `TODO.md` §15. Not implemented. |
+| `design-single-end-wire-egress-variant.md` | Plan for the pocket-mount variant: all five 50 A conductors exit one board end, phases on F.Cu and pack on B.Cu, shielded by the two inner GND planes. Records that the board has no stackup, and that the terminal-end rule area cut the inner planes where the shield is needed (fixed 2026-08-31). Section 3.3's first partition FAILED creepage and is superseded. `TODO.md` §15. Partly implemented in `builds/6s/50A/CAN_485_faraday_sameend/`. |
 | `secure-element-architecture.md` | OPTIGA Trust M rationale, security-monitor budget, cryptographic assessment, open findings C-01..C-07 / O-04..O-05. |
 | `security-mcu-comparison.md` | Eight-candidate survey of security MCUs; the document the MCU swap overturns. |
 | `HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md` | Plan and verified facts for the S32K144 → MSPM0G3518-Q1 swap (`TODO.md` §13). |
@@ -66,6 +66,19 @@ Open-Secure-ESC/
 | `tools/gen_kicad_symbol.py` | JSON spec → `.kicad_sym`. |
 | `tools/gen_*_footprint.py` | One generator per hand-authored footprint: DRV8353S `RTA0040B`, Toshiba `2-5W1A`, Würth `WE-SHC 3670209`/`3670375`, and the SMD solder-pad strips. Each docstring names the drawing every dimension came from and flags which numbers are derivations rather than manufacturer values. |
 | `tools/gen_optiga_uson10_3dmodel.py` | STEP model generator. |
+
+## builds/6s/50A/CAN_485_faraday_sameend/
+
+Same-end wire-egress variant of the build below — all five 50 A conductors
+leave one board end, phases on F.Cu and pack on B.Cu, shielded by the two
+inner GND planes. `TODO.md` §15.
+
+| Path | What it is |
+| --- | --- |
+| `README.md` | Delta against the parent build; the BOM is deliberately not duplicated. Records why the board is 10 mm longer rather than re-partitioned. |
+| `kicad/` | KiCad 9.0.2 project, basename `..._sameend`. Board is `version 20241229` / `generator_version "9.0"` — must NOT be opened in KiCad 10. |
+| `kicad/tools/make_same_end_egress.py` | Applies the whole geometry change: outline extension, zone stretch, terminal relocation, rule-area and fiducial moves. Idempotent-unsafe — run once against a pristine copy. |
+| `gerbers/` | Placeholder. Three gates listed in its README before fab output is meaningful. |
 
 ## builds/6s/50A/CAN_485_faraday/
 

@@ -1686,6 +1686,28 @@ dielectric height, copper weight or laminate `εr` is specified anywhere.
 are cut away exactly where the two terminal groups must face each other —
 the shield this variant depends on is currently perforated by design.
 
+- [x] 15.1b **Same-end build instantiated 2026-08-31.**
+      `builds/6s/50A/CAN_485_faraday_sameend/` created from the parent build
+      under KiCad **9.0.2** only (board still `version 20241229` / `9.0`,
+      NOT advanced to KiCad 10). Geometry applied by
+      `kicad/tools/make_same_end_egress.py`: outline +10.00 mm at the terminal
+      end (32.00 x 66.10 -> 32.00 x 76.10 mm, +15.1% area), phases J4A/B/C
+      stay on F.Cu on their pours at y 90.50, pack J5A/J5B moved to B.Cu at
+      y 90.50 opposite them, zones and outer-layer rule area stretched to
+      match, FID3/FID6 moved with the band. DRC: 20 violations / **0 errors**
+      / 150 unconnected — identical warning profile to the parent and one
+      fewer unconnected.
+      **The design doc's original partition is DEAD and was not implemented:**
+      U1's courtyard is 13.45 mm, not 12.90 mm, so with U1 at the logic end
+      `isolation_envelope.py` demands 32.41 mm against an actual 32.00 mm —
+      fails by 0.41 mm on [9] Table 6 creepage. Length was bought instead, at
+      the 2.7x width:length rate the tool prices. U1/U2/J1 never move, so the
+      gate-drive and current-sense regressions the old partition carried are
+      gone. Plan section 3.3 and open item 3 are superseded — **the design doc
+      still describes the dead partition and needs rewriting.**
+      **Still open:** VM cannot reach J5A on B.Cu (pour stops at y 60.3/60.5),
+      and J5B's GND pad is cut off from the B.Cu pour by the relocated rule
+      area — both are the 12.5.ae decision, inherited unresolved.
 - [x] 15.1 **Wire Egress axis added to the decision matrix** 2026-08-31 via
       `docs/tools/add_wire_egress_sheet.py`; `decision-matrix.json`
       regenerated and `decision_matrix_to_json.py --check` passes. Values:

@@ -3,8 +3,12 @@
 Governed by [`AGENTS.md`](../AGENTS.md). Tracked as `TODO.md` §15.
 Decision-matrix axis: **Wire Egress**, value `Same-end, opposite faces`.
 
-**Status: PLAN — not implemented, not vetted for fabrication.** Nothing in
-this document has been placed, routed, or DRC-checked. Every quantitative
+**Status: PARTLY IMPLEMENTED as of 2026-08-31, not vetted for fabrication.**
+Geometry is applied in `builds/6s/50A/CAN_485_faraday_sameend/` (DRC 20
+warnings / 0 errors / 150 unconnected under KiCad 9.0.2); routing, stackup
+(§2.2) and VM distribution to the relocated pack pad (§3.2) are **not** done.
+The partition first proposed in §3.3 was measured and **failed** — see §3.3
+for what was built instead. Every quantitative
 claim below is either (a) read directly out of the as-built
 `builds/6s/50A/CAN_485_faraday/kicad/*.kicad_pcb`, (b) produced by a repo tool
 named at the point of use, (c) arithmetic shown in full at the point of use,
@@ -140,30 +144,51 @@ shield in exactly the window where it is needed. **Rejected.**
 
 - `GND` (VBATT−) is trivial: B.Cu already carries a GND pour there.
 - `VM` (VBATT+) is the real work. The VM pour stops at Y 60.3 mm (F.Cu) and
-  Y 60.5 mm (In2.Cu). VM must be carried roughly 0.79 in (20 mm) further to
-  reach a B.Cu pad at Y ≈ 80 mm, on a face where GND currently pours. B.Cu at
-  the terminal end must be re-partitioned into a VM region and a GND region.
+  Y 60.5 mm (In2.Cu). VM must be carried roughly 1.18 in (30 mm) further to
+  reach the B.Cu pad at Y = 90.50 mm, on a face where GND currently pours.
+  B.Cu at the terminal end must be re-partitioned into a VM region and a GND
+  region. **Not done** — `J5A` (VM) is deliberately left unconnected rather
+  than bridged by a track, because a 3.0 mm track across that span costs more
+  than all six FETs' conduction loss combined (§7). `J5B` (GND) is also
+  unconnected, cut off from the B.Cu pour by the relocated outer-layer rule
+  area — the same defect `TODO.md` 12.5.an measures on the parent. Both are
+  the 12.5.ae sign-off, inherited unresolved.
 
-### 3.3 What has to move, and what does not
+### 3.3 What has to move — corrected 2026-08-31
 
-| Item | Baseline | Variant |
+**The partition originally proposed here is dead. Do not implement it.** It
+moved `U1`/`U2`/`J1` to the logic end to free the terminal end. `U1`'s
+courtyard measures **13.45 mm**, not the 12.90 mm §2.3's envelope calculation
+assumed, so with `U1` at the logic end `isolation_envelope.py` returns:
+
+```text
+13.45 + 2 x (7.5 + 1.43) + 2 x 0.55 = 32.41 mm minimum board width
+```
+
+against an actual 32.00 mm — a **0.41 mm failure** against the [9] Table 6
+creepage, which is verified and not negotiable. §11 open item 3 anticipated
+exactly this, and §2.3's rule applies: *this variant needs a different
+partition, not a wider board.*
+
+**The partition actually built** leaves the logic cluster alone and buys
+length at the terminal end instead. `isolation_envelope.py` prices width
+against length at 2.7× here, so length is the cheap dimension.
+
+| Item | Baseline | Variant as built |
 | --- | --- | --- |
-| `J4A`/`J4B`/`J4C` phases | F.Cu, Y 80.50 | **unchanged** |
-| Phase pours `PH_A/B/C` | F.Cu | **unchanged** |
-| FET bridge `Q1`–`Q6` | F.Cu | **unchanged** |
-| Gate driver `U5` | B.Cu, Y 60.00 | **unchanged** |
-| `J5A`/`J5B` pack | F.Cu, Y 29.00 | → **B.Cu, Y ≈ 76–86** |
-| `U1` MCU | B.Cu, Y 78.50 | → B.Cu, logic end (Y ≈ 25–45) |
-| `U2` secure element | B.Cu, Y 81.50 | → B.Cu, logic end |
-| `J1` probe pads | B.Cu, Y 81.00 | → B.Cu, logic end |
-| `VM` distribution | ends Y ≈ 60.4 | extended to B.Cu terminal end |
-| Terminal-end rule area | all 4 layers | → outer layers only (§4.2) |
+| Board outline | 32.00 × 66.10 mm | **32.00 × 76.10 mm** (+15.1 % area) |
+| `J4A`/`J4B`/`J4C` phases | F.Cu, y 80.50 | F.Cu, **y 90.50** (still on their pours) |
+| `J5A`/`J5B` pack | F.Cu, y 29.00 | **B.Cu, y 90.50** (opposite the phases) |
+| `U1` / `U2` / `J1` | B.Cu, y ≈ 76–86 | **unchanged** |
+| MCU → gate-driver run | ≈18.5 mm | **unchanged** |
+| Current-sense returns | — | **unchanged** |
+| `FID3` / `FID6` | y 83.65 | y 93.65 (move with the band) |
+| Phase pours, FETs, `U5` | — | **unchanged** |
 
-This is materially smaller than the long-edge reading would have been: the
-entire phase side is untouched. The cost is concentrated in two places — the
-`U1`/`U2`/`J1` relocation, and getting VM to the back face.
-
----
+Because the logic cluster never moves, the two regressions §8.1 previously
+listed — the lengthened gate-drive run and the lengthened current-sense
+returns — **do not occur**. Applied by
+`builds/6s/50A/CAN_485_faraday_sameend/kicad/tools/make_same_end_egress.py`.
 
 ## 4. The shield between front and back copper
 
@@ -404,9 +429,8 @@ measurement; inventing a figure would violate `AGENTS.md` §1.3.
 
 | Consequence | Effect | Handled in |
 | --- | --- | --- |
-| `U1`/`U2`/`J1` leave the terminal end | **Improvement** — logic no longer sits under the phase rule area, and moves to the logic side of the isolation barrier | 15.4 |
-| MCU-to-gate-driver distance grows ≈18.5 → ≈31 mm | Longer DRV8353S SPI and 6× PWM runs beside the switching node | 15.4 |
-| Current-sense returns lengthen | Analog runs cross more of the board | 15.4 |
+| Board grows 66.10 → 76.10 mm | +15.1 % area; length is the cheap dimension at the 2.7x rate isolation_envelope.py prices | §3.3 |
+| `U1`/`U2`/`J1` stay put | **No regression** — the gate-drive and current-sense lengthening the dead partition would have caused does not occur | §3.3 |
 | VM must reach B.Cu at the terminal end | New 50 A pour region on a face that is currently all GND | 15.5 |
 | VM pour on B.Cu under the phase pours on F.Cu | Acceptable **only** if §4.2 is fixed first; otherwise unshielded | 15.3 |
 | Five terminals concentrated at one end | Wires are a heat path out of the board; the gradient concentrates | 15.8 |
@@ -472,13 +496,11 @@ placement rule barring phase and VM vias from that window (§4.3).
 *Done when:* both inner planes show continuous fill across the window in the
 filled-polygon data, not merely an edited rule area.
 
-**15.4 — Re-place `U1`, `U2`, `J1` to the logic end.** Move all three off
-B.Cu Y ≈ 76–86 mm to Y ≈ 25–45 mm. **Re-run `isolation_envelope.py` with the
-new widest non-isolated part** — the LQFP-64 (10 × 10 mm body) may displace
-the 12.90 mm input and push the minimum width past the as-built 32.00 mm. If
-it does, this variant needs a different partition, **not** a wider board.
-Re-check the lengthened DRV8353S SPI, PWM and current-sense runs against the
-DRV8353S datasheet's layout guidance.
+**15.4 — ~~Re-place `U1`, `U2`, `J1` to the logic end.~~ CLOSED 2026-08-31 —
+not done, and must not be.** `U1` is 13.45 mm wide; at the logic end
+`isolation_envelope.py` demands 32.41 mm against an actual 32.00 mm. Replaced
+by the length-extension partition in §3.3, which leaves all three parts where
+they are.
 
 **15.5 — Extend VM to a B.Cu pad at the terminal end.** Re-partition B.Cu
 Y > 60.5 mm into VM and GND regions; place `J5A`/`J5B`. Re-run
@@ -525,7 +547,7 @@ plan names this variant and its harness dress.
 | --- | --- | --- |
 | 1 | Stackup undefined — no dielectric height, copper weight or `εr` anywhere (§2.2) | **Yes** — gates 15.3–15.9 |
 | 2 | Rule area cuts the inner planes in the terminal window (§4.2) | **Yes** — the variant does not work until fixed |
-| 3 | Does `U1` become the "widest non-isolated part" at the logic end? (15.4) | **Yes** — may invalidate the partition |
+| 3 | ~~Does `U1` become the widest non-isolated part?~~ **RESOLVED 2026-08-31: yes, 13.45 mm, and it invalidated the original partition (§3.3). Superseded by the length-extension partition.** | closed |
 | 4 | Connector selection, inherited from `TODO.md` §12.4.l | **Yes** for layout |
 | 5 | Laminate `εr` — nominal 4.3 used, none verified (§4.4, §5) | No — ratios hold regardless |
 | 6 | Switching edge rate unspecified — `IDRIVE` and gate resistors not set (§5.2) | No — but 15.7 needs it |
