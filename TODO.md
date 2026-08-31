@@ -691,7 +691,14 @@ detail belongs in design docs, not here.
         opposite for itself: "Neither PCB stitching capacitance nor high
         voltage surface-mounted technology (SMT) safety capacitors are
         required" -- so this applies to the RS-485 part, U4.
-  - [ ] 12.5.ae **(Medium) The isolation keepout is not datasheet-driven and
+  - [~] 12.5.ae **PARTLY RESOLVED 2026-08-31 — inner layers stripped.**
+        Option (b)'s inner-layer half is done: In1.Cu/In2.Cu removed from the
+        rule area by `tools/restore_inner_planes.py`, restoring the
+        plane-to-plane overlap [9] p.17 asks for. **Still open:** whether the
+        remaining F.Cu/B.Cu scope should be deleted (option a) or shrunk to
+        the U3/U4 package bodies (option b) — that moves 50 A current paths
+        and still needs sign-off. Original entry follows.
+        **(Medium) The isolation keepout is not datasheet-driven and
         should be replaced, not relocated.** The existing rule area is a
         full-width, 4-layer no-copper-pour rectangle. [9] p.17 asks for the
         **opposite** on a 4-layer board: "place an embedded stitching
@@ -895,8 +902,14 @@ detail belongs in design docs, not here.
         area. The zone's `island_removal_mode` was already `ALWAYS` and did
         not remove it; a clean reload-fill-save cycle reproduced it, so this
         was not the stale-fill trap. `isolated_copper` 2 -> 1.
-        **Still open:** confirm the authored rule area over the phase
-        terminals is intended, and identify the last remaining
+        **Answered 2026-08-31 for the inner layers:** it was NOT intended
+        there. The rule area was authored when U3/U4 sat at that end; they
+        are now at y 34.50 on B.Cu, so it guarded nothing while cutting both
+        GND planes across the full board width. In1.Cu/In2.Cu stripped by
+        `tools/restore_inner_planes.py`; the In2.Cu VM-island rule area is
+        the one justified inner-layer keepout and was kept.
+        **Still open:** whether the remaining F.Cu/B.Cu scope over the phase
+        terminals is intended (see 12.5.ae), and identify the last remaining
         `isolated_copper` (1, warning).
   - [x] 12.5.ao **DONE 2026-08-19 — 11 starved GND thermals given solid zone
         connections.** `.kicad_pro` sets `min_resolved_spokes = 2`; these pads
@@ -1659,56 +1672,83 @@ out of scope; the skill stops at a DRC-clean routed board.
 
 ## 15. Single-End Wire Egress Variant (planned — not started)
 
-Design plan: `docs/design-single-end-wire-egress-variant.md`. A pocket-mount
-variant in which the pack conductors and the three phase conductors both
-terminate at the same board end, on opposite long edges. Not a connector
-move — a board re-partition that swaps the logic cluster (`U1`/`U2`/`J1`)
-with the pack input.
+Design plan: `docs/design-single-end-wire-egress-variant.md`. Pocket-mount
+variant: all five 50 A conductors leave the same board end, **phases on F.Cu
+(unchanged) and pack on B.Cu**, with the two inner GND planes carrying the
+shield between them. Owner confirmed the opposite-**faces** reading
+2026-08-31; the earlier long-edge reading is withdrawn (plan §9.2).
 
-- [ ] 15.1 **(Blocking) Confirm the egress reading.** "Opposite sides" =
-      the two long edges near one end, or the two board faces? Everything
-      below assumes long edges (plan §1.1); the faces reading is rejected in
-      plan §7.1 and reopens §3–§6 if it was the intent.
-- [ ] 15.2 **Add a Wire Egress axis to `docs/decision-matrix.xlsx`** with
-      values `split-end` (as-built default) and `single-end`. Re-run
-      `docs/tools/decision_matrix_to_json.py --check`; add the axis to root
-      `README.md`; instantiate `builds/6s/50A/CAN_485_faraday_singleend/`.
-- [ ] 15.3 **(High, blocks layout) Select the power connectors.** Promotes
-      §12.4.l from a fab blocker to a layout gate: single-end egress budgets
-      connector *body length along the long edge*, a dimension the baseline
-      never constrained. Cite the part in `REFERENCES.md` before use (Cn).
-- [ ] 15.4 **Re-place: swap logic cluster and pack input.** `U1`/`U2`/`J1`
-      to Y ~25–45 mm; `J5A/B` to the −X long edge and `J4A/B/C` to the +X
-      long edge at Y ~76–86 mm. **Re-run `isolation_envelope.py` with the
-      new widest non-isolated part** — the LQFP-64 may displace the 12.90 mm
-      input and push the minimum width past the as-built 32.00 mm, which
-      would invalidate the partition rather than justify a wider board.
-- [ ] 15.5 **Re-run `docs/tools/conductor_sizing.py`** for the new
-      pour-edge-to-terminal gaps on both edges. Its standing conclusion
-      holds: the gap is pour, not track, or the terminals move onto the
-      pour's layer. No "TBD" copper weight.
-- [ ] 15.6 **Common-mode choke on the pack input** — new for this variant.
-      Single-end egress puts the pack and phase harnesses in one bundle,
-      deleting the physical separation the split-end layout gave free. Quote
-      insertion loss from the part's own datasheet; do not estimate (Cn).
-- [ ] 15.7 **Split the phase-terminal rule area** (X 20.8–51.1, Y 76.5–86.5)
-      into a −X `VBATT` area and a +X `PHASE` area. **Each new rule needs a
-      negative control before it is trusted** — see `CLAUDE-MEMORY.md`
-      *kicad-dru-silent-failure*: one-line conditions only, and clause order
-      is not commutative. Record the control procedure beside the rule.
-- [ ] 15.8 **Thermal re-run** over the new placement. Five wire terminals at
-      one end redistributes the conduction path out of the board. Quote
-      junction temperatures for `Q1`–`Q6`, `U5`, `U1`; no "TBD".
-- [ ] 15.9 **Conducted-emissions pre-compliance for this variant.** The
+**Two findings drive this section.** (a) The board has **no stackup** — four
+copper layers are declared and `(thickness 1.6)` is KiCad's default, but no
+dielectric height, copper weight or laminate `εr` is specified anywhere.
+(b) The unnamed rule area at x 20.75–51.15, y 76.50–86.55 mm sets
+`copperpour not_allowed` on **all four** copper layers, so In1.Cu and In2.Cu
+are cut away exactly where the two terminal groups must face each other —
+the shield this variant depends on is currently perforated by design.
+
+- [x] 15.1 **Wire Egress axis added to the decision matrix** 2026-08-31 via
+      `docs/tools/add_wire_egress_sheet.py`; `decision-matrix.json`
+      regenerated and `decision_matrix_to_json.py --check` passes. Values:
+      `Opposite-end` (as-built default) and `Same-end, opposite faces`.
+      **Still open:** add the axis to root `README.md` build options, and
+      instantiate `builds/6s/50A/CAN_485_faraday_sameend/` per
+      `docs/solutions/architecture-patterns/esc-build-instantiation-workflow.md`.
+- [ ] 15.2 **(Blocking) Define the stackup.** Specify layer count, per-layer
+      copper weight, every dielectric height, laminate and `εr`, and surface
+      finish; write them into the `.kicad_pcb` stackup block. Settle 4 layers
+      at 2 oz against 6 at 1 oz (plan §6.3). Gates 15.3–15.9. No "TBD".
+- [~] 15.3 **Terminal-end rule area re-scoped 2026-08-31 — inner planes
+      restored.** `tools/restore_inner_planes.py` stripped In1.Cu/In2.Cu from
+      rule area 7c9dc61f, leaving F.Cu/B.Cu. Verified against **filled-polygon
+      data**, not the edited rule area: probe points inside the window went
+      0/6 → 6/6 in copper on both inner planes, In1.Cu/GND +273.36 mm² and
+      In2.Cu/GND +273.36 mm², every other layer/net delta 0.00 mm². DRC
+      unchanged at 20 warnings / 151 unconnected. The In2.Cu VM-island rule
+      area (923717e9) was inspected and **kept** — it is the justified case
+      (12.5.an).
+      **Still open:** the placement rule barring phase and VM vias from
+      x 20.75–51.15, y 76.50–86.55 mm is not yet authored.
+- [ ] 15.4 **Re-place `U1`, `U2`, `J1`** off B.Cu y ~76–86 mm to the logic
+      end (y ~25–45 mm). **Re-run `isolation_envelope.py` with the new widest
+      non-isolated part** — the LQFP-64 may displace the 12.90 mm input and
+      push the minimum width past the as-built 32.00 mm, which invalidates
+      the partition rather than justifying a wider board. Re-check the
+      lengthened DRV8353S SPI/PWM/current-sense runs against [21].
+- [ ] 15.5 **Extend VM to a B.Cu pad at the terminal end.** Re-partition
+      B.Cu y > 60.5 mm into VM and GND regions; place `J5A`/`J5B`. Re-run
+      `docs/tools/conductor_sizing.py` for the new pack-side gap; it must be
+      pour, not track. No "TBD" copper weight.
+- [ ] 15.6 **Stitch In1.Cu to In2.Cu** around the terminal window at a pitch
+      justified against a stated highest frequency of interest. **Every new
+      DRC rule needs a negative control before it is trusted** — see
+      `CLAUDE-MEMORY.md` *kicad-dru-silent-failure*: one-line conditions only
+      (a multi-line condition silently voids the whole `.kicad_dru`, exit 0),
+      and clause order is not commutative.
+- [ ] 15.7 **Common-mode choke on the pack input** — new for this variant.
+      Inside the board the planes handle separation; outside it both
+      harnesses leave the pocket in one bundle. Quote insertion loss at the
+      switching fundamental from the part's own datasheet (Cn); needs the
+      edge rate from 15.2/`IDRIVE`, currently unspecified.
+- [ ] 15.8 **Thermal re-run** over the new placement. Junction temperatures
+      for `Q1`–`Q6`, `U5`, `U1` at a stated ambient. No "TBD".
+- [ ] 15.9 **Obtain a fabrication quote**: 4 vs 6 layers; 1 oz vs 2 oz; 1.6
+      vs 2.0 vs 3.2 mm thickness; max via aspect ratio accepted at each
+      thickness. **No price enters this repo until it comes from a vendor
+      quotation** (`AGENTS.md` §1.3). Confirms or revises plan §5/§6.
+- [ ] 15.10 **Conducted-emissions pre-compliance for this variant.** The
       baseline §7.3 result does not transfer. Add this variant and its
       harness dress (twisted phase triplet, twisted pack pair, stated bundle
-      separation) to the §7.3 test plan — the test is meaningless without a
-      defined harness.
+      separation) to the §7.3 test plan.
 
-**Sequencing.** 15.1 → 15.2 → 15.3 → 15.4 → 15.5 → 15.7 → 15.6 → 15.8 →
-15.9. 15.1 gates all of it.
+**Sequencing.** 15.2 → 15.3 → 15.4 → 15.5 → 15.6 → 15.7 → 15.8 → 15.9 →
+15.10, with the 15.1 remainder any time. 15.2 gates the rest.
 
-**Open, non-blocking.** IPC-2221 Table 6-1 conductor spacing is used
-nowhere as an asserted value — no primary copy exists and no tag is issued
-(`REFERENCES.md`, "Pending Verification"). Mechanics, not spacing, decides
-the terminal pitch (plan §3.1).
+**Answered in the plan, recorded here so they are not re-asked.** Thickening
+the laminate is not a useful lever for face-to-face separation (one factor of
+two per doubling, against a grounded plane that terminates the path outright
+and is already in the stackup — plan §5). A fifth layer is not needed and is
+not a normal fabrication count; the real choice is 4 vs 6, and 6 would be
+justified by copper cross-section, not shielding (plan §6). The dominant
+coupling on this board is the phase pour to the In1.Cu plane, ~190x the
+face-to-face pad figure, and it is set by a dielectric height 15.2 has yet
+to specify (plan §5.2).
