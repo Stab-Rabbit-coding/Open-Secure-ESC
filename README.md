@@ -18,6 +18,8 @@ Build Options:
 * Protocol: PWM, SBus, DBus, UART, TTL, SPI, RS-232 [3], RS-485 [4], CAN2.0 [5], CAN-FD [6], MIL-STD-1553B [7]
 * Control: Open, Closed-Diff, Closed-PID
 * EMI Hardening: None, Isolation, Grounding, Faraday
+* Wire Egress: Opposite-end (default), Same-end opposite faces (both conductor groups leave one board end, phases on F.Cu and pack on B.Cu, shielded by the inner GND planes)
+* Form Factor: Flat (default), Faceted rigid-flex (for mounting inside a curved host; strip width and sagitta derive from the host bore radius — see `docs/tools/strip_width.py`)
 * Ingress & environmental protection: IP ratings up to IP68 and NEMA equivalents up to NEMA 6P. Submersible variants MUST include cooling strategies that operate correctly in both air and water (see docs/design-submersible-cooling.md DRAFT).
 
 ## Repository layout

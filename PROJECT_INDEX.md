@@ -43,6 +43,8 @@ Open-Secure-ESC/
 | `decision-matrix.json` | Generated export of the workbook for scripting — rows keyed by slug, with a status legend and a workbook hash for staleness detection. Do not hand-edit; re-run the exporter. |
 | `tools/add_motor_and_shaft_sensor_sheets.py` | Adds the Motor and Shaft Sensor axis sheets (idempotent, backs up first). |
 | `tools/decision_matrix_to_json.py` | Exports the workbook to JSON; `--check` fails if the JSON is stale. |
+| `tools/strip_width.py` | Sagitta/chord calculator: how wide a flat board fits inside a curved host, both directions, plus facet count for an arc. Makes the width↔length coupling explicit. |
+| `tools/add_form_factor_sheet.py` | Adds the Form Factor axis sheet (Flat / Faceted rigid-flex) with a machine-readable geometry preamble. Recomputes its own reference numbers so the sheet cannot drift from `strip_width.py`. |
 | `tools/add_wire_egress_sheet.py` | Adds the Wire Egress axis sheet (Opposite-end / Same-end opposite faces). Idempotent; backs up to a timestamped file so the existing `.xlsx.bak` is not clobbered. |
 | `solutions/` | Documented learnings, organized by category with YAML frontmatter (`module`, `tags`, `problem_type`). |
 | `design-single-end-wire-egress-variant.md` | Plan for the pocket-mount variant: all five 50 A conductors exit one board end, phases on F.Cu and pack on B.Cu, shielded by the two inner GND planes. Records that the board has no stackup, and that the terminal-end rule area cut the inner planes where the shield is needed (fixed 2026-08-31). Section 3.3's first partition FAILED creepage and is superseded. `TODO.md` §15. Partly implemented in `builds/6s/50A/CAN_485_faraday_sameend/`. |

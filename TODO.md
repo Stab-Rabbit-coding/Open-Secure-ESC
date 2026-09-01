@@ -1774,3 +1774,57 @@ justified by copper cross-section, not shielding (plan §6). The dominant
 coupling on this board is the phase pour to the In1.Cu plane, ~190x the
 face-to-face pad figure, and it is set by a dielectric height 15.2 has yet
 to specify (plan §5.2).
+
+## 16. Form Factor Axis — curved-host mounting (planned — not started)
+
+Raised 2026-08-31: an ESC mounted inside a 30 mm-radius nacelle bore. A rigid
+PCB is flat, so it sits as a CHORD of the bore and its sagitta is radial depth
+stolen from the annulus. Axis added to `docs/decision-matrix.xlsx` with values
+`Flat` (default) and `Faceted rigid-flex`; calculator in
+`docs/tools/strip_width.py`.
+
+**The governing numbers.** At R = 30.0 mm with a 2.5 mm radial depth budget
+the widest flat strip is 23.98 mm, taken as 24.00 mm nominal (sagitta
+2.505 mm, facet arc 47.16 deg, so 4 facets cover 180 deg). Confirmed against
+the figure the repo owner supplied.
+
+**Curvature is not the blocker — creepage is.** [9] Table 6 forces a 31.86 mm
+minimum width while the isolated transceivers flank the control section.
+24.00 mm is 7.86 mm under that, and no amount of bending changes it.
+
+- [x] 16.1 **Form Factor axis added** 2026-08-31 via
+      `docs/tools/add_form_factor_sheet.py`; JSON regenerated,
+      `decision_matrix_to_json.py --check` passes. Carries max strip width,
+      sagitta, max board width, max board length and the component-driven
+      dimension, with both derivation formulas in a machine-readable preamble.
+      Root `README.md` build options updated for this axis and for Wire Egress
+      (closes the remainder of 15.1).
+- [ ] 16.2 **(Blocking) Acquire and cite a flex design standard.** No flex or
+      rigid-flex standard is catalogued: neither IPC-2223 (flex design) nor
+      IPC-6013 (flex qualification) has been obtained. Until one is in
+      `REFERENCES.md` per `AGENTS.md` §2, bend radius, flex-zone layer count
+      and copper limits cannot be stated (Cn). Gates 16.4–16.6.
+- [ ] 16.3 **Confirm the host envelope with Serenity-UAV.** R = 30 mm and the
+      2.5 mm depth budget are the repo owner's figures; the nacelle's internal
+      LENGTH has not been checked against the ~105–115 mm this layout needs.
+      A cross-repo constraint — verify before laying anything out.
+- [ ] 16.4 **Re-run the width/length trade at the target strip width.**
+      `strip_width.py` for the confirmed host, then
+      `isolation_envelope.py --board-width <w>` for the length it costs. At
+      24.00 mm that is +19.50 mm from restacking the isolation section alone.
+- [ ] 16.5 **Re-lay the power stage to fit the strip.** Q1–Q6 span 26.96 mm
+      in the current 3x2 arrangement and do not fit a 24.00 mm strip at all;
+      2x3 adds further length. Keep the whole 50 A power stage on ONE rigid
+      facet — flex copper is thin and polyimide is a poor thermal path, and
+      `conductor_sizing.py` already requires 2 oz for the phase pours alone.
+- [ ] 16.6 **Re-run `conductor_sizing.py`** for the re-laid geometry; no
+      "TBD" copper weight.
+
+**Sequencing.** 16.3 → 16.2 → 16.4 → 16.5 → 16.6. 16.3 first because an
+unconfirmed host envelope makes the rest speculative.
+
+**Scope note.** This is a NEW layout sharing the BOM, not a variant of the
+flat board — estimated 24 x 105–115 mm against the current 32.00 x 76.10 mm.
+True curved rigid FR-4 does not exist; the laminate is pressed flat, so
+"curved" means faceted, whether the facets are joined by flex hinges or are
+separate boards with an interconnect.

@@ -2,9 +2,9 @@
   "schema_version": 1,
   "source": {
     "workbook": "docs/decision-matrix.xlsx",
-    "workbook_sha256": "313c2838549bd33bd9882e0c598f892b1e7a58a95f21d4432c0665ca43ce47e9",
-    "workbook_mtime": "2026-08-31T15:15:03.502801+00:00",
-    "exported": "2026-08-31T15:15:04.011136+00:00",
+    "workbook_sha256": "45d7f95c2804445eb214b816d652d75f10e14b71ca767f56838d60068ee7d1ef",
+    "workbook_mtime": "2026-09-01T03:00:12.860679+00:00",
+    "exported": "2026-09-01T03:00:13.078283+00:00",
     "exported_by": "docs/tools/decision_matrix_to_json.py",
     "governed_by": "AGENTS.md",
     "note": "Generated file -- edit the workbook, then re-run the exporter. Do not hand-edit this JSON."
@@ -987,6 +987,92 @@
           "Additional BOM Component": "Common-mode choke on the pack input -- TBD -- requires primary-source verification (AGENTS.md Sec.1.3). No choke has been sourced or verified in this repo.",
           "Workflow Steps": "Define a stackup FIRST -- the board currently has none (4 copper layers declared, `(thickness 1.6)` is KiCad's default, no dielectric height or copper weight specified). Then: fix the rule area's layer scope; re-place U1/U2/J1; extend VM to B.Cu; stitch In1/In2 with a GND via fence around the terminal window; re-run conductor_sizing.py and isolation_envelope.py; negative-control every new DRC rule before trusting it.",
           "REFERENCES.md Tags": "[9], [49]",
+          "Status": "Open / unresolved"
+        }
+      }
+    },
+    "form_factor": {
+      "sheet": "Form Factor",
+      "title": "Form Factor Decision Matrix",
+      "subtitle": "Build axis: Form Factor (Flat / Faceted rigid-flex). Strip width and sagitta derive from each other; see the preamble.",
+      "header_row": 10,
+      "parameters": {
+        "Width from radial depth": "w = 2 * sqrt(2*R*s - s^2)",
+        "Radial depth from width": "s = R - sqrt(R^2 - (w/2)^2)",
+        "Reference host bore radius R (mm)": 30,
+        "Reference radial depth budget s (mm)": 2.5,
+        "Resulting max strip width w (mm)": 23.98
+      },
+      "key_column": "Form Factor",
+      "columns": [
+        "Form Factor",
+        "Host Geometry",
+        "Max Strip Width (mm)",
+        "Sagitta / Radial Depth (mm)",
+        "Max Board Width (mm)",
+        "Max Board Length (mm)",
+        "Component-Driven Dimension",
+        "Facet Interconnect",
+        "Workflow Steps",
+        "REFERENCES.md Tags",
+        "Status"
+      ],
+      "notes": [
+        "Note: Choose the dimension the enclosure actually constrains and let the components drive the other -- they are not independent. A board carries a fixed part list, so narrowing it does not shrink it, it lengthens it, usually by more than the width saved. Both figures in the 'Component-Driven Dimension' cells come from this repo's own tools (docs/tools/isolation_envelope.py and measurements of the Q1-Q6 placement), not from estimation. -- Curvature is NOT what blocks a narrow board on this design: creepage is. [9] Table 6 forces a 31.86 mm minimum width while the isolated transceivers sit either side of the control section, and no amount of bending changes that; only restacking the isolation section does. -- True curved rigid FR-4 does not exist: the laminate is pressed flat. 'Curved' means faceted, whether the facets are joined by flex hinges or are separate boards with an interconnect."
+      ],
+      "rows": [
+        {
+          "Form Factor": "Flat (default)",
+          "Host Geometry": "Planar mounting, no host curvature. Sagitta does not apply.",
+          "Max Strip Width (mm)": "n/a -- one rigid panel",
+          "Sagitta / Radial Depth (mm)": "n/a",
+          "Max Board Width (mm)": "No host limit. The LOWER bound of 31.86 mm is set by [9] Table 6 creepage via docs/tools/isolation_envelope.py, not by any enclosure.",
+          "Max Board Length (mm)": "Driven by components.",
+          "Component-Driven Dimension": "Length. Width is pinned at the creepage minimum, so the part count sets the length.",
+          "Facet Interconnect": "None -- a single rigid board.",
+          "Workflow Steps": "Default; no extra step. Both existing builds are this form factor: builds/6s/50A/CAN_485_faraday/ at 32.00 x 66.10 mm and .../CAN_485_faraday_sameend/ at 32.00 x 76.10 mm.",
+          "REFERENCES.md Tags": "[9]",
+          "Status": "Candidate (unverified)"
+        },
+        {
+          "Form Factor": "Faceted rigid-flex",
+          "Host Geometry": "Cylindrical bore of radius R. Each rigid facet is a flat chord; its sagitta is the radial depth it consumes from the annulus. At the reference R = 30.0 mm a 24.00 mm facet subtends 47.16 deg, so 4 facets cover 180 deg.",
+          "Max Strip Width (mm)": "24.00 mm nominal at the reference geometry (23.98 mm exact for s = 2.5 mm, rounded down). Recompute per host: docs/tools/strip_width.py --radius R --depth s",
+          "Sagitta / Radial Depth (mm)": "2.505 mm at w = 24.00 mm, R = 30.0 mm. This is the depth the board steals from the annulus -- budget it against the bore contents, not against the skin alone.",
+          "Max Board Width (mm)": "Equals the strip width for a single-facet-wide board.",
+          "Max Board Length (mm)": "Driven by components; the sum of the facet lengths plus the flex hinges between them.",
+          "Component-Driven Dimension": "Length, and it grows faster than the width shrinks. At 24.00 mm on THIS design: isolation_envelope.py can no longer seat the control section between the isolated rows and stacks it in Y instead, +19.50 mm; and the FET bridge spans 26.96 mm across Q1-Q6 as a 3x2, so it does not fit the strip at all and must become 2x3, adding more. Estimated 24 x 105-115 mm -- a new layout sharing the BOM, NOT a variant of the flat board.",
+          "Facet Interconnect": "Flex hinge -- TBD -- requires primary-source verification (AGENTS.md Sec.1.3). No flex or rigid-flex standard is catalogued in REFERENCES.md; neither IPC-2223 (flex design) nor IPC-6013 (flex qualification) has been obtained. Bend radius, flex-zone layer count and copper limits cannot be stated until one is.",
+          "Workflow Steps": "Acquire and cite a flex design standard FIRST (AGENTS.md Sec.2). Then: run strip_width.py for the actual host radius and depth budget; re-run isolation_envelope.py at the target width to price the length; re-lay the FET bridge to fit the strip; keep the whole 50 A power stage on ONE rigid facet -- flex copper is thin and polyimide is a poor thermal path, and conductor_sizing.py already requires 2 oz just for the phase pours; re-run conductor_sizing.py for the new geometry.",
+          "REFERENCES.md Tags": "[9]",
+          "Status": "Open / unresolved"
+        }
+      ],
+      "rows_by_key": {
+        "flat_default": {
+          "Form Factor": "Flat (default)",
+          "Host Geometry": "Planar mounting, no host curvature. Sagitta does not apply.",
+          "Max Strip Width (mm)": "n/a -- one rigid panel",
+          "Sagitta / Radial Depth (mm)": "n/a",
+          "Max Board Width (mm)": "No host limit. The LOWER bound of 31.86 mm is set by [9] Table 6 creepage via docs/tools/isolation_envelope.py, not by any enclosure.",
+          "Max Board Length (mm)": "Driven by components.",
+          "Component-Driven Dimension": "Length. Width is pinned at the creepage minimum, so the part count sets the length.",
+          "Facet Interconnect": "None -- a single rigid board.",
+          "Workflow Steps": "Default; no extra step. Both existing builds are this form factor: builds/6s/50A/CAN_485_faraday/ at 32.00 x 66.10 mm and .../CAN_485_faraday_sameend/ at 32.00 x 76.10 mm.",
+          "REFERENCES.md Tags": "[9]",
+          "Status": "Candidate (unverified)"
+        },
+        "faceted_rigid_flex": {
+          "Form Factor": "Faceted rigid-flex",
+          "Host Geometry": "Cylindrical bore of radius R. Each rigid facet is a flat chord; its sagitta is the radial depth it consumes from the annulus. At the reference R = 30.0 mm a 24.00 mm facet subtends 47.16 deg, so 4 facets cover 180 deg.",
+          "Max Strip Width (mm)": "24.00 mm nominal at the reference geometry (23.98 mm exact for s = 2.5 mm, rounded down). Recompute per host: docs/tools/strip_width.py --radius R --depth s",
+          "Sagitta / Radial Depth (mm)": "2.505 mm at w = 24.00 mm, R = 30.0 mm. This is the depth the board steals from the annulus -- budget it against the bore contents, not against the skin alone.",
+          "Max Board Width (mm)": "Equals the strip width for a single-facet-wide board.",
+          "Max Board Length (mm)": "Driven by components; the sum of the facet lengths plus the flex hinges between them.",
+          "Component-Driven Dimension": "Length, and it grows faster than the width shrinks. At 24.00 mm on THIS design: isolation_envelope.py can no longer seat the control section between the isolated rows and stacks it in Y instead, +19.50 mm; and the FET bridge spans 26.96 mm across Q1-Q6 as a 3x2, so it does not fit the strip at all and must become 2x3, adding more. Estimated 24 x 105-115 mm -- a new layout sharing the BOM, NOT a variant of the flat board.",
+          "Facet Interconnect": "Flex hinge -- TBD -- requires primary-source verification (AGENTS.md Sec.1.3). No flex or rigid-flex standard is catalogued in REFERENCES.md; neither IPC-2223 (flex design) nor IPC-6013 (flex qualification) has been obtained. Bend radius, flex-zone layer count and copper limits cannot be stated until one is.",
+          "Workflow Steps": "Acquire and cite a flex design standard FIRST (AGENTS.md Sec.2). Then: run strip_width.py for the actual host radius and depth budget; re-run isolation_envelope.py at the target width to price the length; re-lay the FET bridge to fit the strip; keep the whole 50 A power stage on ONE rigid facet -- flex copper is thin and polyimide is a poor thermal path, and conductor_sizing.py already requires 2 oz just for the phase pours; re-run conductor_sizing.py for the new geometry.",
+          "REFERENCES.md Tags": "[9]",
           "Status": "Open / unresolved"
         }
       }
