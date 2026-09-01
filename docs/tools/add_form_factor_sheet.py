@@ -104,7 +104,7 @@ PREAMBLE = [
 
 FORM_FACTOR = {
     "title": "Form Factor Decision Matrix",
-    "subtitle": "Build axis: Form Factor (Flat / Faceted rigid-flex). "
+    "subtitle": "Build axis: Form Factor (Flat / Faceted rigid-flex / Faceted separate boards). "
     "Strip width and sagitta derive from each other; see the preamble.",
     "widths": [22, 32, 26, 26, 32, 26, 42, 34, 46, 16, 20],
     "columns": [
@@ -204,6 +204,66 @@ FORM_FACTOR = {
             "[9]",
             "Open / unresolved",
         ],
+        [
+            "Faceted separate boards",
+            (
+                "Same chord geometry as rigid-flex -- each rigid panel is a "
+                "flat chord of the bore -- but the panels are independent "
+                "boards joined by an interconnect rather than by a flex "
+                "hinge. NOTE: the panels meet AT the bore circle, the point "
+                "of maximum radius, so a connector at the joint has no "
+                "outward room and protrudes inward into the bore. Budget its "
+                "height against the bore contents (TODO.md 16.3)."
+            ),
+            (
+                f"Identical to rigid-flex: {NOMINAL_WIDTH_MM:.2f} mm nominal "
+                f"at the reference geometry. docs/tools/hinge_placement.py "
+                f"chooses the CUT position exactly as it chooses a fold."
+            ),
+            (
+                f"{NOMINAL_SAGITTA_MM:.3f} mm per panel, as rigid-flex, PLUS "
+                f"the interconnect height at the joint vertex."
+            ),
+            "Equals the strip width per panel.",
+            "Driven by components, as rigid-flex.",
+            (
+                "Length -- AND the form factor should drive the functional "
+                "partition. Faceting makes logic-vs-power placement a "
+                "first-class layout decision: if the whole 50 A power stage "
+                "sits on ONE panel the joint carries signals only, and either "
+                "form factor works. If the cut splits the power stage the "
+                "joint carries up to 50 A, which only separate boards can "
+                "realistically do. On the current layout the power stage "
+                "spans 26.96 mm in X and logic spans 28.74 mm, overlapping "
+                "over 26.96 mm, so EVERY cut splits both -- the partition "
+                "must be re-oriented along the cut axis."
+            ),
+            (
+                "Board-to-board connector, busbar, solder tab or wire link -- "
+                + TBD
+                + ". No interconnect part has been selected. The decisive "
+                "advantage over a flex hinge is that this joint CAN carry "
+                "50 A; flex copper is thin and conductor_sizing.py already "
+                "requires 2 oz for the phase pours alone. The decisive "
+                "disadvantage is a rigid joint in a vibration environment, "
+                "where a flex hinge is compliant -- an engineering judgement "
+                "here, no standard is cited for it."
+            ),
+            (
+                "NOT blocked by the flex-standard gate (16.2): standard rigid "
+                "FR-4 on both panels, any fab, full copper weight throughout. "
+                "Run hinge_placement.py --optimize for the cut, then: keep "
+                "the whole power stage on one panel if the interconnect is to "
+                "stay signal-only; keep any rigid shielding can wholly on one "
+                "panel (SH1 is 22.75 mm and nearly fills a 23.98 mm facet by "
+                "itself); and either give the isolated section its own panel "
+                "or let the isolation barrier fall ON the cut, where the "
+                "inter-panel gap supplies the separation instead of 7.5 mm of "
+                "board surface."
+            ),
+            "[9], [19]",
+            "Open / unresolved",
+        ],
     ],
 }
 
@@ -220,7 +280,17 @@ NOTES = (
     "control section, and no amount of bending changes that; only restacking "
     "the isolation section does. -- True curved rigid FR-4 does not exist: "
     "the laminate is pressed flat. 'Curved' means faceted, whether the facets "
-    "are joined by flex hinges or are separate boards with an interconnect."
+    "are joined by flex hinges or are separate boards with an "
+    "interconnect. -- CHOOSING BETWEEN THE TWO FACETED ROWS: run "
+    "docs/tools/hinge_placement.py --optimize and read what crosses the cut. "
+    "A signal-only joint favours rigid-flex (no connector, self-locating, "
+    "compliant under vibration); a joint carrying Power-netclass conductors "
+    "favours separate boards, because a flex hinge cannot realistically pass "
+    "50 A. Separate boards also avoid the flex-standard acquisition gate "
+    "(16.2) entirely. The tool also checks the two constraints faceting "
+    "imposes on placement: a rigid shielding can may not straddle a joint, "
+    "and a panel holding both sides of an isolation barrier must still meet "
+    "the 31.86 mm width isolation_envelope.py derives from [9] Table 6."
 )
 
 

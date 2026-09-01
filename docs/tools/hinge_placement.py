@@ -52,11 +52,19 @@ Usage:
 # Not human-authored. Not yet human-reviewed.
 
 import argparse
+import fnmatch
+import json
 import math
+from pathlib import Path
 
 import pcbnew
 
 PLACEHOLDER_HINGE_MM = 1.0
+# Minimum width a panel needs if it holds BOTH sides of an isolation barrier.
+# From docs/tools/isolation_envelope.py on this design's geometry, which is
+# built on the 7.5 mm creepage of REFERENCES.md [9] Table 6.
+ISOLATION_MIN_WIDTH_MM = 31.86
+POWER_CLASSES = ("Power",)
 DEFAULT_RADIUS_MM = 30.0
 DEFAULT_DEPTH_MM = 2.5
 
@@ -134,6 +142,58 @@ def crossing_pours(board, x_at):
     return sorted(set(out))
 
 
+def net_class_map(board_path):
+    """net name -> netclass, resolved from the .kicad_pro patterns."""
+    pro = Path(board_path).with_suffix(".kicad_pro")
+    if not pro.exists():
+        return {}
+    settings = json.loads(pro.read_text()).get("net_settings", {})
+    patterns = settings.get("netclass_patterns", [])
+    return {p["pattern"]: p["netclass"] for p in patterns if "pattern" in p}
+
+
+def classify(net, patterns):
+    """Netclass for a net, honouring the pattern globs KiCad stores."""
+    if net in patterns:
+        return patterns[net]
+    for pattern, cls in patterns.items():
+        if fnmatch.fnmatch(net, pattern):
+            return cls
+    return "Default"
+
+
+def shield_refs(board):
+    """Rigid shielding cans -- these can never straddle a fold or a cut."""
+    out = []
+    for footprint in board.GetFootprints():
+        fid = footprint.GetFPIDAsString()
+        if "SHC" in fid or "Shield" in fid or "Frame" in fid:
+            box = footprint.GetBoundingBox(False, False)
+            out.append((mm(box.GetLeft()), mm(box.GetRight()),
+                        footprint.GetReference(), mm(box.GetWidth())))
+    return out
+
+
+def isolation_report(board, x_at, patterns, panel_widths):
+    """Does either panel hold both sides of an isolation barrier?"""
+    sides = [{"iso": False, "non": False}, {"iso": False, "non": False}]
+    for footprint in board.GetFootprints():
+        for pad in footprint.Pads():
+            net = pad.GetNetname()
+            if not net:
+                continue
+            index = 0 if mm(pad.GetCenter().x) < x_at else 1
+            key = "iso" if classify(net, patterns) == "Isolated" else "non"
+            sides[index][key] = True
+    findings = []
+    for index, side in enumerate(sides):
+        if side["iso"] and side["non"]:
+            width = panel_widths[index]
+            ok = width >= ISOLATION_MIN_WIDTH_MM
+            findings.append((index + 1, width, ok))
+    return findings
+
+
 def describe_partition(x_edges, radius, depth_budget):
     """Per-panel geometry for a fold at the given interior edges."""
     print(f"  {'panel':>7s} {'x range':>16s} {'width':>8s} "
@@ -186,6 +246,14 @@ def main() -> int:
         print("board already fits one facet -- no fold needed")
         return 0
 
+    patterns = net_class_map(args.board)
+    shields = shield_refs(board)
+    if shields:
+        print("rigid shielding cans (may not straddle a fold or joint):")
+        for lo, hi, ref, width in shields:
+            print(f"  {ref}  {lo:.2f}..{hi:.2f}  ({width:.2f} mm)")
+        print()
+
     spans = load_extents(board)
     corridors = free_corridors(spans, x_lo, x_hi, args.hinge_width)
     print(f"=== free corridors >= {args.hinge_width:.2f} mm ===")
@@ -220,12 +288,15 @@ def main() -> int:
             widths = (x_at - x_lo, x_hi - x_at)
             if max(sagitta(args.radius, w) for w in widths) <= args.depth:
                 nets = crossing_nets(board, x_at)
-                pours = crossing_pours(board, x_at)
-                heavy = [p for p in pours
-                         if p.startswith("PH_") or p in ("VM", "GND")]
+                power = [n for n in nets
+                         if classify(n, patterns) in POWER_CLASSES]
+                iso = [n for n in nets if classify(n, patterns) == "Isolated"]
                 hits = blockers(spans, x_at)
-                cost = 10.0 * len(heavy) + len(nets) + 0.5 * len(hits)
-                candidates.append((cost, x_at, widths, nets, heavy, hits))
+                shield_bad = any(s[0] < x_at < s[1] for s in shields)
+                cost = (100.0 * shield_bad + 10.0 * len(power)
+                        + 2.0 * len(iso) + len(nets) + 0.5 * len(hits))
+                candidates.append((cost, x_at, widths, nets, power, hits,
+                                   iso, shield_bad))
             x_at += step
         if not candidates:
             print("  no fold position gives two panels within the depth "
@@ -235,21 +306,30 @@ def main() -> int:
             # report lists distinct options rather than 0.05 mm neighbours.
             best, seen = [], set()
             for entry in sorted(candidates, key=lambda c: (c[0], c[1])):
-                key = (entry[0], tuple(entry[4]), len(entry[3]))
+                key = (round(entry[0], 2), tuple(entry[4]), len(entry[3]))
                 if key in seen:
                     continue
                 seen.add(key)
                 best.append(entry)
                 if len(best) >= 6:
                     break
-            print(f"  {'x':>7s} {'panels mm':>16s} {'flex nets':>10s} "
-                  f"{'move':>5s}  heavy pours crossing")
-            for cost, x_at, widths, nets, heavy, hits in best:
+            print(f"  {'x':>7s} {'panels mm':>16s} {'cond':>5s} "
+                  f"{'pwr':>4s} {'iso':>4s} {'move':>5s} {'shield':>7s}  "
+                  f"interconnect")
+            for (cost, x_at, widths, nets, power, hits, iso,
+                 shield_bad) in best:
+                verdict = "POWER" if power else "signal-only"
                 print(f"  {x_at:7.2f} {widths[0]:7.2f} +{widths[1]:7.2f} "
-                      f"{len(nets):10d} {len(hits):5d}  "
-                      f"{', '.join(heavy) if heavy else 'NONE'}")
-            print("\n  'move' = footprints straddling that fold today, i.e. "
-                  "the re-layout cost.")
+                      f"{len(nets):5d} {len(power):4d} {len(iso):4d} "
+                      f"{len(hits):5d} {'STRADDLE' if shield_bad else 'ok':>7s}"
+                      f"  {verdict}")
+            print("\n  cond = conductors crossing; pwr = of those, Power "
+                  "netclass (up to 50 A);")
+            print("  iso = Isolated netclass; move = footprints straddling "
+                  "the cut today.")
+            print("  A 'POWER' interconnect rules out a flex hinge in "
+                  "practice and points at")
+            print("  separate boards with a busbar/tab joint.")
 
     for x_at in (args.propose or []):
         print(f"\n=== proposed fold at x {x_at:.2f} ===")
@@ -264,14 +344,63 @@ def main() -> int:
         describe_partition([x_lo, x_at, x_hi], args.radius, args.depth)
         nets = crossing_nets(board, x_at)
         pours = crossing_pours(board, x_at)
-        print(f"  nets crossing (become flex conductors): {len(nets)}")
-        if nets:
-            print("    " + ", ".join(nets))
+        by_class = {}
+        for net in nets:
+            by_class.setdefault(classify(net, patterns), []).append(net)
+        print(f"  conductors crossing: {len(nets)}")
+        for cls in sorted(by_class):
+            tag = "  <-- POWER, up to 50 A" if cls in POWER_CLASSES else ""
+            if cls == "Isolated":
+                tag = "  <-- CROSSES THE ISOLATION BARRIER"
+            print(f"    {cls:9s} {len(by_class[cls]):3d}  "
+                  f"{', '.join(by_class[cls])[:60]}{tag}")
         print(f"  pours crossing: {', '.join(pours) if pours else 'none'}")
-        heavy = [p for p in pours if p.startswith("PH_") or p in ("VM", "GND")]
-        if heavy:
-            print(f"    ** {', '.join(heavy)} are high-current pours; a bend "
-                  f"in these is a conductor-sizing question, not a layout one")
+
+        power_crossing = [n for n in nets
+                          if classify(n, patterns) in POWER_CLASSES]
+        print("\n  INTERCONNECT VERDICT: ", end="")
+        if power_crossing:
+            print(f"POWER interconnect required "
+                  f"({len(power_crossing)} conductors at up to 50 A)")
+            print("    Flex hinge is not advisable here -- flex copper is thin")
+            print("    and conductor_sizing.py already needs 2 oz for the")
+            print("    pours. Separate boards with a busbar/tab joint can")
+            print("    carry this; a flex hinge realistically cannot.")
+        else:
+            print("SIGNAL-ONLY interconnect")
+            print("    Either form factor works. Flex is the lighter answer:")
+            print("    no connector on the BOM, self-locating, compliant")
+            print("    under vibration.")
+
+        straddling = [s for s in shields if s[0] < x_at < s[1]]
+        print("\n  SHIELD CONTAINMENT: ", end="")
+        if straddling:
+            for lo, hi, ref, width in straddling:
+                print(f"INVALID -- {ref} ({width:.2f} mm, {lo:.2f}..{hi:.2f}) "
+                      f"straddles the cut.")
+            print("    A rigid shielding can cannot fold or span a joint. It")
+            print("    must sit wholly on one panel -- and at 22.75 mm it")
+            print("    nearly fills a 23.98 mm facet on its own, so that")
+            print("    panel has almost no width left for anything else.")
+        else:
+            print("OK -- no rigid can straddles the cut")
+
+        widths = (x_at - x_lo, x_hi - x_at)
+        print("  ISOLATION CONTAINMENT: ", end="")
+        findings = isolation_report(board, x_at, patterns, widths)
+        if not findings:
+            print("OK -- no panel holds both sides of a barrier")
+        for position, (panel, width, ok) in enumerate(findings):
+            lead = "" if position == 0 else "                         "
+            print(f"{lead}{'OK' if ok else 'FAILS'} -- panel {panel} holds isolated "
+                  f"AND non-isolated pads")
+            print(f"    width {width:.2f} mm vs {ISOLATION_MIN_WIDTH_MM:.2f} "
+                  f"mm required by isolation_envelope.py ([9] Table 6)")
+            if not ok:
+                print("    => that barrier cannot fit on this panel. Either")
+                print("       put the isolated section on its OWN panel, or")
+                print("       let the barrier fall ON the cut, where the")
+                print("       inter-panel gap supplies the separation.")
     return 0
 
 

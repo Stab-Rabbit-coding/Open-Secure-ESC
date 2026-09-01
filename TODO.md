@@ -1780,8 +1780,9 @@ to specify (plan §5.2).
 Raised 2026-08-31: an ESC mounted inside a 30 mm-radius nacelle bore. A rigid
 PCB is flat, so it sits as a CHORD of the bore and its sagitta is radial depth
 stolen from the annulus. Axis added to `docs/decision-matrix.xlsx` with values
-`Flat` (default) and `Faceted rigid-flex`; calculator in
-`docs/tools/strip_width.py`.
+`Flat` (default), `Faceted rigid-flex` and `Faceted separate boards`;
+calculator in `docs/tools/strip_width.py`, cut/fold optimiser in
+`docs/tools/hinge_placement.py`.
 
 **The governing numbers.** At R = 30.0 mm with a 2.5 mm radial depth budget
 the widest flat strip is 23.98 mm, taken as 24.00 mm nominal (sagitta
@@ -1803,7 +1804,10 @@ minimum width while the isolated transceivers flank the control section.
       rigid-flex standard is catalogued: neither IPC-2223 (flex design) nor
       IPC-6013 (flex qualification) has been obtained. Until one is in
       `REFERENCES.md` per `AGENTS.md` §2, bend radius, flex-zone layer count
-      and copper limits cannot be stated (Cn). Gates 16.4–16.6.
+      and copper limits cannot be stated (Cn). **Gates the
+      `Faceted rigid-flex` row ONLY** — `Faceted separate boards` is standard
+      rigid FR-4 on both panels and needs no new standard, which is that
+      option's main schedule advantage.
 - [ ] 16.3 **Confirm the host envelope with Serenity-UAV.** R = 30 mm and the
       2.5 mm depth budget are the repo owner's figures; the nacelle's internal
       LENGTH has not been checked against the ~105–115 mm this layout needs.
@@ -1836,6 +1840,43 @@ minimum width while the isolated transceivers flank the control section.
       board-wide pours and their flex cross-section is a
       `conductor_sizing.py` question, not a layout one. x 28.35 costs five
       fewer flex conductors than the 43.x family.
+- [ ] 16.4c **(Decides the CoA) Choose rigid-flex vs separate boards from
+      what crosses the cut, not from preference.** `hinge_placement.py`
+      classifies every crossing conductor by netclass and reports a verdict:
+      - **Signal-only joint** → rigid-flex is the lighter answer: no
+        connector on the BOM, self-locating, compliant in a vibration
+        environment.
+      - **Power-netclass conductors crossing** → separate boards, because a
+        flex hinge cannot realistically pass 50 A; `conductor_sizing.py`
+        already needs 2 oz for the phase pours alone. The joint becomes a
+        busbar, tab or board-to-board power connector (part not selected, Cn).
+
+      Measured on the `_sameend` board 2026-08-31: **every** candidate cut
+      crosses 3 Power conductors (GND, VM, one PH_) and **every** candidate is
+      blocked by SH1 straddling it. So the current layout supports neither
+      faceted option as it stands.
+- [ ] 16.4d **Faceting drives the logic-vs-power partition — re-orient it.**
+      The layout currently partitions functionally along **Y** (logic at the
+      ends, power in the middle) while the fold/cut axis is **X**: the power
+      stage spans 26.96 mm in X, logic spans 28.74 mm, and they overlap over
+      26.96 mm, so every X cut splits both groups. Putting the **whole 50 A
+      power stage on one panel** is what turns the joint signal-only and
+      re-opens rigid-flex as an option. This is a placement-strategy decision
+      that must precede placement, like the hinge corridor itself.
+- [ ] 16.4e **Shielding and isolation constrain the panel assignment.**
+      Both are checked by `hinge_placement.py`:
+      - **Shield:** a rigid can cannot straddle a fold or a joint. SH1 is
+        22.75 mm against a 23.98 mm max facet, so it very nearly fills a
+        panel by itself — the panel carrying it has almost no width left.
+        Revisit whether the Faraday tier's can [19] is still the right part
+        at this form factor, or whether per-panel shielding is better.
+      - **Isolation:** a panel holding both sides of a barrier must still
+        meet the 31.86 mm from `isolation_envelope.py` ([9] Table 6) — which
+        **no facet can satisfy**, since max strip width is 23.98 mm.
+        Therefore the isolated section gets its OWN panel, or the barrier
+        falls ON the cut, where the inter-panel gap supplies the separation
+        instead of 7.5 mm of board surface. The second option is a genuine
+        advantage of faceting and should be evaluated deliberately.
 - [ ] 16.5 **Re-lay the power stage to fit the strip.** Q1–Q6 span 26.96 mm
       in the current 3x2 arrangement and do not fit a 24.00 mm strip at all;
       2x3 adds further length. Keep the whole 50 A power stage on ONE rigid
@@ -1844,7 +1885,7 @@ minimum width while the isolated transceivers flank the control section.
 - [ ] 16.6 **Re-run `conductor_sizing.py`** for the re-laid geometry; no
       "TBD" copper weight.
 
-**Sequencing.** 16.3 → 16.2 → 16.4 → 16.4b → 16.5 → 16.6. 16.3 first because an
+**Sequencing.** 16.3 → 16.4d → 16.4e → 16.4 → 16.4b → 16.4c → 16.2 (only if 16.4c picks rigid-flex) → 16.5 → 16.6. 16.3 first because an
 unconfirmed host envelope makes the rest speculative.
 
 **Scope note.** This is a NEW layout sharing the BOM, not a variant of the
