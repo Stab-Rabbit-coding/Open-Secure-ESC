@@ -44,6 +44,7 @@ Open-Secure-ESC/
 | `tools/add_motor_and_shaft_sensor_sheets.py` | Adds the Motor and Shaft Sensor axis sheets (idempotent, backs up first). |
 | `tools/decision_matrix_to_json.py` | Exports the workbook to JSON; `--check` fails if the JSON is stale. |
 | `tools/strip_width.py` | Sagitta/chord calculator: how wide a flat board fits inside a curved host, both directions, plus facet count for an arc. Makes the width↔length coupling explicit. |
+| `tools/hinge_placement.py` | Where a faceted board may fold: free corridors along the fold axis, what blocks a proposed hinge, per-panel sagitta/arc/bend angle, and `--optimize` to rank folds by pour crossings, flex conductor count and parts that must move. |
 | `tools/add_form_factor_sheet.py` | Adds the Form Factor axis sheet (Flat / Faceted rigid-flex) with a machine-readable geometry preamble. Recomputes its own reference numbers so the sheet cannot drift from `strip_width.py`. |
 | `tools/add_wire_egress_sheet.py` | Adds the Wire Egress axis sheet (Opposite-end / Same-end opposite faces). Idempotent; backs up to a timestamped file so the existing `.xlsx.bak` is not clobbered. |
 | `solutions/` | Documented learnings, organized by category with YAML frontmatter (`module`, `tags`, `problem_type`). |

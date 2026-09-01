@@ -1812,6 +1812,30 @@ minimum width while the isolated transceivers flank the control section.
       `strip_width.py` for the confirmed host, then
       `isolation_envelope.py --board-width <w>` for the length it costs. At
       24.00 mm that is +19.50 mm from restacking the isolation section alone.
+- [ ] 16.4b **Place the hinge from `docs/tools/hinge_placement.py`, not at
+      max strip width.** Folding at the widest legal facet is almost always
+      wrong: nothing rigid may straddle a hinge, every net crossing becomes a
+      flex conductor, and a 50 A pour through a bend is a conductor-sizing
+      problem. Measured on the `_sameend` board 2026-08-31:
+      **no interior fold line exists at all** — the only free corridors are
+      the two ~1 mm board edges, because SH1 (22.75 mm), U3, U1 and U4 span
+      x 21.77–50.26 unbroken. A hinge corridor must therefore be a PLACEMENT
+      CONSTRAINT in the re-layout, reserved before parts are placed.
+      Optimiser output for R = 30 mm, s = 2.5 mm (cost = pour crossings, then
+      flex conductors, then parts to move):
+
+      | fold x | panels mm | flex nets | parts to move | phase pours bent |
+      | --- | --- | --- | --- | --- |
+      | 28.35 | 8.45 + 23.65 | 17 | 13 | none |
+      | 43.05 | 23.15 + 8.95 | 22 | 10 | none |
+      | 43.25 | 23.35 + 8.75 | 22 | 13 | none |
+
+      Both families put one phase alone on the small panel and two on the
+      large one, so no PH_ pour crosses the bend — the arrangement the repo
+      owner specified. GND and VM cross at every position; they are
+      board-wide pours and their flex cross-section is a
+      `conductor_sizing.py` question, not a layout one. x 28.35 costs five
+      fewer flex conductors than the 43.x family.
 - [ ] 16.5 **Re-lay the power stage to fit the strip.** Q1–Q6 span 26.96 mm
       in the current 3x2 arrangement and do not fit a 24.00 mm strip at all;
       2x3 adds further length. Keep the whole 50 A power stage on ONE rigid
@@ -1820,7 +1844,7 @@ minimum width while the isolated transceivers flank the control section.
 - [ ] 16.6 **Re-run `conductor_sizing.py`** for the re-laid geometry; no
       "TBD" copper weight.
 
-**Sequencing.** 16.3 → 16.2 → 16.4 → 16.5 → 16.6. 16.3 first because an
+**Sequencing.** 16.3 → 16.2 → 16.4 → 16.4b → 16.5 → 16.6. 16.3 first because an
 unconfirmed host envelope makes the rest speculative.
 
 **Scope note.** This is a NEW layout sharing the BOM, not a variant of the
