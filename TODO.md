@@ -1877,6 +1877,85 @@ minimum width while the isolated transceivers flank the control section.
         falls ON the cut, where the inter-panel gap supplies the separation
         instead of 7.5 mm of board surface. The second option is a genuine
         advantage of faceting and should be evaluated deliberately.
+- [ ] 16.4f **(CORRECTION) Vibration does NOT discriminate between the two
+      faceted options — the mounting scheme does.** Evaluated 2026-08-31
+      using the `statics-and-dynamics` and `mechanical-engineering` skills.
+      An earlier claim in this session — that a rigid board-to-board joint is
+      a fatigue site while a flex hinge is compliant — was **too loose and is
+      withdrawn as a discriminator**. Setting up the free-body diagram shows
+      why: the fatigue driver at the joint is *relative motion between
+      panels*, which is set by how the panels are MOUNTED, not by the joint
+      technology.
+      - Both panels independently mounted → relative motion small, joint
+        carries little cyclic load, **either joint type is acceptable**.
+      - One panel cantilevered off the other → the joint carries that panel's
+        full inertial load and the connector's solder joints are the fatigue
+        site.
+
+      The consequence runs opposite to the original claim: a flex hinge is
+      **not a structural member**, so it forces independent support of both
+      panels. A rigid connector will carry load, which tempts a design into
+      cantilevering panel 2 off panel 1 — the arrangement that actually
+      fails. **Isolation:** one panel, separated from the nacelle at its
+      mounts and from its neighbour at the joint. **Idealisations:** uniform
+      rectangular plate, uniform areal mass (false in detail — SH1 is 22.75
+      mm of can, plus local FET and connector masses), simply supported on
+      all four edges, rigid-body inertial loading, no dynamic amplification.
+      **Determinacy:** a panel on ≥3 mounts plus a joint reaction is
+      statically INDETERMINATE — load sharing needs compatibility, so the
+      joint loads below are an upper bound, not a distribution.
+
+      **Faceting itself helps, and this part needs no material data.** Both
+      panels share laminate and thickness, so `E`, `ρ` and `t` cancel in a
+      frequency ratio for a plate mode-1 shape factor `(1/a² + 1/b²)`:
+
+      | Partition | Panel | f_n / f_ref |
+      | --- | --- | --- |
+      | x=28.35 | 8.45 × 76.1 mm | 3.51 |
+      | x=28.35 | 23.65 × 76.1 mm | 1.31 |
+      | x=43.25 | 23.35 × 76.1 mm | 1.32 |
+      | x=43.25 | 8.75 × 76.1 mm | 3.39 |
+
+      Every panel is stiffer than the single 32.00 × 76.10 mm board, because
+      the short dimension dominates the plate mode. Higher `f_n` moves the
+      structure away from excitation. **This applies equally to both faceted
+      options**, so it is an argument FOR faceting, not for either joint.
+
+      Cantilevered joint load, parametric in panel mass because no board mass
+      exists: `F = m·n`, `M = F·d`. Per 1.0 lbm at 1 g → F = 1.000 lbf
+      (4.448 N); at d = 11.83 mm (0.466 in) → M = 0.466 lbf·in (0.0526 N·m)
+      per lbm per g.
+
+      **Failure modes.** Governing for a cantilevered panel: solder-joint
+      fatigue at the connector. Governing only if the flex is load-bearing
+      (which it must not be): flex-hinge bend fatigue. Not governing:
+      laminate fatigue in the panel. **Not checked:** mount-point fastener
+      fatigue (no mount scheme exists), and component lead fatigue on SH1 —
+      the largest local mass, sitting over the fold region.
+
+      **No fatigue life or margin is produced**, per `mechanical-engineering`
+      rule 2: a remembered allowable is not an allowable. Allowables and
+      margins are out of scope for this item and belong to PE Mechanical
+      Machine Design once the inputs below exist.
+- [ ] 16.4g **(NEW, blocking for any vibration claim) Five missing inputs.**
+      None of these exist anywhere in this repository, and the vibration
+      question cannot be closed without them:
+      1. **Vibration environment** — EDF blade-passing frequency, RPM,
+         broadband spectrum. Serenity-UAV data, unverified here (Cn).
+      2. **Board mass and mass distribution** — never computed; with no
+         stackup (15.2) even areal density is unavailable.
+      3. **Mounting scheme** — not designed anywhere. **This is the variable
+         that actually decides the answer** and it has no owner yet.
+      4. **Material properties** — no laminate spec, no `E`, no `ρ` (15.2).
+      5. **Fatigue allowables** — no solder-joint fatigue model and no
+         vibration standard in `REFERENCES.md`. Steinberg's octave rule and
+         MIL-STD-810 are the usual authorities; **neither is catalogued**, so
+         both are acquisition candidates, NOT citations (Cn).
+- [ ] 16.4h **(NEW) Design the panel mounting scheme.** Per 16.4f this is
+      what decides vibration survival, and it does not exist in any document.
+      Requirement: **both panels independently mounted to nacelle structure**,
+      so neither is cantilevered off the other through the joint. Applies to
+      both faceted options. Must precede any fatigue assessment.
 - [ ] 16.5 **Re-lay the power stage to fit the strip.** Q1–Q6 span 26.96 mm
       in the current 3x2 arrangement and do not fit a 24.00 mm strip at all;
       2x3 adds further length. Keep the whole 50 A power stage on ONE rigid
@@ -1885,7 +1964,8 @@ minimum width while the isolated transceivers flank the control section.
 - [ ] 16.6 **Re-run `conductor_sizing.py`** for the re-laid geometry; no
       "TBD" copper weight.
 
-**Sequencing.** 16.3 → 16.4d → 16.4e → 16.4 → 16.4b → 16.4c → 16.2 (only if 16.4c picks rigid-flex) → 16.5 → 16.6. 16.3 first because an
+**Sequencing.** 16.3 → 16.4d → 16.4e → 16.4 → 16.4b → 16.4c → 16.4h → 16.2 (only if 16.4c picks rigid-flex) → 16.5 →
+16.6. 16.4f/16.4g are findings, not tasks; 16.4h is the task they raise. 16.3 first because an
 unconfirmed host envelope makes the rest speculative.
 
 **Scope note.** This is a NEW layout sharing the BOM, not a variant of the
