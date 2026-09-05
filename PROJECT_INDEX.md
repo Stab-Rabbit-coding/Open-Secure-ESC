@@ -49,6 +49,7 @@ Open-Secure-ESC/
 | `tools/add_wire_egress_sheet.py` | Adds the Wire Egress axis sheet (Opposite-end / Same-end opposite faces). Idempotent; backs up to a timestamped file so the existing `.xlsx.bak` is not clobbered. |
 | `solutions/` | Documented learnings, organized by category with YAML frontmatter (`module`, `tags`, `problem_type`). |
 | `design-single-end-wire-egress-variant.md` | Plan for the pocket-mount variant: all five 50 A conductors exit one board end, phases on F.Cu and pack on B.Cu, shielded by the two inner GND planes. Records that the board has no stackup, and that the terminal-end rule area cut the inner planes where the shield is needed (fixed 2026-08-31). Section 3.3's first partition FAILED creepage and is superseded. `TODO.md` §15. Partly implemented in `builds/6s/50A/CAN_485_faraday_sameend/`. |
+| `solutions/architecture-patterns/pcbnew-bulk-removal-segfault.md` | pcbnew 9.0.2 (Debian) segfaults at process exit after bulk zone/track/drawing removal unless `item.thisown = False` is set post-`Remove()`; a second trap where `GetDrawings()` breaks after prior zone removal. Mirrored in `CLAUDE-MEMORY.md`. |
 | `secure-element-architecture.md` | OPTIGA Trust M rationale, security-monitor budget, cryptographic assessment, open findings C-01..C-07 / O-04..O-05. |
 | `security-mcu-comparison.md` | Eight-candidate survey of security MCUs; the document the MCU swap overturns. |
 | `HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md` | Plan and verified facts for the S32K144 → MSPM0G3518-Q1 swap (`TODO.md` §13). |
@@ -72,15 +73,32 @@ Open-Secure-ESC/
 
 ## builds/6s/50A/CAN_485_faraday_faceted/
 
-Faceted (two-panel) variant. Partitioned by function, **not placed** — no
-board files yet. `TODO.md` §16.
+Faceted (two-panel), **opposite-end** egress. Initial placement done
+2026-09-05: 65 parts across two panels, 23.00 mm strip, 0 courtyard overlaps,
+0 DRC errors. Not routed. `TODO.md` §16.
 
 | Path | What it is |
 | --- | --- |
-| `README.md` | The partition, panel envelopes and the 19-net interconnect. Records that a functional partition makes the joint signal-only, reversing the geometric-cut verdict. |
-| `kicad/tools/partition_panels.py` | Assigns every part to a panel by function, sizes each panel, and measures what crosses the joint. Does not place parts. |
-| `kicad/partition.json` | Generated assignment + interconnect, for downstream tooling. |
-| `gerbers/` | Placeholder; five gates listed in its README. |
+| `README.md` | Placement results, SH1 rotation rationale, confirms Form Factor and Wire Egress are independent axes (identical panel results vs. the same-end sibling). |
+| `kicad/*.kicad_pcb` | Two rectangular panel outlines (23.00 mm strip each), all 65 footprints placed, zero copper. KiCad 9.0.2 format, unadvanced. |
+| `kicad/placement.json` | Generated placement report (per-panel part count, dimensions, rotated refs). |
+| `gerbers/` | Placeholder — not fabricable. |
+
+## builds/6s/50A/CAN_485_faraday_sameend_faceted/
+
+Faceted (two-panel), **same-end** egress. Renamed 2026-09-05 from
+`CAN_485_faraday_faceted` once the opposite-end faceted build above was
+also instantiated. Initial placement done: identical panel results to its
+opposite-end sibling. `TODO.md` §16.
+
+| Path | What it is |
+| --- | --- |
+| `README.md` | Placement results and the SH1 rotation-to-fit rationale (22.75 mm un-rotated fails a 23.00 mm strip by margin; rotated 90 deg it fits with 5.85 mm to spare). |
+| `kicad/*.kicad_pcb` | Two rectangular panel outlines, all 65 footprints placed, zero copper. KiCad 9.0.2 format, unadvanced. |
+| `kicad/placement.json` | Generated placement report. |
+| `kicad/tools/partition_panels.py` | Original function-based panel-assignment analysis (superseded for placement by `docs/tools/facet_placement.py`, kept as the partition-only reference this build's placement was checked against). |
+| `kicad/partition.json` | Generated assignment + interconnect from the partition-only pass. |
+| `gerbers/` | Placeholder — not fabricable. |
 
 ## builds/6s/50A/CAN_485_faraday_sameend/
 

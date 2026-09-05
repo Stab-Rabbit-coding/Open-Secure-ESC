@@ -1979,11 +1979,43 @@ minimum width while the isolated transceivers flank the control section.
       **Still open:** placement (16.5), SH1's 0.6 mm/edge margin (16.4e),
       whether VREF_MID should be generated locally on Panel P instead of
       crossing the joint.
-- [ ] 16.5 **Re-lay the power stage to fit the strip.** Q1–Q6 span 26.96 mm
-      in the current 3x2 arrangement and do not fit a 24.00 mm strip at all;
-      2x3 adds further length. Keep the whole 50 A power stage on ONE rigid
-      facet — flex copper is thin and polyimide is a poor thermal path, and
-      `conductor_sizing.py` already requires 2 oz for the phase pours alone.
+- [x] 16.5 **Initial placement done 2026-09-05, both egress variants.**
+      `docs/tools/facet_placement.py` shelf-packs each panel from the
+      partition, at a 23.00 mm strip width (tightened from the 23.98 mm
+      reference figure per the repo owner). Built for BOTH egress parents:
+      `builds/6s/50A/CAN_485_faraday_sameend_faceted/` (from the same-end
+      parent) and `builds/6s/50A/CAN_485_faraday_faceted/` (from the
+      opposite-end parent, renamed from the sameend-derived build that
+      previously held this name — see each README's opening note). Both
+      produce **identical** panel results — Panel P 30 parts / 23.00 x
+      89.51 mm, Panel L 35 parts / 23.00 x 61.68 mm — confirming Form
+      Factor and Wire Egress are independent axes on this design.
+      **SH1 fit resolved by rotation, not re-selection:** 22.75 mm
+      un-rotated left 0.25 mm total margin against 23.00 mm (16.4e);
+      rotated 90 deg it presents 17.15 mm across the strip with 5.85 mm
+      margin. **Not re-verified: whether the rotated can still shields the
+      same physical area relative to the switching node** — flagged
+      explicitly in both READMEs, not assumed clean.
+      Verified: 0 courtyard overlaps (65 parts, geometric check), 0 DRC
+      errors on both boards (43-48 silkscreen warnings, 184 unconnected —
+      both expected on an unrouted, repositioned board), board format
+      unchanged at `version 20241229` / `"9.0"` on both outputs (KiCad
+      9.0.2 throughout, not advanced to KiCad 10).
+      **This is a placement floor, not a routing-aware layout** — the
+      packer is a greedy largest-area-first row-packer with no routing or
+      thermal awareness; a routing-aware pass will likely produce
+      different panel lengths. Length is confirmed as the component-driven
+      dimension per the Form Factor axis's own column.
+      **Tool debugging note:** the pcbnew 9.0.2 (Debian) binding segfaults
+      at process exit after bulk zone/track/drawing removal unless
+      `item.thisown = False` is set post-`Remove()` — see
+      `docs/solutions/architecture-patterns/pcbnew-bulk-removal-segfault.md`
+      and the new `CLAUDE-MEMORY.md` entry. The crash lands after
+      `Save()` already wrote a correct file; every "crashed" output was
+      verified by reload before being trusted.
+      **Still open:** routing, stackup (15.2), interconnect part selection,
+      SH1's rotated shielding geometry, host envelope (16.3), mounting
+      scheme (16.4h).
 - [ ] 16.6 **Re-run `conductor_sizing.py`** for the re-laid geometry; no
       "TBD" copper weight.
 
