@@ -1956,6 +1956,29 @@ minimum width while the isolated transceivers flank the control section.
       Requirement: **both panels independently mounted to nacelle structure**,
       so neither is cantilevered off the other through the joint. Applies to
       both faceted options. Must precede any fatigue assessment.
+- [x] 16.4i **Functional partition measured 2026-09-01 — the joint is
+      SIGNAL-ONLY, which reverses 16.4c's conclusion.**
+      `builds/6s/50A/CAN_485_faraday_faceted/` instantiated;
+      `kicad/tools/partition_panels.py` seeds both panels by function and
+      propagates the rest by net majority to a fixed point. Result:
+      **19 interconnect nets** — 18 Default plus GND, whose L-side is
+      decoupling and logic only (no power-stage part). **No 50 A crosses**;
+      the pack path runs J5A → Q1/Q3/Q5 → phases → shunts → J5B wholly
+      inside Panel P. **No Isolated net crosses** either — both transceivers
+      sit on Panel L, so the barrier never reaches the joint and the
+      "no facet can meet 31.86 mm" problem of 16.4e is sidestepped.
+      **Consequence:** 16.4c's "separate boards only" verdict was a property
+      of cutting the EXISTING layout geometrically, not of faceting. With the
+      functional partition **both faceted options are viable again**, and the
+      choice reverts to the flex-standard gate (16.2), which only rigid-flex
+      must clear.
+      Panel P 30 parts / widest 22.75 mm (SH1); Panel L 35 parts / widest
+      13.48 mm (U4); both fit the 23.98 mm strip. U6–U8 are assigned to
+      Panel P deliberately so the joint carries amplified ADC_Ix rather than
+      the noise-sensitive differential shunt pairs.
+      **Still open:** placement (16.5), SH1's 0.6 mm/edge margin (16.4e),
+      whether VREF_MID should be generated locally on Panel P instead of
+      crossing the joint.
 - [ ] 16.5 **Re-lay the power stage to fit the strip.** Q1–Q6 span 26.96 mm
       in the current 3x2 arrangement and do not fit a 24.00 mm strip at all;
       2x3 adds further length. Keep the whole 50 A power stage on ONE rigid
