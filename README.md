@@ -2,7 +2,7 @@
 
 All builds:
 
-MCU: **TI MSPM0G3518-Q1**, package PM (LQFP-64), orderable `M0G3518QPMRQ1` [44] — pin map VERIFIED. Supersedes the NXP S32K144 [31] as of 2026-08-10 (`TODO.md` §13.1; migration record in [`docs/HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md`](docs/HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md)), for its AES-128/256 accelerator with GCM/CMAC and hardware keystore, which lifted the AES-128 ceiling the S32K144's SHE-compliant CSEc imposed.
+MCU: **TI MSPM0G3518-Q1**, package RHB (VQFN-32, 5x5mm), orderable `M0G3518QRHBRQ1` [44] — pin map VERIFIED, standard package for all builds as of 2026-09-06 (`docs/solutions/architecture-patterns/bom-creepage-audit-can485-faraday.md` finding #1; supersedes the PM/LQFP-64 package, same die, ~4x smaller footprint). Supersedes the NXP S32K144 [31] as of 2026-08-10 (`TODO.md` §13.1; migration record in [`docs/HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md`](docs/HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md)), for its AES-128/256 accelerator with GCM/CMAC and hardware keystore, which lifted the AES-128 ceiling the S32K144's SHE-compliant CSEc imposed.
 
 > **The two lines below still describe the S32K144 and its CSEc, which is no longer the MCU in any build.** They are left in place because the swap's *security* consequences are unfinished work, not a documentation lag — `docs/secure-element-architecture.md` has not yet been revisited (`TODO.md` §13.1.e), so rewriting the summary here would assert a conclusion nobody has reached. Treat every CSEc statement below as describing a superseded design until §13.1.e closes. The OPTIGA Trust M's role is unaffected: the MSPM0's AES engine is still symmetric, so the asymmetric layer is still required.
 
@@ -18,7 +18,9 @@ Build Options:
 * Protocol: PWM, SBus, DBus, UART, TTL, SPI, RS-232 [3], RS-485 [4], CAN2.0 [5], CAN-FD [6], MIL-STD-1553B [7]
 * Control: Open, Closed-Diff, Closed-PID
 * EMI Hardening: None, Isolation, Grounding, Faraday
-* Ingress & environmental protection: IP ratings up to IP68 and NEMA equivalents up to NEMA 6P. Submersible variants MUST include cooling strategies that operate correctly in both air and water (see docs/design-submersible-cooling.md DRAFT).
+* Wire Egress: Opposite-end (default), Same-end opposite faces (both conductor groups leave one board end, phases on F.Cu and pack on B.Cu, shielded by the inner GND planes)
+* Form Factor: Flat (default), Faceted rigid-flex (for mounting inside a curved host; strip width and sagitta derive from the host bore radius — see `docs/tools/strip_width.py`)
+* Ingress & environmental protection: Splash/spray variants (target IPX4–IPX6, IEC 60529 [56]) air-cooled via an open aspirated path; Sealed/immersion variants (target IPX7–IPX8, up to NEMA 6P equivalent) MUST use a metal conduction cooling path with no air exchange — these are two distinct mechanical designs, not one IP-rating dial (see `docs/design-waterproofing-and-thermal-management.md`).
 
 ## Repository layout
 

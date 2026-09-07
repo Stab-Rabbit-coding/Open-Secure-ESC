@@ -1,0 +1,23 @@
+{
+  "strip_width_mm": 23.0,
+  "panels": {
+    "P": {
+      "name": "power stage",
+      "count": 30,
+      "width_mm": 23.0,
+      "length_mm": 89.51,
+      "rotated_to_fit": [
+        "SH1"
+      ],
+      "x_origin_mm": 0.0
+    },
+    "L": {
+      "name": "logic/comms",
+      "count": 35,
+      "width_mm": 23.0,
+      "length_mm": 61.68,
+      "rotated_to_fit": [],
+      "x_origin_mm": 26.0
+    }
+  }
+}
