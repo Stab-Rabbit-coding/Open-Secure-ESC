@@ -1414,28 +1414,53 @@ detail belongs in design docs, not here.
         the write path. Until this is understood the board cannot be routed
         reproducibly.
   - [~] 12.5.bg **(High) MCU package swap PM (LQFP-64) -> RHB (VQFN-32) for
-        `U1`, MSPM0G3518-Q1.** Full BOM/creepage audit
+        `U1`, MSPM0G3518-Q1 -- now the STANDARD package for all builds.**
+        Full BOM/creepage audit
         (`docs/solutions/architecture-patterns/bom-creepage-audit-can485-faraday.md`)
-        found and verified a conflict-free pin remap of every signal this
-        schematic uses onto RHB's 28 GPIOs (no Port B/C on this package), with
-        4 spare, cutting `isolation_envelope.py`'s "widest non-isolated part"
-        from 12.90 mm to ~6.5 mm. **SCHEMATIC SIDE DONE 2026-09-06:** the
-        prior generic, unwired `symbols/MSPM0G3518_Q1_RHB.kicad_sym` (built
-        for a different board, character-named) has been scrubbed and
-        re-wired with this build's ESC-specific pin roles
-        (`symbols/specs/MSPM0G3518_Q1_RHB.json`), `U1` swapped from
-        `MSPM0G3518_Q1_PM` to `MSPM0G3518_Q1_RHB` in
-        `open_secure_esc_6s_50a_can485_faraday.kicad_sch`, and `kicad-cli sch
-        erc` re-verified at 0 errors with the identical warning set as
-        before the swap. **STILL OPEN:** the `.kicad_pcb` still carries the
-        old `LQFP-64_10x10mm` footprint for `U1` — schematic and PCB are now
-        out of sync. Needs "Update PCB from Schematic" in the KiCad GUI (not
-        a raw text edit, given the pcbnew 9.0.2 Python-binding segfault on
-        footprint removal recorded elsewhere in this repo's history) to swap
-        the footprint to `Package_DFN_QFN:Texas_RHB0032E_VQFN-32-1EP_5x5mm_
-        P0.5mm_EP3.45x3.45mm`, followed by a re-placement (RHB's pad layout
-        bears no resemblance to LQFP-64's, so the existing PCB placement/
-        courtyard cannot simply be reused at the new footprint's size).
+        found and verified a conflict-free pin remap of every signal onto
+        RHB's 28 GPIOs (no Port B/C on this package), with 4 spare, cutting
+        `isolation_envelope.py`'s "widest non-isolated part" from 12.90 mm to
+        ~6.5 mm. **DONE 2026-09-06, schematic + PCB staging, for 3 of 4
+        build variants:** `CAN_485_faraday`, `CAN_485_faraday_sameend`, and
+        `CAN_485_faraday_sameend_faceted`. For the two with a schematic
+        (`CAN_485_faraday`, `CAN_485_faraday_sameend`): the prior generic,
+        unwired `symbols/MSPM0G3518_Q1_RHB.kicad_sym` (built for a different
+        board, character-named) was scrubbed and re-wired with this build's
+        ESC-specific pin roles (`symbols/specs/MSPM0G3518_Q1_RHB.json`), `U1`
+        swapped from `MSPM0G3518_Q1_PM` to `MSPM0G3518_Q1_RHB` in both
+        `.kicad_sch` files, and `kicad-cli sch erc` re-verified at 0 errors
+        with the identical warning set as before each swap. For all three
+        `.kicad_pcb` files: the old `LQFP-64_10x10mm` `U1` footprint was
+        replaced in place with `Package_DFN_QFN:Texas_RHB0032E_VQFN-32-1EP_
+        5x5mm_P0.5mm_EP3.45x3.45mm`, every pad wired to its correct net
+        (verified against each board's own net table, same IDs across all
+        three), and the whole footprint staged OFF-BOARD (at coordinates
+        clear of each board's own outline) rather than placed in the old
+        LQFP-64's spot or auto-placed, so the final position is a manual
+        decision, not a guessed one. `kicad-cli pcb drc` re-run on each:
+        violation categories and unconnected-item counts are unchanged
+        (or, in two cases, one fewer `silk_over_copper`/`silk_edge_clearance`
+        finding, from removing the old footprint's silkscreen at its old
+        spot) — no new DRC findings introduced by any of the three swaps.
+        **STILL OPEN:** `CAN_485_faraday_faceted`'s `.kicad_pcb` was NOT
+        touched — it was open in a live, running KiCad GUI session
+        (lock file + running `kicad` process observed) when this work was
+        done, and writing to a file KiCad already has open risks the next
+        GUI save silently discarding the change. Apply the same swap there
+        once that session is closed/saved. Manual final placement of the
+        staged RHB footprint (moving it from its off-board staging position
+        into the actual layout) is deliberately left to the repo owner in
+        all cases — that positioning call, and the re-route it implies, was
+        the point of staging rather than auto-placing.
+  - [ ] 12.5.bg.1 **(Low) Verify whether the RHB package's exposed thermal
+        pad (pad 33) must be tied to a net.** Left WITHOUT a net in all
+        three staged footprints above: no statement was found in the local
+        copy of [44] that the exposed pad is internally bonded to VSS (unlike
+        some MSPM0 QFN parts where this is explicit). Per `AGENTS.md` Sec.1.3
+        this is marked `UNVERIFIED` rather than assumed to be GND by
+        convention. Resolve before fab, one way or the other, with a primary
+        source (TI's generic QFN/SON PCB attachment application note, or an
+        E2E confirmation) — not by guessing from other parts' behavior.
   - [ ] 12.5.bh **(Low, free) Close the "ADM3055E vs. ADM3057E left open"
         decision to ADM3057E.** REFERENCES.md [10]'s 2026-09-06 addendum
         confirms the two variants are timing-identical (shared Table 2, both

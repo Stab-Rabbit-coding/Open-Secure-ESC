@@ -2,7 +2,7 @@
 
 All builds:
 
-MCU: **TI MSPM0G3518-Q1**, package PM (LQFP-64), orderable `M0G3518QPMRQ1` [44] — pin map VERIFIED. Supersedes the NXP S32K144 [31] as of 2026-08-10 (`TODO.md` §13.1; migration record in [`docs/HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md`](docs/HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md)), for its AES-128/256 accelerator with GCM/CMAC and hardware keystore, which lifted the AES-128 ceiling the S32K144's SHE-compliant CSEc imposed.
+MCU: **TI MSPM0G3518-Q1**, package RHB (VQFN-32, 5x5mm), orderable `M0G3518QRHBRQ1` [44] — pin map VERIFIED, standard package for all builds as of 2026-09-06 (`docs/solutions/architecture-patterns/bom-creepage-audit-can485-faraday.md` finding #1; supersedes the PM/LQFP-64 package, same die, ~4x smaller footprint). Supersedes the NXP S32K144 [31] as of 2026-08-10 (`TODO.md` §13.1; migration record in [`docs/HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md`](docs/HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md)), for its AES-128/256 accelerator with GCM/CMAC and hardware keystore, which lifted the AES-128 ceiling the S32K144's SHE-compliant CSEc imposed.
 
 > **The two lines below still describe the S32K144 and its CSEc, which is no longer the MCU in any build.** They are left in place because the swap's *security* consequences are unfinished work, not a documentation lag — `docs/secure-element-architecture.md` has not yet been revisited (`TODO.md` §13.1.e), so rewriting the summary here would assert a conclusion nobody has reached. Treat every CSEc statement below as describing a superseded design until §13.1.e closes. The OPTIGA Trust M's role is unaffected: the MSPM0's AES engine is still symmetric, so the asymmetric layer is still required.
 
