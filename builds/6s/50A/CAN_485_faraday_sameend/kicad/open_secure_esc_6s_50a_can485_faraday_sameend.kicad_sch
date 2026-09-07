@@ -18046,6 +18046,186 @@
 			)
 		)
 	)
+	(wire
+		(pts
+			(xy 898.58 129.84) (xy 901.12 129.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d5a1f0010-bus0-4000-8000-q1drain001")
+	)
+	(wire
+		(pts
+			(xy 901.12 129.84) (xy 903.66 129.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d5a1f0020-bus0-4000-8000-q1drain002")
+	)
+	(wire
+		(pts
+			(xy 903.66 129.84) (xy 906.1999999999999 129.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d5a1f0030-bus0-4000-8000-q1drain003")
+	)
+	(wire
+		(pts
+			(xy 898.58 169.84) (xy 901.12 169.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d5a1f0040-bus0-4000-8000-q2drain004")
+	)
+	(wire
+		(pts
+			(xy 901.12 169.84) (xy 903.66 169.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d5a1f0050-bus0-4000-8000-q2drain005")
+	)
+	(wire
+		(pts
+			(xy 903.66 169.84) (xy 906.1999999999999 169.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d5a1f0060-bus0-4000-8000-q2drain006")
+	)
+	(wire
+		(pts
+			(xy 898.58 339.84) (xy 901.12 339.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d5a1f0070-bus0-4000-8000-q3drain007")
+	)
+	(wire
+		(pts
+			(xy 901.12 339.84) (xy 903.66 339.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d5a1f0080-bus0-4000-8000-q3drain008")
+	)
+	(wire
+		(pts
+			(xy 903.66 339.84) (xy 906.1999999999999 339.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d5a1f0090-bus0-4000-8000-q3drain009")
+	)
+	(wire
+		(pts
+			(xy 898.58 379.84) (xy 901.12 379.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d5a1f0100-bus0-4000-8000-q4drain010")
+	)
+	(wire
+		(pts
+			(xy 901.12 379.84) (xy 903.66 379.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d5a1f0110-bus0-4000-8000-q4drain011")
+	)
+	(wire
+		(pts
+			(xy 903.66 379.84) (xy 906.1999999999999 379.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d5a1f0120-bus0-4000-8000-q4drain012")
+	)
+	(wire
+		(pts
+			(xy 898.58 549.84) (xy 901.12 549.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d5a1f0130-bus0-4000-8000-q5drain013")
+	)
+	(wire
+		(pts
+			(xy 901.12 549.84) (xy 903.66 549.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d5a1f0140-bus0-4000-8000-q5drain014")
+	)
+	(wire
+		(pts
+			(xy 903.66 549.84) (xy 906.1999999999999 549.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d5a1f0150-bus0-4000-8000-q5drain015")
+	)
+	(wire
+		(pts
+			(xy 898.58 589.84) (xy 901.12 589.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d5a1f0160-bus0-4000-8000-q6drain016")
+	)
+	(wire
+		(pts
+			(xy 901.12 589.84) (xy 903.66 589.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d5a1f0170-bus0-4000-8000-q6drain017")
+	)
+	(wire
+		(pts
+			(xy 903.66 589.84) (xy 906.1999999999999 589.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d5a1f0180-bus0-4000-8000-q6drain018")
+	)
 	(sheet_instances
 		(path "/"
 			(page "1")

@@ -1420,38 +1420,74 @@ detail belongs in design docs, not here.
         found and verified a conflict-free pin remap of every signal onto
         RHB's 28 GPIOs (no Port B/C on this package), with 4 spare, cutting
         `isolation_envelope.py`'s "widest non-isolated part" from 12.90 mm to
-        ~6.5 mm. **DONE 2026-09-06, schematic + PCB staging, for 3 of 4
-        build variants:** `CAN_485_faraday`, `CAN_485_faraday_sameend`, and
-        `CAN_485_faraday_sameend_faceted`. For the two with a schematic
-        (`CAN_485_faraday`, `CAN_485_faraday_sameend`): the prior generic,
-        unwired `symbols/MSPM0G3518_Q1_RHB.kicad_sym` (built for a different
-        board, character-named) was scrubbed and re-wired with this build's
+        ~6.5 mm. **DONE 2026-09-06/07, schematic + PCB staging, for ALL 4 build
+        variants:** `CAN_485_faraday`, `CAN_485_faraday_sameend`,
+        `CAN_485_faraday_sameend_faceted`, and (once the repo owner closed
+        the live KiCad session on it, 2026-09-07) `CAN_485_faraday_faceted`.
+        For the two with a schematic (`CAN_485_faraday`,
+        `CAN_485_faraday_sameend`): the prior generic, unwired
+        `symbols/MSPM0G3518_Q1_RHB.kicad_sym` (built for a different board,
+        character-named) was scrubbed and re-wired with this build's
         ESC-specific pin roles (`symbols/specs/MSPM0G3518_Q1_RHB.json`), `U1`
         swapped from `MSPM0G3518_Q1_PM` to `MSPM0G3518_Q1_RHB` in both
         `.kicad_sch` files, and `kicad-cli sch erc` re-verified at 0 errors
-        with the identical warning set as before each swap. For all three
+        with the identical warning set as before each swap. For all four
         `.kicad_pcb` files: the old `LQFP-64_10x10mm` `U1` footprint was
         replaced in place with `Package_DFN_QFN:Texas_RHB0032E_VQFN-32-1EP_
         5x5mm_P0.5mm_EP3.45x3.45mm`, every pad wired to its correct net
         (verified against each board's own net table, same IDs across all
-        three), and the whole footprint staged OFF-BOARD (at coordinates
+        four), and the whole footprint staged OFF-BOARD (at coordinates
         clear of each board's own outline) rather than placed in the old
         LQFP-64's spot or auto-placed, so the final position is a manual
         decision, not a guessed one. `kicad-cli pcb drc` re-run on each:
         violation categories and unconnected-item counts are unchanged
-        (or, in two cases, one fewer `silk_over_copper`/`silk_edge_clearance`
+        (or, in some cases, one fewer `silk_over_copper`/`silk_edge_clearance`
         finding, from removing the old footprint's silkscreen at its old
-        spot) — no new DRC findings introduced by any of the three swaps.
-        **STILL OPEN:** `CAN_485_faraday_faceted`'s `.kicad_pcb` was NOT
-        touched — it was open in a live, running KiCad GUI session
-        (lock file + running `kicad` process observed) when this work was
-        done, and writing to a file KiCad already has open risks the next
-        GUI save silently discarding the change. Apply the same swap there
-        once that session is closed/saved. Manual final placement of the
-        staged RHB footprint (moving it from its off-board staging position
-        into the actual layout) is deliberately left to the repo owner in
-        all cases — that positioning call, and the re-route it implies, was
-        the point of staging rather than auto-placing.
+        spot) — no new DRC findings introduced by any of the four swaps.
+        **`CAN_485_faraday_faceted` NOTE:** the repo owner had already begun
+        manually repositioning components on this board to compact the
+        layout (started before the RHB footprint was staged, continued
+        after) — the committed state of this specific `.kicad_pcb` is a
+        snapshot of that in-progress manual work plus the staged RHB
+        footprint, not a finished layout; do not treat its current placement
+        as settled or re-run any placement generator against it, per the
+        established "never regenerate after manual packing" rule. Manual
+        final placement of the staged RHB footprint on all four boards
+        (moving it from its off-board staging position into the actual
+        layout) is deliberately left to the repo owner — that positioning
+        call, and the re-route it implies, was the point of staging rather
+        than auto-placing.
+  - [x] 12.5.bg.2 **(High) Fix the 18 `pin_not_connected` ERC errors on
+        `CAN_485_faraday_sameend` (Q1-Q6, TPHR8504PL drain pins 5/6/7).**
+        DONE 2026-09-07. These were flagged by CI's `KiCad ERC/DRC` check
+        (`kicad-cli sch erc --severity-error`) and are independent of
+        component placement — a pure schematic-connectivity gap, not a
+        layout one. Root cause found via netlist export: each FET's drain
+        pins 5/6/7 (redundant parallel leads on the same physical drain,
+        per `symbols/specs/TPHR8504PL.json`) were left floating when the
+        symbol was expanded from a simplified 3-pin stub to the verified
+        8-pin one; only pin 8 carried the real net (VM for Q1/Q3/Q5, PH_A/
+        PH_B/PH_C for Q2/Q4/Q6). Fixed by adding 3 short wire segments per
+        FET (18 total) bussing pins 5-6-7-8 together at each pin's own
+        connection point, verified point-by-point via netlist re-export
+        before being trusted (a first attempt, computed from the wrong sign
+        on the pin's Y-offset, silently failed to land on the real pins and
+        was caught and reverted the same way, by re-checking the netlist
+        rather than assuming the coordinates were right). `kicad-cli sch
+        erc --severity-error` now returns 0 violations, exit code 0,
+        matching CI's exact invocation. The analogous defect on the SOURCE
+        side (pins 1/3 wired to each other but not to pin 2's real PH_x/
+        ISENSE_x net — invisible to ERC since 1/3 aren't floating, just on
+        the wrong net) was found in the same investigation and is
+        **NOT fixed** — out of scope for "the 18," tracked separately below.
+  - [ ] 12.5.bg.3 **(Medium) `CAN_485_faraday_sameend` Q1-Q6 source pins 1
+        and 3 are wired to each other but not to the FET's real phase/
+        sense net (only pin 2 carries it).** Same root cause as 12.5.bg.2
+        (symbol expanded from 3 pins to the verified pin count, new pins
+        never wired) but on the source side, and ERC does not flag it
+        because pins 1/3 aren't floating — they're just isolated from pin
+        2's net, which ERC has no rule for. Confirmed via netlist export;
+        not yet fixed.
   - [ ] 12.5.bg.1 **(Low) Verify whether the RHB package's exposed thermal
         pad (pad 33) must be tied to a net.** Left WITHOUT a net in all
         three staged footprints above: no statement was found in the local
