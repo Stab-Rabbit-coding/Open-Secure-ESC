@@ -70,8 +70,6 @@ Usage:
 import argparse
 import json
 import re
-import shutil
-from datetime import datetime, timezone
 from pathlib import Path
 
 import pcbnew
@@ -80,9 +78,9 @@ CORE_POWER = re.compile(r"^(Q\d+|U5|U[678]|R[123]|J4[ABC]|J5[AB]|SH1)$")
 CORE_LOGIC = re.compile(r"^(U[1234]|J[123]|FB[1-4])$")
 FIDUCIAL = re.compile(r"^FID\d+$")
 
-EDGE_MARGIN_MM = 0.5   # footprint courtyard to board edge
-ROW_GAP_MM = 0.8       # vertical gap between shelf-pack rows
-COL_GAP_MM = 0.8       # horizontal gap between parts in one row
+EDGE_MARGIN_MM = 0.5  # footprint courtyard to board edge
+ROW_GAP_MM = 0.8  # vertical gap between shelf-pack rows
+COL_GAP_MM = 0.8  # horizontal gap between parts in one row
 
 
 def mm(v):
@@ -235,8 +233,11 @@ def strip_old_geometry(board):
     (post-fix) reports 0 zones, 0 tracks, and only non-Edge.Cuts drawings
     remaining, with a clean process exit.
     """
-    edge_cuts = [d for d in board.GetDrawings()
-                 if board.GetLayerName(d.GetLayer()) == "Edge.Cuts"]
+    edge_cuts = [
+        d
+        for d in board.GetDrawings()
+        if board.GetLayerName(d.GetLayer()) == "Edge.Cuts"
+    ]
     for zone in list(board.Zones()):
         board.Remove(zone)
         zone.thisown = False
@@ -253,8 +254,9 @@ def main() -> int:
     ap.add_argument("--board", required=True)
     ap.add_argument("--output", required=True)
     ap.add_argument("--strip-width", type=float, default=23.0)
-    ap.add_argument("--gap", type=float, default=3.0,
-                    help="gap between the two panel outlines, mm")
+    ap.add_argument(
+        "--gap", type=float, default=3.0, help="gap between the two panel outlines, mm"
+    )
     ap.add_argument("--json", help="write placement report to this path")
     args = ap.parse_args()
 
@@ -272,8 +274,7 @@ def main() -> int:
         placements, length, rotated = shelf_pack(by_panel[want], args.strip_width)
         panel_origin_x[want] = cursor_x
         for fp, cx, cy in placements:
-            fp.SetPosition(pcbnew.VECTOR2I(
-                fmm(cursor_x + cx), fmm(cy)))
+            fp.SetPosition(pcbnew.VECTOR2I(fmm(cursor_x + cx), fmm(cy)))
         report["panels"][want] = {
             "name": name,
             "count": len(placements),
@@ -282,8 +283,10 @@ def main() -> int:
             "rotated_to_fit": rotated,
             "x_origin_mm": round(cursor_x, 3),
         }
-        print(f"Panel {want} ({name}): {len(placements)} parts, "
-              f"{args.strip_width:.2f} x {length:.2f} mm")
+        print(
+            f"Panel {want} ({name}): {len(placements)} parts, "
+            f"{args.strip_width:.2f} x {length:.2f} mm"
+        )
         if rotated:
             print(f"  rotated 90 deg to fit strip width: {', '.join(rotated)}")
         cursor_x += args.strip_width + args.gap
@@ -293,15 +296,18 @@ def main() -> int:
     strip_old_geometry(board)
     for want in ("P", "L"):
         x0 = panel_origin_x[want]
-        draw_rectangle(board, x0, 0.0, x0 + args.strip_width, max_length,
-                        pcbnew.Edge_Cuts)
+        draw_rectangle(
+            board, x0, 0.0, x0 + args.strip_width, max_length, pcbnew.Edge_Cuts
+        )
 
     board.Save(args.output)
     print(f"\nwrote {args.output}")
-    print(f"combined envelope (two panels + gap): "
-          f"{cursor_x - args.gap:.2f} x {max_length:.2f} mm "
-          f"(panels are independent boards; this is footprint only, not "
-          f"real panel bounding stock)")
+    print(
+        f"combined envelope (two panels + gap): "
+        f"{cursor_x - args.gap:.2f} x {max_length:.2f} mm "
+        f"(panels are independent boards; this is footprint only, not "
+        f"real panel bounding stock)"
+    )
 
     if args.json:
         Path(args.json).write_text(json.dumps(report, indent=2) + "\n")

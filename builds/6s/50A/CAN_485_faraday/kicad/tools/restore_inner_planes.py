@@ -201,13 +201,13 @@ def main() -> int:
     for name, hits in after.items():
         print(f"  {name}: {sum(hits)}/{len(hits)} probes in copper")
 
-    gained = sum(
-        sum(after[n]) - sum(before[n]) for n in after
-    )
+    gained = sum(sum(after[n]) - sum(before[n]) for n in after)
     print(f"\nprobe points newly covered by inner-plane copper: {gained}")
     if gained <= 0:
-        print("WARNING: no probe point gained copper. The rule area was "
-              "edited but the planes did not fill -- do not trust the edit.")
+        print(
+            "WARNING: no probe point gained copper. The rule area was "
+            "edited but the planes did not fill -- do not trust the edit."
+        )
 
     if args.dry_run:
         print("\ndry run -- nothing written")

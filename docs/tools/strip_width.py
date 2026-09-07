@@ -87,49 +87,62 @@ def facet_angle_deg(radius_mm: float, width_mm: float) -> float:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--radius", type=float, default=DEFAULT_RADIUS_MM,
-                    help="host bore radius in mm (default: 30.0)")
+    ap.add_argument(
+        "--radius",
+        type=float,
+        default=DEFAULT_RADIUS_MM,
+        help="host bore radius in mm (default: 30.0)",
+    )
     ap.add_argument("--width", type=float, help="strip width in mm")
     ap.add_argument("--depth", type=float, help="radial depth budget in mm")
-    ap.add_argument("--arc", type=float,
-                    help="total arc to cover in degrees; reports facet count")
+    ap.add_argument(
+        "--arc", type=float, help="total arc to cover in degrees; reports facet count"
+    )
     args = ap.parse_args()
 
     radius = args.radius
-    print(f"host bore radius R = {radius:.2f} mm "
-          f"({radius / 25.4:.3f} in), circumference "
-          f"{2 * math.pi * radius:.2f} mm\n")
+    print(
+        f"host bore radius R = {radius:.2f} mm "
+        f"({radius / 25.4:.3f} in), circumference "
+        f"{2 * math.pi * radius:.2f} mm\n"
+    )
 
     if args.width is not None:
         depth = sagitta(radius, args.width)
         angle = facet_angle_deg(radius, args.width)
-        print(f"strip width  w = {args.width:.2f} mm "
-              f"({args.width / 25.4:.3f} in)")
-        print(f"  sagitta    s = {depth:.3f} mm ({depth / 25.4:.3f} in) "
-              f"-- radial depth this strip consumes")
+        print(f"strip width  w = {args.width:.2f} mm ({args.width / 25.4:.3f} in)")
+        print(
+            f"  sagitta    s = {depth:.3f} mm ({depth / 25.4:.3f} in) "
+            f"-- radial depth this strip consumes"
+        )
         print(f"  facet arc    = {angle:.2f} deg of the bore")
         if args.arc:
-            print(f"  covering {args.arc:.1f} deg needs "
-                  f"{math.ceil(args.arc / angle)} facets")
+            print(
+                f"  covering {args.arc:.1f} deg needs "
+                f"{math.ceil(args.arc / angle)} facets"
+            )
         print()
 
     if args.depth is not None:
         width = width_for_depth(radius, args.depth)
-        print(f"radial depth s = {args.depth:.2f} mm "
-              f"({args.depth / 25.4:.3f} in)")
+        print(f"radial depth s = {args.depth:.2f} mm ({args.depth / 25.4:.3f} in)")
         print(f"  max width  w = {width:.2f} mm ({width / 25.4:.3f} in)")
         print(f"  facet arc    = {facet_angle_deg(radius, width):.2f} deg\n")
 
     if args.width is None and args.depth is None:
-        print(f"{'width mm':>9s} {'width in':>9s} {'sagitta mm':>11s} "
-              f"{'sagitta in':>11s} {'facet deg':>10s}")
+        print(
+            f"{'width mm':>9s} {'width in':>9s} {'sagitta mm':>11s} "
+            f"{'sagitta in':>11s} {'facet deg':>10s}"
+        )
         for width in WIDTH_SERIES_MM:
             try:
                 depth = sagitta(radius, width)
             except ValueError:
                 continue
-            print(f"{width:9.2f} {width / 25.4:9.3f} {depth:11.3f} "
-                  f"{depth / 25.4:11.3f} {facet_angle_deg(radius, width):10.2f}")
+            print(
+                f"{width:9.2f} {width / 25.4:9.3f} {depth:11.3f} "
+                f"{depth / 25.4:11.3f} {facet_angle_deg(radius, width):10.2f}"
+            )
 
         print(f"\n{'depth mm':>9s} {'max width mm':>13s} {'max width in':>13s}")
         for depth in DEPTH_SERIES_MM:
@@ -138,8 +151,7 @@ def main() -> int:
 
         print("\nWidth is not free: a narrower board is a LONGER board.")
         print("Run docs/tools/isolation_envelope.py --board-width <w> for the")
-        print("length that narrowing costs on THIS design's isolation "
-              "geometry.")
+        print("length that narrowing costs on THIS design's isolation geometry.")
     return 0
 
 

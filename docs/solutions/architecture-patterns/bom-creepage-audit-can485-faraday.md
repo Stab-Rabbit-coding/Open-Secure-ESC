@@ -58,7 +58,7 @@ to spare — CAN0_TX/RX, UART0 TX/RX/RTS(RS-485 DE), SPI1 CS0/SCK/POCI/PICO
 element), SWCLK/SWDIO, and all four ADC channels. Re-running
 `isolation_envelope.py` with the RHB footprint:
 
-```
+```text
 PM  (12.90 mm widest part):  needs 31.86 mm width to sit inboard of both isolated rows
 RHB (~6.5 mm w/ courtyard):  needs 25.46 mm — closes 82% of the gap to a 24 mm target
 ```
@@ -76,7 +76,7 @@ either, no per-variant split anywhere in it. The only differences are
 package and UL rating:
 
 | | Package | CLR/CRP | UL 1577 VISO | VIORM/VIOWM |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | ADM3055E | RI-20-1 "increased creepage" | 8.3 mm | 5000 V rms | 595 Vpk / 420 Vrms |
 | ADM3057E | RW-20 "wide body" | **7.8 mm** | 3750 V rms | 595 Vpk / 420 Vrms (identical) |
 

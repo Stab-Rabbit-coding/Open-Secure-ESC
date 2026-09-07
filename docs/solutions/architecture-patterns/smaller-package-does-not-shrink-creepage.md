@@ -54,11 +54,11 @@ and both corrected the premise:
    and none is invented here.
 
 2. **The smaller package needs MORE creepage, not less.** Both TI
-   candidates were pulled from primary datasheets [59][60] and checked
-   against the two Analog Devices parts they'd replace [9][10]:
+   candidates were pulled from primary datasheets [59], [60] and checked
+   against the two Analog Devices parts they'd replace [9], [10]:
 
    | Part | Function | Package (nominal body) | External creepage/clearance | Working voltage (VIOWM) |
-   |---|---|---|---|---|
+   | --- | --- | --- | --- | --- |
    | ADM2582E/ADM2587E [9] | RS-485, integrated | 20-lead wide SOIC | **7.5 mm** | 396 V rms |
    | ISOW1412 [60] | RS-485, integrated | 20-lead wide SOIC (12.83 × 7.5 mm) | **>8 mm** | 1000 V rms |
    | ADM3057E [10] | CAN, integrated | 20-lead wide SOIC (RW-20) | **7.8 mm** | 420 V rms |
@@ -102,7 +102,7 @@ miss when the instinct is "smaller package, smaller board":
 Running the actual board-width tool on all three creepage values makes the
 outcome quantitative, not just qualitative:
 
-```
+```text
 $ python3 docs/tools/isolation_envelope.py --creepage 7.5 --board-width 24.0   # current, ADM2582E
    ... FAILS by 3.57 mm regardless; MCU needs 31.86 mm width to sit inboard
 

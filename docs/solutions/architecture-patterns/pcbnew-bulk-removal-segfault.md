@@ -44,7 +44,7 @@ pin down, per `CLAUDE-MEMORY.md`'s own standing note that pcbnew SWIG bugs
 **Trap 1 — a board-level container accessor breaks after a prior bulk
 removal, with a misleading error.**
 
-```
+```text
 File ".../pcbnew.py", line 20244, in GetDrawings
     def GetDrawings(self): return list(self.Drawings())
 TypeError: 'SwigPyObject' object is not iterable
@@ -84,7 +84,7 @@ you want for an object the board no longer owns and nothing else references.
 ```python
 for zone in list(board.Zones()):
     board.Remove(zone)
-    zone.thisown = False        # <- prevents the exit-time SIGSEGV
+    zone.thisown = False  # <- prevents the exit-time SIGSEGV
 ```
 
 **Bisection method that found this**, worth reusing: isolate each suspected

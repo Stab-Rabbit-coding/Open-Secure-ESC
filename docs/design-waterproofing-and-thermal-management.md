@@ -68,7 +68,7 @@ other, or both explicitly (e.g. "IPX6/IPX7"), never implied by the higher
 number alone [56].
 
 | Numeral | IEC 60529 [56] definition (Table 3) | Test | Threat it matches |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | IPX4 | "Water splashed against the enclosure from any direction shall have no harmful effects" | Clause 14.2.4 | Rotor wash, rain, road spray on a ground vehicle, rotor-downwash spray on an aircraft |
 | IPX6 | "Water projected in powerful jets ... from any direction shall have no harmful effects" | Clause 14.2.6 | Pressure-washing, heavy following-sea spray |
 | IPX7 | "Ingress of water in quantities causing harmful effects shall not be possible ... temporarily immersed ... under standardized conditions of pressure and time" | Clause 14.2.7 | A ground vehicle fording a stream crossing |
@@ -101,7 +101,7 @@ to be the only cooling path that actually works for this geometry (§6). The
 fix is to put the ingress boundary and the airflow boundary at *different*
 places, each doing one job:
 
-```
+```text
  outside air/spray                                          duct interior
         |                                                          |
         v                                                          v

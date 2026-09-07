@@ -86,8 +86,7 @@ TBD = "TBD -- requires primary-source verification (AGENTS.md Sec.1.3)"
 # ---------------------------------------------------------- Wire Egress -----
 EGRESS = {
     "title": "Wire Egress Decision Matrix",
-    "subtitle": "Build axis: Wire Egress (Opposite-end / Same-end, "
-    "opposite faces)",
+    "subtitle": "Build axis: Wire Egress (Opposite-end / Same-end, opposite faces)",
     "widths": [24, 30, 34, 38, 30, 44, 18, 22],
     "columns": [
         "Egress Pattern",

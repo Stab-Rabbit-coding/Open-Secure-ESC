@@ -49,7 +49,6 @@ Usage:
 import argparse
 import fnmatch
 import json
-import math
 import re
 from pathlib import Path
 
@@ -80,7 +79,7 @@ CORE_LOGIC = re.compile(r"^(U[1234]|J[123]|FB[1-4])$")
 # separately fabricated and separately assembled board and needs its own set.
 FIDUCIAL = re.compile(r"^FID\d+$")
 
-MAX_STRIP_MM = 23.98   # docs/tools/strip_width.py at R=30.0 mm, s=2.5 mm
+MAX_STRIP_MM = 23.98  # docs/tools/strip_width.py at R=30.0 mm, s=2.5 mm
 POWER_CLASS = "Power"
 
 
@@ -93,8 +92,11 @@ def netclass_patterns(board_path):
     if not pro.exists():
         return {}
     settings = json.loads(pro.read_text()).get("net_settings", {})
-    return {p["pattern"]: p["netclass"]
-            for p in settings.get("netclass_patterns", []) if "pattern" in p}
+    return {
+        p["pattern"]: p["netclass"]
+        for p in settings.get("netclass_patterns", [])
+        if "pattern" in p
+    }
 
 
 def classify(net, patterns):
@@ -195,7 +197,6 @@ def main() -> int:
     for want, name in (("P", "POWER STAGE"), ("L", "LOGIC / COMMS")):
         members = sorted(r for r, p in panel.items() if p == want)
         count, area, widest, tallest = envelope(board, panel, want)
-        util = area / (args.strip * 1.0)
         print(f"\nPanel {want} -- {name}: {count} parts")
         print(f"  {', '.join(members)}")
         print(f"  total courtyard area   {area:8.1f} mm^2")
@@ -203,10 +204,14 @@ def main() -> int:
         print(f"  tallest part           {tallest[0]:8.2f} mm  ({tallest[1]})")
         fits = "OK" if widest[0] <= args.strip else "TOO WIDE"
         print(f"  vs {args.strip:.2f} mm strip: {fits}")
-        print(f"  min length if packed at 100% (unachievable floor): "
-              f"{area / args.strip:6.1f} mm")
-        print(f"  at a realistic 40% area utilisation:              "
-              f"{area / args.strip / 0.40:6.1f} mm")
+        print(
+            f"  min length if packed at 100% (unachievable floor): "
+            f"{area / args.strip:6.1f} mm"
+        )
+        print(
+            f"  at a realistic 40% area utilisation:              "
+            f"{area / args.strip / 0.40:6.1f} mm"
+        )
 
     nets = {"P": {}, "L": {}}
     for f in board.GetFootprints():
@@ -222,24 +227,28 @@ def main() -> int:
     for n in crossing:
         by_class.setdefault(classify(n, patterns), []).append(n)
     for cls in sorted(by_class):
-        print(f"  {cls:9s} {len(by_class[cls]):3d}  "
-              f"{', '.join(sorted(by_class[cls]))}")
+        print(f"  {cls:9s} {len(by_class[cls]):3d}  {', '.join(sorted(by_class[cls]))}")
 
     print("\n=== does 50 A cross the joint? ===")
     verdict_ok = True
     for n in sorted(by_class.get(POWER_CLASS, [])):
-        p_side = sorted(nets['P'][n])
-        l_side = sorted(nets['L'][n])
+        l_side = sorted(nets["L"][n])
         carries = [r for r in l_side if CORE_POWER.match(r)]
-        print(f"  {n}: L-side parts = {', '.join(l_side[:10])}"
-              f"{'...' if len(l_side) > 10 else ''}")
+        print(
+            f"  {n}: L-side parts = {', '.join(l_side[:10])}"
+            f"{'...' if len(l_side) > 10 else ''}"
+        )
         if carries:
             print(f"    ** carries pack current to {carries} -- 50 A CROSSES")
             verdict_ok = False
         else:
-            print(f"    no power-stage part on the L side -- this net crosses "
-                  f"as a supply/reference only, not as a 50 A conductor")
-    print(f"\n  VERDICT: {'SIGNAL-ONLY interconnect' if verdict_ok else '50 A CROSSES'}")
+            print(
+                "    no power-stage part on the L side -- this net crosses "
+                "as a supply/reference only, not as a 50 A conductor"
+            )
+    print(
+        f"\n  VERDICT: {'SIGNAL-ONLY interconnect' if verdict_ok else '50 A CROSSES'}"
+    )
     if verdict_ok:
         print("  Both faceted options are viable. This is the result a purely")
         print("  geometric cut could not reach: the 50 A path runs pack ->")
@@ -247,10 +256,18 @@ def main() -> int:
         print("  Panel P.")
 
     if args.json:
-        Path(args.json).write_text(json.dumps(
-            {"panel": panel, "interconnect": crossing,
-             "by_class": {k: sorted(v) for k, v in by_class.items()}},
-            indent=2, sort_keys=True) + "\n")
+        Path(args.json).write_text(
+            json.dumps(
+                {
+                    "panel": panel,
+                    "interconnect": crossing,
+                    "by_class": {k: sorted(v) for k, v in by_class.items()},
+                },
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n"
+        )
         print(f"\nwrote {args.json}")
     return 0
 

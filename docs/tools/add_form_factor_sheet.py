@@ -333,7 +333,9 @@ def write_sheet(wb, name: str, spec: dict) -> None:
     nc.font = SUB_FONT
 
     for col, width in enumerate(spec["widths"], start=1):
-        ws.column_dimensions[ws.cell(row=header_row, column=col).column_letter].width = width
+        ws.column_dimensions[
+            ws.cell(row=header_row, column=col).column_letter
+        ].width = width
     ws.freeze_panes = f"A{header_row + 1}"
 
 

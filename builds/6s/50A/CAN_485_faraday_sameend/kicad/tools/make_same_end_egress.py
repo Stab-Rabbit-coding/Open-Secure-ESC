@@ -75,10 +75,10 @@ import pcbnew
 HERE = Path(__file__).resolve().parent
 BOARD = HERE.parent / "open_secure_esc_6s_50a_can485_faraday_sameend.kicad_pcb"
 
-EXTEND_MM = 10.00       # new length added at the terminal end
-Y_SPLIT_MM = 80.00      # Edge.Cuts points below this belong to the moving end
-ZONE_SPLIT_MM = 84.00   # zone vertices below this belong to the moving end
-TERMINAL_Y_MM = 90.50   # new centre-line for both terminal groups
+EXTEND_MM = 10.00  # new length added at the terminal end
+Y_SPLIT_MM = 80.00  # Edge.Cuts points below this belong to the moving end
+ZONE_SPLIT_MM = 84.00  # zone vertices below this belong to the moving end
+TERMINAL_Y_MM = 90.50  # new centre-line for both terminal groups
 
 PHASE_REFS = ("J4A", "J4B", "J4C")
 # Pack pads, moved to B.Cu and spread symmetrically about the board centre
@@ -132,9 +132,7 @@ def stretch_zone(zone, dy_nm, threshold_mm):
     for index in range(outline.VertexCount()):
         vertex = outline.CVertex(index)
         if mm(vertex.y) > threshold_mm:
-            outline.SetVertex(
-                index, pcbnew.VECTOR2I(vertex.x, vertex.y + dy_nm)
-            )
+            outline.SetVertex(index, pcbnew.VECTOR2I(vertex.x, vertex.y + dy_nm))
             moved += 1
     return moved
 
