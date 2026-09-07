@@ -126,3 +126,40 @@ executed. 79 real violations were hidden.
   that can match nothing should be proven to match something.
 
 Related: [[pcbnew-swig-chained-call-trap]], [[kicad-concurrent-edit-hazard]]
+
+---
+
+## pcbnew-bulk-removal-thisown-segfault
+
+`board.Remove(item)` sets the removed item's `thisown` flag so the Python
+wrapper now owns the C++ object — but no destructor is wrapped for
+ZONE/PCB_TRACK/PCB_SHAPE, so Python's GC later corrupts the heap trying to
+free it. This produces a SIGSEGV (exit 139) at process exit, well *after*
+`board.Save()` already wrote a correct file, with no Python traceback body —
+it looks like the crash happened at the last print statement but didn't.
+
+Separately, `board.GetDrawings()` / `board.Zones()` / `board.Tracks()` called
+for introspection (not removal) can raise `TypeError: 'SwigPyObject' object
+is not iterable` if zones were removed earlier in the same process — the
+container accessor's return typemap doesn't survive a prior bulk removal.
+
+**Why:** verified 2026-09-05 (Open-Secure-ESC, `docs/tools/facet_placement.py`)
+by reloading each "crashed" output file — every one was complete and
+correct, confirming the crash was in teardown, not in `Save()`. Found by
+bisecting into one-line invocations run 3-4× each (heap-layout-dependent,
+can pass by luck on a single run) and checking exit code, not just stdout.
+
+**How to apply:**
+
+- After any `board.Remove(item)` in a bulk-removal loop, immediately set
+  `item.thisown = False`.
+- Capture any board-level container list (`GetDrawings()`, etc.) you'll need
+  later BEFORE removing anything else, in one pass — never call these
+  accessors again for introspection after a removal in the same process.
+- A script that "crashes" after visibly completing its work is not
+  automatically fine — reload the output and verify before trusting it.
+
+Full writeup:
+`docs/solutions/architecture-patterns/pcbnew-bulk-removal-segfault.md`.
+
+Related: [[pcbnew-swig-chained-call-trap]]

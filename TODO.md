@@ -33,7 +33,12 @@ detail belongs in design docs, not here.
 - [ ] 2.3 Regulatory/EMC targets per market (cite standard, Cn)
 - [ ] 2.4 Requirements traceability matrix → REFERENCES.md tags
 - [ ] 2.5 Motor speed-sensor requirement (ALL variants): define required accuracy, latency, interfaces and failure modes; enumerate supported sensor types (Hall/low-voltage digital, optical encoder/quadrature, analog tachometer → ADC). Trace to authoritative references where applicable (Cn). See `docs/design-speed-sensor-integration.md`.
-- [ ] 2.6 Environmental & ingress protection requirements: specify supported IP ratings (up to IP68) and NEMA equivalents (up to NEMA 6P); define temperature, humidity, condensation and immersion duration/pressure profiles per-variant; submersible variants MUST include cooling strategies that operate in both air and water and have verification tests (see `docs/design-submersible-cooling.md` — DRAFT to author). Mark any environmental spec values UNVERIFIED until primary-source standards are cited (Cn).
+- [x] 2.6 Environmental & ingress protection requirements: Form Factor × Ingress resolved as a joint axis (two variants: splash/spray air-cooled IPX4–6, sealed/immersion IPX7–8), with the cited standards, layered-boundary design, and thermal/waterproofing interaction fully authored in `docs/design-waterproofing-and-thermal-management.md`. Remaining sub-items tracked below (Cn where marked).
+  - [ ] 2.6.a Select an IPC-CC-830C [57]-qualified conformal coating for the faceted board with its Flexibility (§3.5.5) and Thermal Shock (§3.7.2) data obtained from a vendor datasheet, not assumed from coating type alone (Cn).
+  - [ ] 2.6.b Select a wire-egress connector/gland series with a manufacturer-stated IP rating at the mated condition; hold its datasheet locally (Cn).
+  - [ ] 2.6.c Size the pressure-equalization vent (ePTFE membrane, e.g. [58]) against bay free volume and design altitude/thermal excursion — no sizing method is catalogued yet (Cn).
+  - [ ] 2.6.d Verify whether IEC 60529 Amendments 1/2 changed the IPX4/6/7/8 clause numbers or definitions relative to the 2001 text held locally as [56] (Cn).
+  - [ ] 2.6.e Decide, for the sealed/immersion variant, whether service access (compression gasket) or potting is required — a requirements decision, currently open.
 
 ## 3. Hardware — MCU Subsystem
 
@@ -696,7 +701,14 @@ detail belongs in design docs, not here.
         opposite for itself: "Neither PCB stitching capacitance nor high
         voltage surface-mounted technology (SMT) safety capacitors are
         required" -- so this applies to the RS-485 part, U4.
-  - [ ] 12.5.ae **(Medium) The isolation keepout is not datasheet-driven and
+  - [~] 12.5.ae **PARTLY RESOLVED 2026-08-31 — inner layers stripped.**
+        Option (b)'s inner-layer half is done: In1.Cu/In2.Cu removed from the
+        rule area by `tools/restore_inner_planes.py`, restoring the
+        plane-to-plane overlap [9] p.17 asks for. **Still open:** whether the
+        remaining F.Cu/B.Cu scope should be deleted (option a) or shrunk to
+        the U3/U4 package bodies (option b) — that moves 50 A current paths
+        and still needs sign-off. Original entry follows.
+        **(Medium) The isolation keepout is not datasheet-driven and
         should be replaced, not relocated.** The existing rule area is a
         full-width, 4-layer no-copper-pour rectangle. [9] p.17 asks for the
         **opposite** on a 4-layer board: "place an embedded stitching
@@ -900,8 +912,14 @@ detail belongs in design docs, not here.
         area. The zone's `island_removal_mode` was already `ALWAYS` and did
         not remove it; a clean reload-fill-save cycle reproduced it, so this
         was not the stale-fill trap. `isolated_copper` 2 -> 1.
-        **Still open:** confirm the authored rule area over the phase
-        terminals is intended, and identify the last remaining
+        **Answered 2026-08-31 for the inner layers:** it was NOT intended
+        there. The rule area was authored when U3/U4 sat at that end; they
+        are now at y 34.50 on B.Cu, so it guarded nothing while cutting both
+        GND planes across the full board width. In1.Cu/In2.Cu stripped by
+        `tools/restore_inner_planes.py`; the In2.Cu VM-island rule area is
+        the one justified inner-layer keepout and was kept.
+        **Still open:** whether the remaining F.Cu/B.Cu scope over the phase
+        terminals is intended (see 12.5.ae), and identify the last remaining
         `isolated_copper` (1, warning).
   - [x] 12.5.ao **DONE 2026-08-19 — 11 starved GND thermals given solid zone
         connections.** `.kicad_pro` sets `min_resolved_spokes = 2`; these pads
@@ -1400,6 +1418,93 @@ detail belongs in design docs, not here.
         `-mp` below some threshold, or completing before convergence, skips
         the write path. Until this is understood the board cannot be routed
         reproducibly.
+  - [~] 12.5.bg **(High) MCU package swap PM (LQFP-64) -> RHB (VQFN-32) for
+        `U1`, MSPM0G3518-Q1 -- now the STANDARD package for all builds.**
+        Full BOM/creepage audit
+        (`docs/solutions/architecture-patterns/bom-creepage-audit-can485-faraday.md`)
+        found and verified a conflict-free pin remap of every signal onto
+        RHB's 28 GPIOs (no Port B/C on this package), with 4 spare, cutting
+        `isolation_envelope.py`'s "widest non-isolated part" from 12.90 mm to
+        ~6.5 mm. **DONE 2026-09-06, schematic + PCB staging, for 3 of 4
+        build variants:** `CAN_485_faraday`, `CAN_485_faraday_sameend`, and
+        `CAN_485_faraday_sameend_faceted`. For the two with a schematic
+        (`CAN_485_faraday`, `CAN_485_faraday_sameend`): the prior generic,
+        unwired `symbols/MSPM0G3518_Q1_RHB.kicad_sym` (built for a different
+        board, character-named) was scrubbed and re-wired with this build's
+        ESC-specific pin roles (`symbols/specs/MSPM0G3518_Q1_RHB.json`), `U1`
+        swapped from `MSPM0G3518_Q1_PM` to `MSPM0G3518_Q1_RHB` in both
+        `.kicad_sch` files, and `kicad-cli sch erc` re-verified at 0 errors
+        with the identical warning set as before each swap. For all three
+        `.kicad_pcb` files: the old `LQFP-64_10x10mm` `U1` footprint was
+        replaced in place with `Package_DFN_QFN:Texas_RHB0032E_VQFN-32-1EP_
+        5x5mm_P0.5mm_EP3.45x3.45mm`, every pad wired to its correct net
+        (verified against each board's own net table, same IDs across all
+        three), and the whole footprint staged OFF-BOARD (at coordinates
+        clear of each board's own outline) rather than placed in the old
+        LQFP-64's spot or auto-placed, so the final position is a manual
+        decision, not a guessed one. `kicad-cli pcb drc` re-run on each:
+        violation categories and unconnected-item counts are unchanged
+        (or, in two cases, one fewer `silk_over_copper`/`silk_edge_clearance`
+        finding, from removing the old footprint's silkscreen at its old
+        spot) — no new DRC findings introduced by any of the three swaps.
+        **STILL OPEN:** `CAN_485_faraday_faceted`'s `.kicad_pcb` was NOT
+        touched — it was open in a live, running KiCad GUI session
+        (lock file + running `kicad` process observed) when this work was
+        done, and writing to a file KiCad already has open risks the next
+        GUI save silently discarding the change. Apply the same swap there
+        once that session is closed/saved. Manual final placement of the
+        staged RHB footprint (moving it from its off-board staging position
+        into the actual layout) is deliberately left to the repo owner in
+        all cases — that positioning call, and the re-route it implies, was
+        the point of staging rather than auto-placing.
+  - [ ] 12.5.bg.1 **(Low) Verify whether the RHB package's exposed thermal
+        pad (pad 33) must be tied to a net.** Left WITHOUT a net in all
+        three staged footprints above: no statement was found in the local
+        copy of [44] that the exposed pad is internally bonded to VSS (unlike
+        some MSPM0 QFN parts where this is explicit). Per `AGENTS.md` Sec.1.3
+        this is marked `UNVERIFIED` rather than assumed to be GND by
+        convention. Resolve before fab, one way or the other, with a primary
+        source (TI's generic QFN/SON PCB attachment application note, or an
+        E2E confirmation) — not by guessing from other parts' behavior.
+  - [ ] 12.5.bh **(Low, free) Close the "ADM3055E vs. ADM3057E left open"
+        decision to ADM3057E.** REFERENCES.md [10]'s 2026-09-06 addendum
+        confirms the two variants are timing-identical (shared Table 2, both
+        12 Mbps) at the same reinforced working-voltage class; ADM3057E's
+        RW-20 package needs 7.8 mm creepage against ADM3055E's RI-20-1 at
+        8.3 mm. The PCB's placed footprint for `U3`
+        (`SOIC-20W_7.5x12.8mm_P1.27mm`) already matches RW-20 dimensionally.
+        Update the schematic `Value`/`Description` and this repo's README to
+        state ADM3057E explicitly, and independently verify the KiCad
+        footprint's pads against [10] p. 27 "Outline Dimensions" for RW-20
+        (not yet checked — the footprint's *name* matching is not the same as
+        its *pad geometry* being confirmed correct).
+  - [ ] 12.5.bi **(Medium, research spike, not a BOM commitment) Investigate
+        consolidating the CAN (`U3`) and RS-485 (`U4`) isolation barriers into
+        one shared multi-channel isolator** (e.g. ISOW7841 [61], quad-channel
+        + integrated DC-DC — checked and found to need exactly 4 channels if
+        RS-485's DE/RE is combined into one line or an automatic-direction
+        RS-485 transceiver is used instead of the current 3-signal
+        ADM2582E-style interface). Open before this can be a BOM item: select
+        and verify a specific automatic-direction RS-485 transceiver against
+        its own primary datasheet; verify ISOW7841's DC-DC output actually
+        covers both bare transceivers' combined current at 16 Mbps/50 Ω
+        loading; and make an explicit, cited decision (`AGENTS.md` §4) on
+        whether removing today's CAN/RS-485 fault separation (both isolated
+        from the MCU, but also from EACH OTHER today) is acceptable — this is
+        a functional-safety trade, not just a part count reduction.
+  - [ ] 12.5.bj **(Low) Trace `isolation_envelope.py`'s `EDGE_MARGIN_MM = 0.55`
+        to the target fab's actual copper-to-board-edge design rule.** Currently
+        unsourced in this repo's citation trail; may be tighter than the real
+        fab minimum (small potential width saving, ≤0.5 mm total) or may
+        already be at the fab's floor. Either way, mark it verified one way or
+        the other rather than leaving it an assumed constant.
+  - [ ] 12.5.bk **(Low, standards research) Obtain and cite the IEC 60664-1
+        clause governing creepage-path extension via PCB grooves/ribs/slots.**
+        Every isolator datasheet checked in the creepage audit ([9], [10],
+        [59], [60], [61]) names the technique in its own footnote but none
+        quantify it; do not apply a groove/slot to any layout for creepage
+        credit until the governing clause and its slot-width/depth rule are
+        held locally and cited, per `AGENTS.md` §1.3.
   - [ ] 12.5.bb **(Medium, NEW) The conductor-spacing basis is sea-level, and
         this is an airborne ESC.** [S-D] records that IPC-2221C (2023) revised
         conductor spacing as a function of **altitude**, and that IPC-2221
@@ -1775,3 +1880,362 @@ the skill must refuse rather than extrapolate, per `AGENTS.md` §1.3.
 
 **Deferred.** Firmware generation, gerber/CPL emission, and BOM sourcing are
 out of scope; the skill stops at a DRC-clean routed board.
+
+## 15. Single-End Wire Egress Variant (planned — not started)
+
+Design plan: `docs/design-single-end-wire-egress-variant.md`. Pocket-mount
+variant: all five 50 A conductors leave the same board end, **phases on F.Cu
+(unchanged) and pack on B.Cu**, with the two inner GND planes carrying the
+shield between them. Owner confirmed the opposite-**faces** reading
+2026-08-31; the earlier long-edge reading is withdrawn (plan §9.2).
+
+**Two findings drive this section.** (a) The board has **no stackup** — four
+copper layers are declared and `(thickness 1.6)` is KiCad's default, but no
+dielectric height, copper weight or laminate `εr` is specified anywhere.
+(b) The unnamed rule area at x 20.75–51.15, y 76.50–86.55 mm sets
+`copperpour not_allowed` on **all four** copper layers, so In1.Cu and In2.Cu
+are cut away exactly where the two terminal groups must face each other —
+the shield this variant depends on is currently perforated by design.
+
+- [x] 15.1b **Same-end build instantiated 2026-08-31.**
+      `builds/6s/50A/CAN_485_faraday_sameend/` created from the parent build
+      under KiCad **9.0.2** only (board still `version 20241229` / `9.0`,
+      NOT advanced to KiCad 10). Geometry applied by
+      `kicad/tools/make_same_end_egress.py`: outline +10.00 mm at the terminal
+      end (32.00 x 66.10 -> 32.00 x 76.10 mm, +15.1% area), phases J4A/B/C
+      stay on F.Cu on their pours at y 90.50, pack J5A/J5B moved to B.Cu at
+      y 90.50 opposite them, zones and outer-layer rule area stretched to
+      match, FID3/FID6 moved with the band. DRC: 20 violations / **0 errors**
+      / 150 unconnected — identical warning profile to the parent and one
+      fewer unconnected.
+      **The design doc's original partition is DEAD and was not implemented:**
+      U1's courtyard is 13.45 mm, not 12.90 mm, so with U1 at the logic end
+      `isolation_envelope.py` demands 32.41 mm against an actual 32.00 mm —
+      fails by 0.41 mm on [9] Table 6 creepage. Length was bought instead, at
+      the 2.7x width:length rate the tool prices. U1/U2/J1 never move, so the
+      gate-drive and current-sense regressions the old partition carried are
+      gone. Plan section 3.3 and open item 3 are superseded — **the design doc
+      still describes the dead partition and needs rewriting.**
+      **Still open:** VM cannot reach J5A on B.Cu (pour stops at y 60.3/60.5),
+      and J5B's GND pad is cut off from the B.Cu pour by the relocated rule
+      area — both are the 12.5.ae decision, inherited unresolved.
+- [x] 15.1 **Wire Egress axis added to the decision matrix** 2026-08-31 via
+      `docs/tools/add_wire_egress_sheet.py`; `decision-matrix.json`
+      regenerated and `decision_matrix_to_json.py --check` passes. Values:
+      `Opposite-end` (as-built default) and `Same-end, opposite faces`.
+      **Still open:** add the axis to root `README.md` build options, and
+      instantiate `builds/6s/50A/CAN_485_faraday_sameend/` per
+      `docs/solutions/architecture-patterns/esc-build-instantiation-workflow.md`.
+- [ ] 15.2 **(Blocking) Define the stackup.** Specify layer count, per-layer
+      copper weight, every dielectric height, laminate and `εr`, and surface
+      finish; write them into the `.kicad_pcb` stackup block. Settle 4 layers
+      at 2 oz against 6 at 1 oz (plan §6.3). Gates 15.3–15.9. No "TBD".
+- [~] 15.3 **Terminal-end rule area re-scoped 2026-08-31 — inner planes
+      restored.** `tools/restore_inner_planes.py` stripped In1.Cu/In2.Cu from
+      rule area 7c9dc61f, leaving F.Cu/B.Cu. Verified against **filled-polygon
+      data**, not the edited rule area: probe points inside the window went
+      0/6 → 6/6 in copper on both inner planes, In1.Cu/GND +273.36 mm² and
+      In2.Cu/GND +273.36 mm², every other layer/net delta 0.00 mm². DRC
+      unchanged at 20 warnings / 151 unconnected. The In2.Cu VM-island rule
+      area (923717e9) was inspected and **kept** — it is the justified case
+      (12.5.an).
+      **Still open:** the placement rule barring phase and VM vias from
+      x 20.75–51.15, y 76.50–86.55 mm is not yet authored.
+- [ ] 15.4 **Re-place `U1`, `U2`, `J1`** off B.Cu y ~76–86 mm to the logic
+      end (y ~25–45 mm). **Re-run `isolation_envelope.py` with the new widest
+      non-isolated part** — the LQFP-64 may displace the 12.90 mm input and
+      push the minimum width past the as-built 32.00 mm, which invalidates
+      the partition rather than justifying a wider board. Re-check the
+      lengthened DRV8353S SPI/PWM/current-sense runs against [21].
+- [ ] 15.5 **Extend VM to a B.Cu pad at the terminal end.** Re-partition
+      B.Cu y > 60.5 mm into VM and GND regions; place `J5A`/`J5B`. Re-run
+      `docs/tools/conductor_sizing.py` for the new pack-side gap; it must be
+      pour, not track. No "TBD" copper weight.
+- [ ] 15.6 **Stitch In1.Cu to In2.Cu** around the terminal window at a pitch
+      justified against a stated highest frequency of interest. **Every new
+      DRC rule needs a negative control before it is trusted** — see
+      `CLAUDE-MEMORY.md` *kicad-dru-silent-failure*: one-line conditions only
+      (a multi-line condition silently voids the whole `.kicad_dru`, exit 0),
+      and clause order is not commutative.
+- [ ] 15.7 **Common-mode choke on the pack input** — new for this variant.
+      Inside the board the planes handle separation; outside it both
+      harnesses leave the pocket in one bundle. Quote insertion loss at the
+      switching fundamental from the part's own datasheet (Cn); needs the
+      edge rate from 15.2/`IDRIVE`, currently unspecified.
+- [ ] 15.8 **Thermal re-run** over the new placement. Junction temperatures
+      for `Q1`–`Q6`, `U5`, `U1` at a stated ambient. No "TBD".
+- [ ] 15.9 **Obtain a fabrication quote**: 4 vs 6 layers; 1 oz vs 2 oz; 1.6
+      vs 2.0 vs 3.2 mm thickness; max via aspect ratio accepted at each
+      thickness. **No price enters this repo until it comes from a vendor
+      quotation** (`AGENTS.md` §1.3). Confirms or revises plan §5/§6.
+- [ ] 15.10 **Conducted-emissions pre-compliance for this variant.** The
+      baseline §7.3 result does not transfer. Add this variant and its
+      harness dress (twisted phase triplet, twisted pack pair, stated bundle
+      separation) to the §7.3 test plan.
+
+**Sequencing.** 15.2 → 15.3 → 15.4 → 15.5 → 15.6 → 15.7 → 15.8 → 15.9 →
+15.10, with the 15.1 remainder any time. 15.2 gates the rest.
+
+**Answered in the plan, recorded here so they are not re-asked.** Thickening
+the laminate is not a useful lever for face-to-face separation (one factor of
+two per doubling, against a grounded plane that terminates the path outright
+and is already in the stackup — plan §5). A fifth layer is not needed and is
+not a normal fabrication count; the real choice is 4 vs 6, and 6 would be
+justified by copper cross-section, not shielding (plan §6). The dominant
+coupling on this board is the phase pour to the In1.Cu plane, ~190x the
+face-to-face pad figure, and it is set by a dielectric height 15.2 has yet
+to specify (plan §5.2).
+
+## 16. Form Factor Axis — curved-host mounting (planned — not started)
+
+Raised 2026-08-31: an ESC mounted inside a 30 mm-radius nacelle bore. A rigid
+PCB is flat, so it sits as a CHORD of the bore and its sagitta is radial depth
+stolen from the annulus. Axis added to `docs/decision-matrix.xlsx` with values
+`Flat` (default), `Faceted rigid-flex` and `Faceted separate boards`;
+calculator in `docs/tools/strip_width.py`, cut/fold optimiser in
+`docs/tools/hinge_placement.py`.
+
+**The governing numbers.** At R = 30.0 mm with a 2.5 mm radial depth budget
+the widest flat strip is 23.98 mm, taken as 24.00 mm nominal (sagitta
+2.505 mm, facet arc 47.16 deg, so 4 facets cover 180 deg). Confirmed against
+the figure the repo owner supplied.
+
+**Curvature is not the blocker — creepage is.** [9] Table 6 forces a 31.86 mm
+minimum width while the isolated transceivers flank the control section.
+24.00 mm is 7.86 mm under that, and no amount of bending changes it.
+
+- [x] 16.1 **Form Factor axis added** 2026-08-31 via
+      `docs/tools/add_form_factor_sheet.py`; JSON regenerated,
+      `decision_matrix_to_json.py --check` passes. Carries max strip width,
+      sagitta, max board width, max board length and the component-driven
+      dimension, with both derivation formulas in a machine-readable preamble.
+      Root `README.md` build options updated for this axis and for Wire Egress
+      (closes the remainder of 15.1).
+- [ ] 16.2 **(Blocking) Acquire and cite a flex design standard.** No flex or
+      rigid-flex standard is catalogued: neither IPC-2223 (flex design) nor
+      IPC-6013 (flex qualification) has been obtained. Until one is in
+      `REFERENCES.md` per `AGENTS.md` §2, bend radius, flex-zone layer count
+      and copper limits cannot be stated (Cn). **Gates the
+      `Faceted rigid-flex` row ONLY** — `Faceted separate boards` is standard
+      rigid FR-4 on both panels and needs no new standard, which is that
+      option's main schedule advantage.
+- [ ] 16.3 **Confirm the host envelope with Serenity-UAV.** R = 30 mm and the
+      2.5 mm depth budget are the repo owner's figures; the nacelle's internal
+      LENGTH has not been checked against the ~105–115 mm this layout needs.
+      A cross-repo constraint — verify before laying anything out.
+- [ ] 16.4 **Re-run the width/length trade at the target strip width.**
+      `strip_width.py` for the confirmed host, then
+      `isolation_envelope.py --board-width <w>` for the length it costs. At
+      24.00 mm that is +19.50 mm from restacking the isolation section alone.
+- [ ] 16.4b **Place the hinge from `docs/tools/hinge_placement.py`, not at
+      max strip width.** Folding at the widest legal facet is almost always
+      wrong: nothing rigid may straddle a hinge, every net crossing becomes a
+      flex conductor, and a 50 A pour through a bend is a conductor-sizing
+      problem. Measured on the `_sameend` board 2026-08-31:
+      **no interior fold line exists at all** — the only free corridors are
+      the two ~1 mm board edges, because SH1 (22.75 mm), U3, U1 and U4 span
+      x 21.77–50.26 unbroken. A hinge corridor must therefore be a PLACEMENT
+      CONSTRAINT in the re-layout, reserved before parts are placed.
+      Optimiser output for R = 30 mm, s = 2.5 mm (cost = pour crossings, then
+      flex conductors, then parts to move):
+
+      | fold x | panels mm | flex nets | parts to move | phase pours bent |
+      | --- | --- | --- | --- | --- |
+      | 28.35 | 8.45 + 23.65 | 17 | 13 | none |
+      | 43.05 | 23.15 + 8.95 | 22 | 10 | none |
+      | 43.25 | 23.35 + 8.75 | 22 | 13 | none |
+
+      Both families put one phase alone on the small panel and two on the
+      large one, so no PH_ pour crosses the bend — the arrangement the repo
+      owner specified. GND and VM cross at every position; they are
+      board-wide pours and their flex cross-section is a
+      `conductor_sizing.py` question, not a layout one. x 28.35 costs five
+      fewer flex conductors than the 43.x family.
+- [ ] 16.4c **(Decides the CoA) Choose rigid-flex vs separate boards from
+      what crosses the cut, not from preference.** `hinge_placement.py`
+      classifies every crossing conductor by netclass and reports a verdict:
+      - **Signal-only joint** → rigid-flex is the lighter answer: no
+        connector on the BOM, self-locating, compliant in a vibration
+        environment.
+      - **Power-netclass conductors crossing** → separate boards, because a
+        flex hinge cannot realistically pass 50 A; `conductor_sizing.py`
+        already needs 2 oz for the phase pours alone. The joint becomes a
+        busbar, tab or board-to-board power connector (part not selected, Cn).
+
+      Measured on the `_sameend` board 2026-08-31: **every** candidate cut
+      crosses 3 Power conductors (GND, VM, one PH_) and **every** candidate is
+      blocked by SH1 straddling it. So the current layout supports neither
+      faceted option as it stands.
+- [ ] 16.4d **Faceting drives the logic-vs-power partition — re-orient it.**
+      The layout currently partitions functionally along **Y** (logic at the
+      ends, power in the middle) while the fold/cut axis is **X**: the power
+      stage spans 26.96 mm in X, logic spans 28.74 mm, and they overlap over
+      26.96 mm, so every X cut splits both groups. Putting the **whole 50 A
+      power stage on one panel** is what turns the joint signal-only and
+      re-opens rigid-flex as an option. This is a placement-strategy decision
+      that must precede placement, like the hinge corridor itself.
+- [ ] 16.4e **Shielding and isolation constrain the panel assignment.**
+      Both are checked by `hinge_placement.py`:
+      - **Shield:** a rigid can cannot straddle a fold or a joint. SH1 is
+        22.75 mm against a 23.98 mm max facet, so it very nearly fills a
+        panel by itself — the panel carrying it has almost no width left.
+        Revisit whether the Faraday tier's can [19] is still the right part
+        at this form factor, or whether per-panel shielding is better.
+      - **Isolation:** a panel holding both sides of a barrier must still
+        meet the 31.86 mm from `isolation_envelope.py` ([9] Table 6) — which
+        **no facet can satisfy**, since max strip width is 23.98 mm.
+        Therefore the isolated section gets its OWN panel, or the barrier
+        falls ON the cut, where the inter-panel gap supplies the separation
+        instead of 7.5 mm of board surface. The second option is a genuine
+        advantage of faceting and should be evaluated deliberately.
+- [ ] 16.4f **(CORRECTION) Vibration does NOT discriminate between the two
+      faceted options — the mounting scheme does.** Evaluated 2026-08-31
+      using the `statics-and-dynamics` and `mechanical-engineering` skills.
+      An earlier claim in this session — that a rigid board-to-board joint is
+      a fatigue site while a flex hinge is compliant — was **too loose and is
+      withdrawn as a discriminator**. Setting up the free-body diagram shows
+      why: the fatigue driver at the joint is *relative motion between
+      panels*, which is set by how the panels are MOUNTED, not by the joint
+      technology.
+      - Both panels independently mounted → relative motion small, joint
+        carries little cyclic load, **either joint type is acceptable**.
+      - One panel cantilevered off the other → the joint carries that panel's
+        full inertial load and the connector's solder joints are the fatigue
+        site.
+
+      The consequence runs opposite to the original claim: a flex hinge is
+      **not a structural member**, so it forces independent support of both
+      panels. A rigid connector will carry load, which tempts a design into
+      cantilevering panel 2 off panel 1 — the arrangement that actually
+      fails. **Isolation:** one panel, separated from the nacelle at its
+      mounts and from its neighbour at the joint. **Idealisations:** uniform
+      rectangular plate, uniform areal mass (false in detail — SH1 is 22.75
+      mm of can, plus local FET and connector masses), simply supported on
+      all four edges, rigid-body inertial loading, no dynamic amplification.
+      **Determinacy:** a panel on ≥3 mounts plus a joint reaction is
+      statically INDETERMINATE — load sharing needs compatibility, so the
+      joint loads below are an upper bound, not a distribution.
+
+      **Faceting itself helps, and this part needs no material data.** Both
+      panels share laminate and thickness, so `E`, `ρ` and `t` cancel in a
+      frequency ratio for a plate mode-1 shape factor `(1/a² + 1/b²)`:
+
+      | Partition | Panel | f_n / f_ref |
+      | --- | --- | --- |
+      | x=28.35 | 8.45 × 76.1 mm | 3.51 |
+      | x=28.35 | 23.65 × 76.1 mm | 1.31 |
+      | x=43.25 | 23.35 × 76.1 mm | 1.32 |
+      | x=43.25 | 8.75 × 76.1 mm | 3.39 |
+
+      Every panel is stiffer than the single 32.00 × 76.10 mm board, because
+      the short dimension dominates the plate mode. Higher `f_n` moves the
+      structure away from excitation. **This applies equally to both faceted
+      options**, so it is an argument FOR faceting, not for either joint.
+
+      Cantilevered joint load, parametric in panel mass because no board mass
+      exists: `F = m·n`, `M = F·d`. Per 1.0 lbm at 1 g → F = 1.000 lbf
+      (4.448 N); at d = 11.83 mm (0.466 in) → M = 0.466 lbf·in (0.0526 N·m)
+      per lbm per g.
+
+      **Failure modes.** Governing for a cantilevered panel: solder-joint
+      fatigue at the connector. Governing only if the flex is load-bearing
+      (which it must not be): flex-hinge bend fatigue. Not governing:
+      laminate fatigue in the panel. **Not checked:** mount-point fastener
+      fatigue (no mount scheme exists), and component lead fatigue on SH1 —
+      the largest local mass, sitting over the fold region.
+
+      **No fatigue life or margin is produced**, per `mechanical-engineering`
+      rule 2: a remembered allowable is not an allowable. Allowables and
+      margins are out of scope for this item and belong to PE Mechanical
+      Machine Design once the inputs below exist.
+- [ ] 16.4g **(NEW, blocking for any vibration claim) Five missing inputs.**
+      None of these exist anywhere in this repository, and the vibration
+      question cannot be closed without them:
+      1. **Vibration environment** — EDF blade-passing frequency, RPM,
+         broadband spectrum. Serenity-UAV data, unverified here (Cn).
+      2. **Board mass and mass distribution** — never computed; with no
+         stackup (15.2) even areal density is unavailable.
+      3. **Mounting scheme** — not designed anywhere. **This is the variable
+         that actually decides the answer** and it has no owner yet.
+      4. **Material properties** — no laminate spec, no `E`, no `ρ` (15.2).
+      5. **Fatigue allowables** — no solder-joint fatigue model and no
+         vibration standard in `REFERENCES.md`. Steinberg's octave rule and
+         MIL-STD-810 are the usual authorities; **neither is catalogued**, so
+         both are acquisition candidates, NOT citations (Cn).
+- [ ] 16.4h **(NEW) Design the panel mounting scheme.** Per 16.4f this is
+      what decides vibration survival, and it does not exist in any document.
+      Requirement: **both panels independently mounted to nacelle structure**,
+      so neither is cantilevered off the other through the joint. Applies to
+      both faceted options. Must precede any fatigue assessment.
+- [x] 16.4i **Functional partition measured 2026-09-01 — the joint is
+      SIGNAL-ONLY, which reverses 16.4c's conclusion.**
+      `builds/6s/50A/CAN_485_faraday_faceted/` instantiated;
+      `kicad/tools/partition_panels.py` seeds both panels by function and
+      propagates the rest by net majority to a fixed point. Result:
+      **19 interconnect nets** — 18 Default plus GND, whose L-side is
+      decoupling and logic only (no power-stage part). **No 50 A crosses**;
+      the pack path runs J5A → Q1/Q3/Q5 → phases → shunts → J5B wholly
+      inside Panel P. **No Isolated net crosses** either — both transceivers
+      sit on Panel L, so the barrier never reaches the joint and the
+      "no facet can meet 31.86 mm" problem of 16.4e is sidestepped.
+      **Consequence:** 16.4c's "separate boards only" verdict was a property
+      of cutting the EXISTING layout geometrically, not of faceting. With the
+      functional partition **both faceted options are viable again**, and the
+      choice reverts to the flex-standard gate (16.2), which only rigid-flex
+      must clear.
+      Panel P 30 parts / widest 22.75 mm (SH1); Panel L 35 parts / widest
+      13.48 mm (U4); both fit the 23.98 mm strip. U6–U8 are assigned to
+      Panel P deliberately so the joint carries amplified ADC_Ix rather than
+      the noise-sensitive differential shunt pairs.
+      **Still open:** placement (16.5), SH1's 0.6 mm/edge margin (16.4e),
+      whether VREF_MID should be generated locally on Panel P instead of
+      crossing the joint.
+- [x] 16.5 **Initial placement done 2026-09-05, both egress variants.**
+      `docs/tools/facet_placement.py` shelf-packs each panel from the
+      partition, at a 23.00 mm strip width (tightened from the 23.98 mm
+      reference figure per the repo owner). Built for BOTH egress parents:
+      `builds/6s/50A/CAN_485_faraday_sameend_faceted/` (from the same-end
+      parent) and `builds/6s/50A/CAN_485_faraday_faceted/` (from the
+      opposite-end parent, renamed from the sameend-derived build that
+      previously held this name — see each README's opening note). Both
+      produce **identical** panel results — Panel P 30 parts / 23.00 x
+      89.51 mm, Panel L 35 parts / 23.00 x 61.68 mm — confirming Form
+      Factor and Wire Egress are independent axes on this design.
+      **SH1 fit resolved by rotation, not re-selection:** 22.75 mm
+      un-rotated left 0.25 mm total margin against 23.00 mm (16.4e);
+      rotated 90 deg it presents 17.15 mm across the strip with 5.85 mm
+      margin. **Not re-verified: whether the rotated can still shields the
+      same physical area relative to the switching node** — flagged
+      explicitly in both READMEs, not assumed clean.
+      Verified: 0 courtyard overlaps (65 parts, geometric check), 0 DRC
+      errors on both boards (43-48 silkscreen warnings, 184 unconnected —
+      both expected on an unrouted, repositioned board), board format
+      unchanged at `version 20241229` / `"9.0"` on both outputs (KiCad
+      9.0.2 throughout, not advanced to KiCad 10).
+      **This is a placement floor, not a routing-aware layout** — the
+      packer is a greedy largest-area-first row-packer with no routing or
+      thermal awareness; a routing-aware pass will likely produce
+      different panel lengths. Length is confirmed as the component-driven
+      dimension per the Form Factor axis's own column.
+      **Tool debugging note:** the pcbnew 9.0.2 (Debian) binding segfaults
+      at process exit after bulk zone/track/drawing removal unless
+      `item.thisown = False` is set post-`Remove()` — see
+      `docs/solutions/architecture-patterns/pcbnew-bulk-removal-segfault.md`
+      and the new `CLAUDE-MEMORY.md` entry. The crash lands after
+      `Save()` already wrote a correct file; every "crashed" output was
+      verified by reload before being trusted.
+      **Still open:** routing, stackup (15.2), interconnect part selection,
+      SH1's rotated shielding geometry, host envelope (16.3), mounting
+      scheme (16.4h).
+- [ ] 16.6 **Re-run `conductor_sizing.py`** for the re-laid geometry; no
+      "TBD" copper weight.
+
+**Sequencing.** 16.3 → 16.4d → 16.4e → 16.4 → 16.4b → 16.4c → 16.4h → 16.2 (only if 16.4c picks rigid-flex) → 16.5 →
+16.6. 16.4f/16.4g are findings, not tasks; 16.4h is the task they raise. 16.3 first because an
+unconfirmed host envelope makes the rest speculative.
+
+**Scope note.** This is a NEW layout sharing the BOM, not a variant of the
+flat board — estimated 24 x 105–115 mm against the current 32.00 x 76.10 mm.
+True curved rigid FR-4 does not exist; the laminate is pressed flat, so
+"curved" means faceted, whether the facets are joined by flex hinges or are
+separate boards with an interconnect.

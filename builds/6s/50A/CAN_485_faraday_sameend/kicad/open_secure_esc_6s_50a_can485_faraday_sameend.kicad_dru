@@ -1,0 +1,89 @@
+(version 1)
+
+# Custom design rules for the 6S / 50 A CAN+RS-485 Faraday build.
+#
+# Authored by Claude Opus 5 (Anthropic), 2026-08-19 routing pass. AI-generated.
+#
+# WHY THIS FILE EXISTS
+# --------------------
+# A KiCad net-class clearance is a floor applied to every copper item on the
+# net, and it cannot tell an IC pin from a routed track. The Power class
+# wanted 0.4 mm between power conductors; applied literally it also demanded
+# 0.4 mm between U5's own VM and PH_A pins, which sit 0.28 mm apart on a
+# 0.5 mm-pitch WQFN-40. That is unsatisfiable by construction and produced 24
+# clearance violations no routing could ever clear.
+#
+# The net-class clearances are therefore 0.2 mm (tools/set_netclasses.py) and
+# the spacing that the power conductors actually need is stated here, scoped
+# to the items it can apply to.
+#
+# UNVERIFIED, and deliberately so: 0.4 mm is the value the project already
+# carried, not a figure derived from a standard. IPC-2221A Table 6-1 governs
+# conductor spacing for a 25.2 V nominal pack and is NOT in REFERENCES.md --
+# it is paywalled and has not been read -- so per AGENTS.md Sec.1.3 this file
+# asserts no standards basis for it. Tracked in TODO.md.
+
+# EVERY (condition ...) IN THIS FILE MUST BE ON ONE LINE.
+# A newline inside the quoted condition string does not error, does not warn,
+# and silently invalidates the WHOLE FILE -- every rule in it, including ones
+# above the offending line. Verified on KiCad 9.0.2: with a multi-line
+# condition present, a rule that fires 154 times on its own fires 0 times.
+# The power and sense rules below were multi-line when first written and had
+# therefore never fired at all; the DRC improvement attributed to them on
+# 2026-08-19 came entirely from the net-class clearance change.
+(rule "power_conductor_spacing"
+    (constraint clearance (min 0.4mm))
+    (condition "A.NetClass == 'Power' && B.NetClass == 'Power' && A.Type != 'Pad' && B.Type != 'Pad'"))
+
+(rule "sense_conductor_spacing"
+    (constraint clearance (min 0.3mm))
+    (condition "A.NetClass == 'Sense' && A.Type != 'Pad' && B.Type != 'Pad'"))
+
+# ISOLATION BARRIER — a via defeats it by definition.
+#
+# This board's barrier is held geometrically: primary-side copper lives on the
+# face OPPOSITE the isolated section (score_placement.py's
+# `pack_layer_separated` rule, worth 2.80 -> 4.64 mm of creepage). A through
+# via punches every layer, so a via near the isolated section destroys the
+# thing the barrier is made of. It is the same reason J5B cannot be stitched
+# to the ground planes.
+#
+# WHY THIS RULE EXISTS. On 2026-08-19 tools/stitch_planes.py, written without
+# an isolation rule, placed 48 vias inside the isolated band — several over
+# U3/U4's isolated pin rows and the isolated supply capacitors, the worst
+# 0.340 mm from C13.1 (CAN_VISOIN). Nothing caught it: KiCad has no built-in
+# isolation rule, and score_placement.py's creepage metric compares PADS on a
+# SHARED LAYER, so a via is invisible to it twice over. Both of those
+# exclusions are individually correct; together they left a hole exactly the
+# shape of that defect.
+#
+# 7.5 mm is from [9] Table 6 (ADM2582E/ADM2587E), verified 2026-08-17 in
+# docs/datasheets/analog-devices-adm2582e-adm2587e-datasheet.pdf p.5 —
+# minimum external air gap AND creepage, input terminals to output terminals.
+# Same-net items are exempt automatically, so a via ON an isolated net is fine.
+
+# CLAUSE ORDER MATTERS, AND NOT IN THE WAY YOU WOULD EXPECT. Verified against
+# KiCad 9.0.2 by running each form over a board known to contain 48 violating
+# vias:
+#     A.Type == 'Via'                                  -> 502 hits
+#     B.NetClass == 'Isolated'                         -> 499 hits
+#     A.Type == 'Via' && B.NetClass == 'Isolated'      ->   0 hits
+#     (A.Type=='Via' && B.NetClass=='Isolated')
+#         || (B.Type=='Via' && A.NetClass=='Isolated') ->   0 hits
+#     A.NetClass == 'Isolated' && B.Type == 'Via'      -> 154 hits   <-- works
+# Both halves match on their own, the obvious conjunction matches nothing, and
+# even an OR containing the working clause matches nothing. Only this ordering
+# fires. **Do not "tidy" this condition without re-running the negative
+# control below** -- a rule that silently matches nothing is worse than no
+# rule, because it reads as passing.
+#
+# NEGATIVE CONTROL (re-run this after any edit):
+#   cp <a board with vias inside the isolated band> /tmp/t.kicad_pcb
+#   cp this file /tmp/t.kicad_dru ; cp ../*.kicad_pro /tmp/t.kicad_pro
+#   kicad-cli pcb drc --format json --output /tmp/t.json --severity-all \
+#       /tmp/t.kicad_pcb
+#   -> must report isolation_barrier_no_via_near_isolated violations.
+
+(rule "isolation_barrier_no_via_near_isolated"
+    (constraint clearance (min 7.5mm))
+    (condition "A.NetClass == 'Isolated' && B.Type == 'Via'"))

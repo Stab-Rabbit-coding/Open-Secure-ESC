@@ -235,6 +235,29 @@ builds/6s/50A/CAN_485_faraday/README.md (Protocol BOM, variant choice
 ADM3055E vs. ADM3057E left open).
 Date accessed: 2026-08-02.
 
+**Variant resolution (2026-09-06), per the BOM/creepage audit in
+`docs/solutions/architecture-patterns/bom-creepage-audit-can485-faraday.md`:**
+p. 7, Table 2 "Timing Characteristics" is a SINGLE shared table covering both
+ADM3055E and ADM3057E — Maximum Data Rate 12 Mbps for both, with no
+per-variant split anywhere in that table. p. 9–10, Table 3 (ADM3055E, "20-Lead
+Increased Creepage SOIC [SOIC_IC] (RI-20-1)") gives CLR/CRP = 8.3 mm; Table 4
+(ADM3057E, "20-Lead Wide SOIC [SOIC_W] (RW-20)") gives CLR/CRP = 7.8 mm — both
+at the identical VIORM 595 V peak / VIOWM 420 V rms reinforced rating; the
+only other difference is the UL 1577 1-minute proof voltage (5000 V rms vs.
+3750 V rms). Since the two variants are electrically and timing-identical,
+**ADM3057E is the correct default selection** (0.5 mm less creepage, no
+functional cost) unless a specific downstream requirement calls out the UL
+5000 V rms figure by name. The PCB footprint already placed for U3 in
+`builds/6s/50A/CAN_485_faraday/kicad/*.kicad_pcb`
+("SOIC-20W_7.5x12.8mm_P1.27mm") is dimensionally the RW-20 package, i.e. the
+board is already built as if ADM3057E were selected — the BOM/schematic
+`Value`/`Description` fields and this repository's README should be updated
+to close the "left open" note rather than carry it forward, and the footprint
+should be independently re-verified against the RW-20 land pattern (this
+citation does not itself confirm the KiCad footprint's pad dimensions match
+[10] p. 27 "Outline Dimensions" for RW-20 — that check is still open, see
+TODO.md).
+
 ---
 
 **[11]** Alta Data Technologies LLC, *MEZ-E1553 — 1-2 MIL-STD-1553
@@ -1464,6 +1487,32 @@ was in use but unrecorded here); `docs/secure-element-architecture.md`
 §1.1/§4/§6 (added same pass).
 Date accessed: 2026-08-10.
 
+**RHB symbol re-wired for this build (2026-09-06):** `symbols/MSPM0G3518_Q1_RHB.kicad_sym`
+was originally a generic, unwired symbol (pins named only "PA0".."PA27") authored
+2026-08-03 for an unrelated board and internally named after that board's
+character call-sign. Per the BOM/creepage audit
+(`docs/solutions/architecture-patterns/bom-creepage-audit-can485-faraday.md`
+finding #1), that name is scrubbed and the symbol is re-wired with this
+build's own functional pin-role names (CAN_TX, RS485_TXD, GD_SPI_*, PWM_*,
+ADC_*, SE_* — identical role set and local pin coordinates to
+`symbols/MSPM0G3518_Q1_PM.kicad_sym`, only the physical pin numbers differ,
+per the RHB pinout re-verified against [44] Figure 6-6 (p.14) and Table 6-2
+(pp.15–23)). Full per-pin verification: `symbols/specs/MSPM0G3518_Q1_RHB.json`.
+A defect in the prior file was found and fixed in the process: it declared 33
+pins (a spurious duplicate `VSS` at pin "33"); RHB is a real 32-pin package
+and the corrected symbol has no such pin.
+`builds/6s/50A/CAN_485_faraday/kicad/open_secure_esc_6s_50a_can485_faraday.kicad_sch`
+`U1` swapped from `MSPM0G3518_Q1_PM` to `MSPM0G3518_Q1_RHB` the same day;
+`kicad-cli sch erc` re-run after the swap reports 0 errors and the identical
+463 `endpoint_off_grid` / 7 `global_label_dangling` warning counts as
+immediately before the swap (report diffed line-for-line apart from the
+`(U1)` component references) — the swap introduced no new ERC finding.
+Cited in: `symbols/MSPM0G3518_Q1_RHB.kicad_sym`;
+`symbols/specs/MSPM0G3518_Q1_RHB.json`;
+`builds/6s/50A/CAN_485_faraday/kicad/open_secure_esc_6s_50a_can485_faraday.kicad_sch`;
+`builds/6s/50A/CAN_485_faraday/kicad/sym-lib-table`.
+Date accessed: 2026-09-06.
+
 ---
 
 **[45]** Infineon Technologies AG, *OPTIGA™ Trust M — Datasheet*
@@ -2056,5 +2105,157 @@ product page, not a datasheet PDF. No local copy exists in
 `docs/datasheets/`. Obtain a manufacturer datasheet and re-verify before
 production release; in particular the page states a single "current" figure
 without distinguishing continuous from peak.
+
+**[56]** Bureau of Indian Standards, *IS/IEC 60529 (2001): Degrees of
+Protection Provided by Enclosures (IP Code)* [ETD 1: Basic Electrotechnical
+Standards], New Delhi, India, 2001 (reprint 2009) — verbatim national
+adoption of IEC 60529. [Online]. Available:
+https://law.resource.org/pub/in/bis/S05/is.iec.60529.2001.pdf
+Local verified copy: `docs/datasheets/is-iec-60529-2001-ip-code.pdf` (47 pp.).
+Section/page: Table 3, "Degrees of protection against water indicated by the
+second characteristic numeral" — numeral 4 "Protected against splashing
+water": "Water splashed against the enclosure from any direction shall have
+no harmful effects," test conditions at clause 14.2.4; numeral 6 "Protected
+against powerful water jets": "Water projected in powerful jets against the
+enclosure from any direction shall have no harmful effects," clause 14.2.6;
+numeral 7 "Protected against the effects of temporary immersion in water,"
+clause 14.2.7; numeral 8 "Protected against the effects of continuous
+immersion in water," clause 14.2.8, "conditions which shall be agreed between
+manufacturer and user but which are more severe than for numeral 7." Clause
+6, note before Table 3: "the two-digit combinations ... characteristic
+numerals 5/6 (water jets) and numerals 7/8 (immersion) ... are given in
+clause 6" — the two families (jet-rated vs. immersion-rated) are not
+additive without an explicit dual rating (e.g. IPX6/IPX7).
+Cited in: `docs/design-waterproofing-and-thermal-management.md`; README.md
+(Ingress & environmental protection line); TODO.md §2.6.
+Date accessed: 2026-09-06.
+**Edition caveat:** the current IEC-published edition is IEC 60529 Ed. 2.2
+consolidated with Amendments 1 (1999) and 2 (2013) [NEMA/ANSI contents
+listing, https://www.nema.org/docs/default-source/about-us-document-library/ansi-iec_60529-2020-contents-and-scopef0908377-f8db-4395-8aaa-97331d276fef.pdf,
+accessed 2026-09-06, live IEC/ANSI store fetch blocked: HTTP 403]. This
+entry's local copy is the 2001 national adoption; the second-characteristic-
+numeral definitions and clause numbers above are read directly from that
+copy. Whether Amendments 1/2 changed clause numbering or definitions for
+IPX4/6/7/8 specifically is **UNVERIFIED — needs primary source** (see
+TODO.md §2.6); nothing in this repository currently relies on a difference
+between editions.
+
+**[57]** IPC (Global Electronics Association), *IPC-CC-830C: Qualification
+and Performance of Electrical Insulating Compound for Printed Wiring
+Assemblies*, developed by the Conformal Coating Task Group (5-33a) of the
+Cleaning and Coating Committee (5-30), December 2018 (supersedes IPC-CC-830B
+Amendment 1, 2008).
+Local verified copy: `docs/datasheets/ipc-cc-830c-toc-scope.pdf` (4 pp.:
+cover, table of contents, §1 Scope) — table of contents fetched from
+https://www.electronics.org/TOC/IPC-CC-830C-toc.pdf, 2026-09-06; full
+standard text is IPC-member/purchase-gated and **not held locally beyond
+these 4 pages** (`webstore.ansi.org/standards/ipc/ipccc830c2019` — live fetch
+not attempted for the full text).
+Section/page: §1.1 "Scope," p. 1 — "The conformal coating is intended to
+provide protection from moisture and contamination and provide electrical
+insulation; not as a sole source of mechanical support." §1.3.1 "Types," p. 1
+— coating chemistries: Type AR (acrylic), ER (epoxy), SR (silicone), UR
+(polyurethane), XY (paraxylylene/Parylene), UT (ultra-thin, ≤12.5 µm target
+thickness), SC (styrene block co-polymer). Table of Contents, p. vii —
+§3.5.5 "Flexibility" and §3.7.2 "Thermal Shock" are both listed qualification
+tests under §3.5 "Physical Requirements" / §3.7 "Environmental Requirements"
+respectively; the specific pass/fail criteria and test method (mandrel
+diameter, cycle count, temperature range) are **UNVERIFIED — needs primary
+source**, since those clauses fall on pages 5–6 of the full standard, not the
+4 pages held locally.
+Cited in: `docs/design-waterproofing-and-thermal-management.md`.
+Date accessed: 2026-09-06.
+
+**[58]** W. L. Gore & Associates, Inc., *GORE Protective Vents, Screw-In
+Series*, product page, Gore.com, Newark, DE, USA.
+URL: https://www.gore.com/products/screw-protective-vents-outdoor-electronics-enclosures
+Section/page: not paginated (product web page, not a datasheet PDF); as
+read 2026-09-06 — IP ratings by model range "IP68" to "IP68 and IP69K"
+(PolyVent Standard/High Airflow/High Airflow PRO/XL), stainless-steel variant
+adds "IK10 (IEC 62262)"; High Airflow PRO airflow "7600 ml/min at 70 mbar";
+thread options include "M12x1 and M12x1.5". The membrane material (ePTFE)
+and its function — passing air/water-vapor while blocking liquid water and
+particulate ingress — are stated on the parent page
+https://www.gore.com/solutions-enclosure-pressure-relief (same access date).
+**Verification caveat (AGENTS.md §3):** manufacturer product/marketing page,
+not a datasheet PDF; no local copy in `docs/datasheets/`. Pore size and
+liquid-entry-pressure figures were NOT stated on either page and are
+**UNVERIFIED — needs primary source** (a part-specific datasheet, not yet
+obtained). Do not select a specific PolyVent part number for BOM until a
+datasheet is held locally per `AGENTS.md` §1.3.
+Cited in: `docs/design-waterproofing-and-thermal-management.md`.
+
+**[59]** Texas Instruments Incorporated, *ISO1042 Isolated CAN Transceiver
+With 70-V Bus Fault Protection and Flexible Data Rate*, datasheet,
+SLLSF09F, Texas Instruments Incorporated, Dallas, TX, USA, 2017-12
+(revised 2026-08). [Online]. Available:
+https://www.ti.com/lit/ds/symlink/iso1042.pdf
+Local verified copy: `docs/datasheets/ti-iso1042-datasheet.pdf` (10 pp.).
+Section/page: p. 1, "Device Information" table — DWV (SOIC-8) package,
+body size 5.85 mm × 7.50 mm nominal (5.85 mm × 11.50 mm including pins);
+DW (SOIC-16), body 10.30 mm × 10.30 mm. p. 1, General Description — "This
+device uses a silicon dioxide (SiO2) insulation barrier with a withstand
+voltage of 5000VRMS and a working voltage of 1060VRMS." §5.7 "Insulation
+Specifications," Table — DWV-8: External Clearance (CLR) >8.5 mm, External
+Creepage (CPG) >8.5 mm (IEC 60664-1); DW-16: >8.15 mm both. VIORM 1500 VPK,
+VIOWM 1060 VRMS / 2121 VDC, reinforced isolation, Pollution Degree 2. This
+is a **CAN transceiver**, functionally equivalent to ADM3055E/ADM3057E
+[10], not to the RS-485 part ADM2582E/ADM2587E [9] — confirmed against
+this device's own Applications/Features text ("Meets the ISO 11898-2:2016
+physical layer standard," CANH/CANL pins).
+Cited in: `docs/solutions/architecture-patterns/smaller-package-does-not-shrink-creepage.md`.
+Date accessed: 2026-09-06.
+
+**[60]** Texas Instruments Incorporated, *ISOW14x2 Isolated RS-485/RS-422
+Transceiver with Integrated Low-Emissions, Low-Noise, High-Efficiency
+DC-DC Converter (ISOW1412, ISOW1432)*, datasheet, SLLSF86D, Texas
+Instruments Incorporated, Dallas, TX, USA, 2018-05 (revised 2026-08).
+[Online]. Available: https://www.ti.com/lit/ds/symlink/isow1412.pdf
+Local verified copy: `docs/datasheets/ti-isow1412-datasheet.pdf` (10 pp.).
+Section/page: p. 1, General Description — "isolated dc-to-dc converter and
+an isolated RS-485 transceiver all integrated in one package," ISOW1412
+signaling rate up to 500 kbps; "20-pin wide SOIC package." Table 2-1
+"Device Information" — DFM (SOIC-20) package, body size 12.83 mm ×
+7.5 mm nominal. §6.6 "Insulation Specifications" — External Clearance
+(CLR) >8 mm, External Creepage (CPG) >8 mm (IEC 60664-1); VIORM 1500 VPK,
+VIOWM 1000 VRMS / 1500 VDC, DIN EN IEC 60747-17 reinforced isolation,
+Pollution Degree 2. This is the direct **single-package** RS-485 equivalent
+to ADM2582E/ADM2587E [9] (both integrate an isolated dc-dc converter and
+the transceiver in one part) — it is NOT the "transceiver + separate
+digital isolator + separate dc-dc + external transformer" architecture
+that would be needed to build an RS-485 channel around a bare CAN-style
+isolator like [59]; no such discrete RS-485 reference design or specific
+dc-dc/transformer part is catalogued in this repository, and none is
+selected here.
+Cited in: `docs/solutions/architecture-patterns/smaller-package-does-not-shrink-creepage.md`.
+Date accessed: 2026-09-06.
+
+**[61]** Texas Instruments Incorporated, *ISOW784x High-Performance,
+5000-VRMS Reinforced Quad-Channel Digital Isolators with Integrated
+High-Efficiency, Low-Emissions DC-DC Converter (ISOW7840, ISOW7841,
+ISOW7842, ISOW7843, ISOW7844)*, datasheet, SLLSEY2G, Texas Instruments
+Incorporated, Dallas, TX, USA, 2017-03 (revised 2021-08). [Online].
+Available: https://www.ti.com/lit/ds/symlink/isow7841.pdf
+Local verified copy: `docs/datasheets/ti-isow7841-datasheet.pdf` (10 pp.).
+Section/page: p. 1, Features/Description — "quad-channel reinforced digital
+isolators with an integrated high-efficiency power converter," "up to
+650 mW of isolated power," "these devices eliminate the need for a separate
+isolated power supply in space-constrained isolated designs." Table
+"Device Information" — SOIC-16 package, body 10.30 mm × 7.50 mm nominal.
+§7.6 "Insulation Specifications" — External Clearance (CLR) >8 mm, External
+Creepage (CPG) >8 mm; VIORM 1414 VPK, VIOWM 1000 VRMS / 1414 VDC, DIN V VDE
+0884-11:2017-01 reinforced isolation, Pollution Degree per IEC 60664-1.
+Four bidirectional-configurable data channels (INA-D/OUTA-D), NOT six —
+insufficient, on its own, to carry CAN (2 signals: TX, RX) plus RS-485 in
+its current 3-signal form (TXD, RXD, DE/RE) without either combining DE and
+RE into one shared direction-control channel (3 total for RS-485) or
+selecting an automatic-direction-sensing RS-485 transceiver that needs no
+external DE/RE line (2 total for RS-485) — the latter would exactly fill the
+4 available channels (CAN TX/RX + RS-485 TXD/RXD). **No specific
+automatic-direction RS-485 transceiver part has been selected or verified
+against a primary datasheet for this repository; this is a proposed
+architecture direction only, not a BOM recommendation.**
+Cited in: `docs/solutions/architecture-patterns/bom-creepage-audit-can485-faraday.md`.
+Date accessed: 2026-09-06.
 
 Track resolution of these items in `TODO.md`.

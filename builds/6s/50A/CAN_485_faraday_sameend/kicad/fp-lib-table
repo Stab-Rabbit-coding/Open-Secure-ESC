@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name "Open_Secure_ESC")(type "KiCad")(uri "${KIPRJMOD}/../../../../../symbols/footprints/Open_Secure_ESC.pretty")(options "")(descr "This repo's own hand-authored footprints -- see symbols/README.md and symbols/tools/gen_*_footprint.py for provenance"))
+)
