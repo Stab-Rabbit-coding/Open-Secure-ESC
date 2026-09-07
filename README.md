@@ -20,7 +20,7 @@ Build Options:
 * EMI Hardening: None, Isolation, Grounding, Faraday
 * Wire Egress: Opposite-end (default), Same-end opposite faces (both conductor groups leave one board end, phases on F.Cu and pack on B.Cu, shielded by the inner GND planes)
 * Form Factor: Flat (default), Faceted rigid-flex (for mounting inside a curved host; strip width and sagitta derive from the host bore radius — see `docs/tools/strip_width.py`)
-* Ingress & environmental protection: IP ratings up to IP68 and NEMA equivalents up to NEMA 6P. Submersible variants MUST include cooling strategies that operate correctly in both air and water (see docs/design-submersible-cooling.md DRAFT).
+* Ingress & environmental protection: Splash/spray variants (target IPX4–IPX6, IEC 60529 [56]) air-cooled via an open aspirated path; Sealed/immersion variants (target IPX7–IPX8, up to NEMA 6P equivalent) MUST use a metal conduction cooling path with no air exchange — these are two distinct mechanical designs, not one IP-rating dial (see `docs/design-waterproofing-and-thermal-management.md`).
 
 ## Repository layout
 

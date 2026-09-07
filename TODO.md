@@ -28,7 +28,12 @@ detail belongs in design docs, not here.
 - [ ] 2.3 Regulatory/EMC targets per market (cite standard, Cn)
 - [ ] 2.4 Requirements traceability matrix → REFERENCES.md tags
 - [ ] 2.5 Motor speed-sensor requirement (ALL variants): define required accuracy, latency, interfaces and failure modes; enumerate supported sensor types (Hall/low-voltage digital, optical encoder/quadrature, analog tachometer → ADC). Trace to authoritative references where applicable (Cn). See `docs/design-speed-sensor-integration.md`.
-- [ ] 2.6 Environmental & ingress protection requirements: specify supported IP ratings (up to IP68) and NEMA equivalents (up to NEMA 6P); define temperature, humidity, condensation and immersion duration/pressure profiles per-variant; submersible variants MUST include cooling strategies that operate in both air and water and have verification tests (see `docs/design-submersible-cooling.md` — DRAFT to author). Mark any environmental spec values UNVERIFIED until primary-source standards are cited (Cn).
+- [x] 2.6 Environmental & ingress protection requirements: Form Factor × Ingress resolved as a joint axis (two variants: splash/spray air-cooled IPX4–6, sealed/immersion IPX7–8), with the cited standards, layered-boundary design, and thermal/waterproofing interaction fully authored in `docs/design-waterproofing-and-thermal-management.md`. Remaining sub-items tracked below (Cn where marked).
+  - [ ] 2.6.a Select an IPC-CC-830C [57]-qualified conformal coating for the faceted board with its Flexibility (§3.5.5) and Thermal Shock (§3.7.2) data obtained from a vendor datasheet, not assumed from coating type alone (Cn).
+  - [ ] 2.6.b Select a wire-egress connector/gland series with a manufacturer-stated IP rating at the mated condition; hold its datasheet locally (Cn).
+  - [ ] 2.6.c Size the pressure-equalization vent (ePTFE membrane, e.g. [58]) against bay free volume and design altitude/thermal excursion — no sizing method is catalogued yet (Cn).
+  - [ ] 2.6.d Verify whether IEC 60529 Amendments 1/2 changed the IPX4/6/7/8 clause numbers or definitions relative to the 2001 text held locally as [56] (Cn).
+  - [ ] 2.6.e Decide, for the sealed/immersion variant, whether service access (compression gasket) or potting is required — a requirements decision, currently open.
 
 ## 3. Hardware — MCU Subsystem
 
@@ -1408,6 +1413,68 @@ detail belongs in design docs, not here.
         `-mp` below some threshold, or completing before convergence, skips
         the write path. Until this is understood the board cannot be routed
         reproducibly.
+  - [~] 12.5.bg **(High) MCU package swap PM (LQFP-64) -> RHB (VQFN-32) for
+        `U1`, MSPM0G3518-Q1.** Full BOM/creepage audit
+        (`docs/solutions/architecture-patterns/bom-creepage-audit-can485-faraday.md`)
+        found and verified a conflict-free pin remap of every signal this
+        schematic uses onto RHB's 28 GPIOs (no Port B/C on this package), with
+        4 spare, cutting `isolation_envelope.py`'s "widest non-isolated part"
+        from 12.90 mm to ~6.5 mm. **SCHEMATIC SIDE DONE 2026-09-06:** the
+        prior generic, unwired `symbols/MSPM0G3518_Q1_RHB.kicad_sym` (built
+        for a different board, character-named) has been scrubbed and
+        re-wired with this build's ESC-specific pin roles
+        (`symbols/specs/MSPM0G3518_Q1_RHB.json`), `U1` swapped from
+        `MSPM0G3518_Q1_PM` to `MSPM0G3518_Q1_RHB` in
+        `open_secure_esc_6s_50a_can485_faraday.kicad_sch`, and `kicad-cli sch
+        erc` re-verified at 0 errors with the identical warning set as
+        before the swap. **STILL OPEN:** the `.kicad_pcb` still carries the
+        old `LQFP-64_10x10mm` footprint for `U1` — schematic and PCB are now
+        out of sync. Needs "Update PCB from Schematic" in the KiCad GUI (not
+        a raw text edit, given the pcbnew 9.0.2 Python-binding segfault on
+        footprint removal recorded elsewhere in this repo's history) to swap
+        the footprint to `Package_DFN_QFN:Texas_RHB0032E_VQFN-32-1EP_5x5mm_
+        P0.5mm_EP3.45x3.45mm`, followed by a re-placement (RHB's pad layout
+        bears no resemblance to LQFP-64's, so the existing PCB placement/
+        courtyard cannot simply be reused at the new footprint's size).
+  - [ ] 12.5.bh **(Low, free) Close the "ADM3055E vs. ADM3057E left open"
+        decision to ADM3057E.** REFERENCES.md [10]'s 2026-09-06 addendum
+        confirms the two variants are timing-identical (shared Table 2, both
+        12 Mbps) at the same reinforced working-voltage class; ADM3057E's
+        RW-20 package needs 7.8 mm creepage against ADM3055E's RI-20-1 at
+        8.3 mm. The PCB's placed footprint for `U3`
+        (`SOIC-20W_7.5x12.8mm_P1.27mm`) already matches RW-20 dimensionally.
+        Update the schematic `Value`/`Description` and this repo's README to
+        state ADM3057E explicitly, and independently verify the KiCad
+        footprint's pads against [10] p. 27 "Outline Dimensions" for RW-20
+        (not yet checked — the footprint's *name* matching is not the same as
+        its *pad geometry* being confirmed correct).
+  - [ ] 12.5.bi **(Medium, research spike, not a BOM commitment) Investigate
+        consolidating the CAN (`U3`) and RS-485 (`U4`) isolation barriers into
+        one shared multi-channel isolator** (e.g. ISOW7841 [61], quad-channel
+        + integrated DC-DC — checked and found to need exactly 4 channels if
+        RS-485's DE/RE is combined into one line or an automatic-direction
+        RS-485 transceiver is used instead of the current 3-signal
+        ADM2582E-style interface). Open before this can be a BOM item: select
+        and verify a specific automatic-direction RS-485 transceiver against
+        its own primary datasheet; verify ISOW7841's DC-DC output actually
+        covers both bare transceivers' combined current at 16 Mbps/50 Ω
+        loading; and make an explicit, cited decision (`AGENTS.md` §4) on
+        whether removing today's CAN/RS-485 fault separation (both isolated
+        from the MCU, but also from EACH OTHER today) is acceptable — this is
+        a functional-safety trade, not just a part count reduction.
+  - [ ] 12.5.bj **(Low) Trace `isolation_envelope.py`'s `EDGE_MARGIN_MM = 0.55`
+        to the target fab's actual copper-to-board-edge design rule.** Currently
+        unsourced in this repo's citation trail; may be tighter than the real
+        fab minimum (small potential width saving, ≤0.5 mm total) or may
+        already be at the fab's floor. Either way, mark it verified one way or
+        the other rather than leaving it an assumed constant.
+  - [ ] 12.5.bk **(Low, standards research) Obtain and cite the IEC 60664-1
+        clause governing creepage-path extension via PCB grooves/ribs/slots.**
+        Every isolator datasheet checked in the creepage audit ([9], [10],
+        [59], [60], [61]) names the technique in its own footnote but none
+        quantify it; do not apply a groove/slot to any layout for creepage
+        credit until the governing clause and its slot-width/depth rule are
+        held locally and cited, per `AGENTS.md` §1.3.
   - [ ] 12.5.bb **(Medium, NEW) The conductor-spacing basis is sea-level, and
         this is an airborne ESC.** [S-D] records that IPC-2221C (2023) revised
         conductor spacing as a function of **altitude**, and that IPC-2221

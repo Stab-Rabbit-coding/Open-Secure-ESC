@@ -1,145 +1,594 @@
-(kicad_symbol_lib (version 20211014) (generator serenity_cleanroom_2026_08_03)
-  (symbol "Jayne_MSPM0G3518_Q1_RHB" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
-    (property "Reference" "U" (id 0) (at -22.86 24.13 0) (effects (font (size 1.27 1.27)) (justify left)))
-    (property "Value" "M0G3518QRHBRQ1" (at -22.86 -25.4 0) (effects (font (size 1.27 1.27)) (justify left)))
-    (property "Footprint" "Package_DFN_QFN:Texas_RHB0032E_VQFN-32-1EP_5x5mm_P0.5mm_EP3.45x3.45mm" (id 2) (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
-    (property "Datasheet" "https://www.ti.com/lit/ds/symlink/mspm0g3518-q1.pdf" (id 3) (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
-    (property "ki_description" "TI MSPM0G3518-Q1 (M0G3518QRHBRQ1) Arm Cortex-M0+ MCU with CAN-FD, 256KB flash / 128KB SRAM, 32-pin RHB VQFN 5x5mm, AEC-Q100 Grade 1, -40 to +125 degC. 28 GPIO (PA0-PA27), 1x CAN-FD, 5x UART / 3x I2C / 2x SPI. Clean-room from TI SLASFA6B Fig 6-6 / Table 6-2. See REFERENCES.md REF-SENSOR-004R." (id 4) (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
-    (symbol "Jayne_MSPM0G3518_Q1_RHB_1_1"
-      (rectangle (start -22.86 -22.86) (end 22.86 22.86)
-        (stroke (width 0.254)) (fill (type background)))
-      (pin bidirectional line (at -26.67 19.05 0) (length 3.81)
-        (name "PA0" (effects (font (size 1.27 1.27))))
-        (number "1" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at -26.67 16.51 0) (length 3.81)
-        (name "PA1" (effects (font (size 1.27 1.27))))
-        (number "2" (effects (font (size 1.27 1.27))))
-      )
-      (pin input line (at -26.67 13.97 0) (length 3.81)
-        (name "NRST" (effects (font (size 1.27 1.27))))
-        (number "3" (effects (font (size 1.27 1.27))))
-      )
-      (pin power_in line (at -26.67 11.43 0) (length 3.81)
-        (name "VDD" (effects (font (size 1.27 1.27))))
-        (number "4" (effects (font (size 1.27 1.27))))
-      )
-      (pin power_in line (at -26.67 8.89 0) (length 3.81)
-        (name "VSS" (effects (font (size 1.27 1.27))))
-        (number "5" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at -26.67 6.35 0) (length 3.81)
-        (name "PA2" (effects (font (size 1.27 1.27))))
-        (number "6" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at -26.67 3.81 0) (length 3.81)
-        (name "PA3" (effects (font (size 1.27 1.27))))
-        (number "7" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at -26.67 1.27 0) (length 3.81)
-        (name "PA4" (effects (font (size 1.27 1.27))))
-        (number "8" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at -26.67 -1.27 0) (length 3.81)
-        (name "PA5" (effects (font (size 1.27 1.27))))
-        (number "9" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at -26.67 -3.81 0) (length 3.81)
-        (name "PA6" (effects (font (size 1.27 1.27))))
-        (number "10" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at -26.67 -6.35 0) (length 3.81)
-        (name "PA7" (effects (font (size 1.27 1.27))))
-        (number "11" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at -26.67 -8.89 0) (length 3.81)
-        (name "PA8" (effects (font (size 1.27 1.27))))
-        (number "12" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at -26.67 -11.43 0) (length 3.81)
-        (name "PA9" (effects (font (size 1.27 1.27))))
-        (number "13" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at -26.67 -13.97 0) (length 3.81)
-        (name "PA10" (effects (font (size 1.27 1.27))))
-        (number "14" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at -26.67 -16.51 0) (length 3.81)
-        (name "PA11" (effects (font (size 1.27 1.27))))
-        (number "15" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at -26.67 -19.05 0) (length 3.81)
-        (name "PA12" (effects (font (size 1.27 1.27))))
-        (number "16" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at 26.67 20.32 180) (length 3.81)
-        (name "PA13" (effects (font (size 1.27 1.27))))
-        (number "17" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at 26.67 17.78 180) (length 3.81)
-        (name "PA14" (effects (font (size 1.27 1.27))))
-        (number "18" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at 26.67 15.24 180) (length 3.81)
-        (name "PA15" (effects (font (size 1.27 1.27))))
-        (number "19" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at 26.67 12.7 180) (length 3.81)
-        (name "PA16" (effects (font (size 1.27 1.27))))
-        (number "20" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at 26.67 10.16 180) (length 3.81)
-        (name "PA17" (effects (font (size 1.27 1.27))))
-        (number "21" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at 26.67 7.62 180) (length 3.81)
-        (name "PA18" (effects (font (size 1.27 1.27))))
-        (number "22" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at 26.67 5.08 180) (length 3.81)
-        (name "PA19/SWDIO" (effects (font (size 1.27 1.27))))
-        (number "23" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at 26.67 2.54 180) (length 3.81)
-        (name "PA20/SWCLK" (effects (font (size 1.27 1.27))))
-        (number "24" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at 26.67 3.55271e-15 180) (length 3.81)
-        (name "PA21" (effects (font (size 1.27 1.27))))
-        (number "25" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at 26.67 -2.54 180) (length 3.81)
-        (name "PA22" (effects (font (size 1.27 1.27))))
-        (number "26" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at 26.67 -5.08 180) (length 3.81)
-        (name "PA23" (effects (font (size 1.27 1.27))))
-        (number "27" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at 26.67 -7.62 180) (length 3.81)
-        (name "PA24" (effects (font (size 1.27 1.27))))
-        (number "28" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at 26.67 -10.16 180) (length 3.81)
-        (name "PA25" (effects (font (size 1.27 1.27))))
-        (number "29" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at 26.67 -12.7 180) (length 3.81)
-        (name "PA26" (effects (font (size 1.27 1.27))))
-        (number "30" (effects (font (size 1.27 1.27))))
-      )
-      (pin bidirectional line (at 26.67 -15.24 180) (length 3.81)
-        (name "PA27" (effects (font (size 1.27 1.27))))
-        (number "31" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line (at 26.67 -17.78 180) (length 3.81)
-        (name "VCORE" (effects (font (size 1.27 1.27))))
-        (number "32" (effects (font (size 1.27 1.27))))
-      )
-      (pin power_in line (at 26.67 -20.32 180) (length 3.81)
-        (name "VSS" (effects (font (size 1.27 1.27))))
-        (number "33" (effects (font (size 1.27 1.27))))
-      )
-    )
-  )
+(kicad_symbol_lib
+	(version 20241209)
+	(generator "open_secure_esc_symgen")
+	(generator_version "9.0")
+(symbol "MSPM0G3518_Q1_RHB"
+	(pin_names
+		(offset 1.016)
+	)
+	(exclude_from_sim no)
+	(in_bom yes)
+	(on_board yes)
+	(property "Reference" "U"
+		(at 0 16.51 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Value" "MSPM0G3518_Q1_RHB"
+		(at 0 13.97 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Footprint" "Package_DFN_QFN:Texas_RHB0032E_VQFN-32-1EP_5x5mm_P0.5mm_EP3.45x3.45mm"
+		(at 0 0 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(hide yes)
+		)
+	)
+	(property "Datasheet" "docs/datasheets/mspm0g3518-q1.pdf"
+		(at 0 0 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(hide yes)
+		)
+	)
+	(property "Description" "TI MSPM0G3518-Q1 Arm Cortex-M0+ MCU, RHB (VQFN-32, 5x5mm body) package, orderable M0G3518QRHBRQ1 -- same die/part number as this build's MCU (MSPM0G3518_Q1_PM, REFERENCES.md [44]), on the smaller package option per docs/solutions/architecture-patterns/bom-creepage-audit-can485-faraday.md finding #1. RHB exposes only PA0-PA27 (no Port B/C); every pin below was re-derived pad-by-pad against that constraint, not renumbered from the PM map. See symbols/specs/MSPM0G3518_Q1_RHB.json for the full per-pin datasheet verification."
+		(at 0 0 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(hide yes)
+		)
+	)
+	(property "Citation" "[44]"
+		(at 0 0 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(hide yes)
+		)
+	)
+	(property "Verification" "VERIFIED against [44] (SLASFA6B) Figure 6-6 '32-pin RHB (0.5mm) (VQFN) Package Diagram' (p.14) and Table 6-2 'Pin Attributes' (pp.15-23, RHB column). Full per-pin pad/IOMUX-function citation and conflict check in symbols/specs/MSPM0G3518_Q1_RHB.json. PROVENANCE: this file replaces a prior generic, unwired symbol at this same path (generator tag 'serenity_cleanroom_2026_08_03') that was authored for an unrelated board and internally named after that board's character call-sign; the name is scrubbed here per this repository's own no-cross-project-naming-leak hygiene, and every claim it made (package, footprint, pinout) was independently re-verified against [44] before reuse rather than carried over on trust. A DEFECT in that prior file was found and fixed: it declared 33 pins, including a spurious duplicate 'VSS' at pin '33' -- RHB is a real 32-pin package and has no such pin; it is not reproduced here. PIN COORDINATES are intentionally IDENTICAL to symbols/MSPM0G3518_Q1_PM.kicad_sym's corresponding named pin (same local (at x y rotation), same electrical type, same functional-role name) so that swapping U1 from the PM symbol to this one in builds/6s/50A/CAN_485_faraday leaves existing wires connected without moving them -- only the physical pin NUMBER changes, to its RHB equivalent. Verified by re-running kicad-cli sch erc after the swap: 0 errors, same warning set as before the swap (see the build's own ERC history)."
+		(at 0 0 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(hide yes)
+		)
+	)
+	(symbol "MSPM0G3518_Q1_RHB_0_1"
+		(rectangle
+			(start -15.24 11.43)
+			(end 15.24 -11.43)
+			(stroke
+				(width 0)
+				(type default)
+			)
+			(fill
+				(type none)
+			)
+		)
+	)
+	(symbol "MSPM0G3518_Q1_RHB_1_1"
+		(pin power_in line
+			(at -6.35 13.97 270)
+			(length 2.54)
+			(name "VDD"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "4"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin power_in line
+			(at -3.81 13.97 270)
+			(length 2.54)
+			(name "VSS"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "5"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin power_out line
+			(at -1.27 13.97 270)
+			(length 2.54)
+			(name "VCORE"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "32"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin input line
+			(at 6.35 13.97 270)
+			(length 2.54)
+			(name "NRST"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "3"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin input line
+			(at -17.78 10.16 0)
+			(length 2.54)
+			(name "SWCLK"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "24"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin bidirectional line
+			(at -17.78 7.62 0)
+			(length 2.54)
+			(name "SWDIO"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "23"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin output line
+			(at -17.78 5.08 0)
+			(length 2.54)
+			(name "CAN_TX"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "16"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin input line
+			(at -17.78 2.54 0)
+			(length 2.54)
+			(name "CAN_RX"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "17"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin output line
+			(at -17.78 0 0)
+			(length 2.54)
+			(name "RS485_TXD"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "1"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin input line
+			(at -17.78 -2.54 0)
+			(length 2.54)
+			(name "RS485_RXD"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "2"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin output line
+			(at -17.78 -5.08 0)
+			(length 2.54)
+			(name "RS485_DE_RE"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "10"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin output line
+			(at 17.78 10.16 180)
+			(length 2.54)
+			(name "GD_SPI_CS"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "6"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin input line
+			(at 17.78 7.62 180)
+			(length 2.54)
+			(name "GD_SPI_MISO"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "20"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin output line
+			(at 17.78 5.08 180)
+			(length 2.54)
+			(name "GD_SPI_MOSI"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "22"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin output line
+			(at 17.78 2.54 180)
+			(length 2.54)
+			(name "GD_SPI_SCK"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "21"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin input line
+			(at -11.43 -13.97 90)
+			(length 2.54)
+			(name "ADC_IU"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "28"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin input line
+			(at -8.89 -13.97 90)
+			(length 2.54)
+			(name "ADC_IV"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "27"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin input line
+			(at -6.35 -13.97 90)
+			(length 2.54)
+			(name "ADC_IW"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "29"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin input line
+			(at -3.81 -13.97 90)
+			(length 2.54)
+			(name "ADC_VBUS"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "25"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin output line
+			(at -1.27 -13.97 90)
+			(length 2.54)
+			(name "PWM_AH"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "12"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin output line
+			(at 1.27 -13.97 90)
+			(length 2.54)
+			(name "PWM_AL"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "13"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin output line
+			(at 3.81 -13.97 90)
+			(length 2.54)
+			(name "PWM_BH"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "7"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin output line
+			(at 6.35 -13.97 90)
+			(length 2.54)
+			(name "PWM_BL"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "8"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin output line
+			(at 8.89 -13.97 90)
+			(length 2.54)
+			(name "PWM_CH"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "14"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin output line
+			(at 11.43 -13.97 90)
+			(length 2.54)
+			(name "PWM_CL"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "15"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin bidirectional line
+			(at 25.4 -5.08 180)
+			(length 2.54)
+			(name "SE_I2C_SCL"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "19"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin bidirectional line
+			(at 25.4 -7.62 180)
+			(length 2.54)
+			(name "SE_I2C_SDA"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "9"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+		(pin output line
+			(at 25.4 -10.16 180)
+			(length 2.54)
+			(name "SE_RST"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(number "18"
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+		)
+	)
+	(embedded_fonts no)
+)
 )
