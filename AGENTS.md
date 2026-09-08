@@ -99,6 +99,10 @@ requirement forces).
 New learnings are added there as work produces them, so the store is expected
 to grow rather than stay fixed.
 
+`CONCEPTS.md`, at the repo root, defines this project's shared domain
+vocabulary (entities, named processes, status concepts) — relevant when
+orienting to the codebase or citing a term precisely.
+
 ## 5. Review Checklist (apply before merging any change)
 
 - [ ] Every new technical claim traces to an authoritative source
