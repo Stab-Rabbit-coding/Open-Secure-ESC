@@ -11,8 +11,9 @@ Root of trust: Infineon OPTIGA™ Trust M V3 secure element [45] over I²C (sche
 
 Build Options:
 
-* Motor speed sensor: ADC/DIO/SPI shaft sensor input (Hall / encoder / analog tach)
-* Motor type: Brushed / Brushless
+* Motor speed sensor: ADC/DIO/SPI shaft sensor input (Hall / encoder / analog tach / magnetic absolute SSI-SPI, e.g. AEAT-8800-Q24 [64])
+* Motor type: Brushed (Tier-1 integrated H-bridge DRV8874-Q1 [63]) / Brushless
+* Holding brake: None (default) / Low-side solenoid driver, spring-applied (de-energised = engaged; TPL7407L [66]) — see `docs/decision-matrix.xlsx` "Holding Brake"
 * Voltage: 2S, 4S, 6S, 8S, 12S
 * Amperage: 10A, 20A, 30A, 40A, 50A, 80A, 120A
 * Protocol: PWM, SBus, DBus, UART, TTL, SPI, RS-232 [3], RS-485 [4], CAN2.0 [5], CAN-FD [6], MIL-STD-1553B [7]

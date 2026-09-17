@@ -2,9 +2,9 @@
   "schema_version": 1,
   "source": {
     "workbook": "docs/decision-matrix.xlsx",
-    "workbook_sha256": "d9b78bf9da9ee0a8db31c1872f99860d9b764fd2ea8db2ed70fd7cd7db2d2f51",
-    "workbook_mtime": "2026-09-01T03:24:06.380017+00:00",
-    "exported": "2026-09-01T03:24:06.620785+00:00",
+    "workbook_sha256": "0cc59126152f9ada026a39a32420b2a95b7f99dc00f6a362e5e65b4a898cf305",
+    "workbook_mtime": "2026-09-17T18:50:14.240494+00:00",
+    "exported": "2026-09-17T18:50:14.647832+00:00",
     "exported_by": "docs/tools/decision_matrix_to_json.py",
     "governed_by": "AGENTS.md",
     "note": "Generated file -- edit the workbook, then re-run the exporter. Do not hand-edit this JSON."
@@ -178,7 +178,7 @@
         "Status"
       ],
       "notes": [
-        "Shunt part: Vishay WSLP2512 [23] (3.0W package rating). \"Shunt Qty Needed\" = ROUNDUP(Shunt Power / 3W, 0); at 80A/120A this correctly computes 2x and 3x devices in parallel (7.2W / 3 tiers exceeds a single package's rating). FET parallel count and gate-driver reuse are a BOM-commonality choice (AGENTS.md §4 judgment call), not a datasheet requirement -- a smaller SO-8 FET would be leaner for the 10A-30A tiers if part-count commonality were not prioritized."
+        "Shunt part: Vishay WSLP2512 [23] (3.0W package rating). \"Shunt Qty Needed\" = ROUNDUP(Shunt Power / 3W, 0); at 80A/120A this correctly computes 2x and 3x devices in parallel (7.2W / 3 tiers exceeds a single package's rating). FET parallel count and gate-driver reuse are a BOM-commonality choice (AGENTS.md §4 judgment call), not a datasheet requirement -- a smaller SO-8 FET would be leaner for the 10A-30A tiers if part-count commonality were not prioritized. -- BRUSHED BUILDS (2026-09-17): the FET Part, Gate Driver Part, Shunt and Current-Sense Amp columns of this sheet are brushless-shaped and are OVERRIDDEN by the Motor sheet's bridge row for a Brushed (DC) build (Tier 1: DRV8874-Q1 [63] integrated bridge, no shunt). This sheet still governs the copper and connector class for the tier."
       ],
       "rows": [
         {
@@ -193,7 +193,7 @@
           "Shunt Power (W)": "",
           "Shunt Qty Needed": "",
           "Current-Sense Amp (Gain)": "TI INA240 [22], 20 or 50 V/V",
-          "REFERENCES.md Tags": "[20], [21], [22], [23]",
+          "REFERENCES.md Tags": "[20], [21], [22], [23], [62], [63]",
           "Status": "Candidate (unverified)"
         },
         {
@@ -300,7 +300,7 @@
           "Shunt Power (W)": "",
           "Shunt Qty Needed": "",
           "Current-Sense Amp (Gain)": "TI INA240 [22], 20 or 50 V/V",
-          "REFERENCES.md Tags": "[20], [21], [22], [23]",
+          "REFERENCES.md Tags": "[20], [21], [22], [23], [62], [63]",
           "Status": "Candidate (unverified)"
         },
         "20": {
@@ -430,12 +430,12 @@
           "Motor Type": "Brushed (DC)",
           "Bridge Topology": "Single H-bridge",
           "Switch Positions": "4 (2 high + 2 low)",
-          "Gate Driver Part": "TBD -- requires primary-source verification (AGENTS.md Sec.1.3). No H-bridge gate driver has been sourced or verified in this repo. NOTE, not yet vetted: a 3-phase driver such as the DRV8353S [21] can drive an H-bridge by using two of its three half-bridges and leaving the third unused -- this reuses an already-verified part at the cost of wasted silicon and board area, and must be checked against [21] before adoption.",
+          "Gate Driver Part": "TI DRV8874-Q1 [63] integrated N-channel H-bridge (non-Q1 twin DRV8874 [62]): 4.5-37 V VM, 6 A peak, 100 mOhm typ per FET, PH/EN or PWM control, IPROPI current mirror 450 uA/A, VREF/ITRIP current regulation, UVLO/CPUV/OCP/TSD. Tier 1 (2S-6S, 10-20 A) per docs/OpenSecureESC-Brushed-Specifications.md Sec.1; every fault coasts the bridge ([63] Table 7).",
           "Output Terminals": "2 (M+ / M-)",
-          "Shunt Qty": "1-2 (bridge-leg or in-line)",
+          "Shunt Qty": "0 -- the driver's IPROPI current mirror replaces the shunt and current-sense amplifier of the brushless tiers ([63] Sec.7.3.3.1)",
           "Commutation Requirement": "None -- direction and magnitude set by bridge polarity and duty cycle; no rotor position needed for basic operation",
-          "REFERENCES.md Tags": "-",
-          "Status": "Open / unresolved"
+          "REFERENCES.md Tags": "[62], [63]",
+          "Status": "Verified (local PDF)"
         }
       ],
       "rows_by_key": {
@@ -454,12 +454,12 @@
           "Motor Type": "Brushed (DC)",
           "Bridge Topology": "Single H-bridge",
           "Switch Positions": "4 (2 high + 2 low)",
-          "Gate Driver Part": "TBD -- requires primary-source verification (AGENTS.md Sec.1.3). No H-bridge gate driver has been sourced or verified in this repo. NOTE, not yet vetted: a 3-phase driver such as the DRV8353S [21] can drive an H-bridge by using two of its three half-bridges and leaving the third unused -- this reuses an already-verified part at the cost of wasted silicon and board area, and must be checked against [21] before adoption.",
+          "Gate Driver Part": "TI DRV8874-Q1 [63] integrated N-channel H-bridge (non-Q1 twin DRV8874 [62]): 4.5-37 V VM, 6 A peak, 100 mOhm typ per FET, PH/EN or PWM control, IPROPI current mirror 450 uA/A, VREF/ITRIP current regulation, UVLO/CPUV/OCP/TSD. Tier 1 (2S-6S, 10-20 A) per docs/OpenSecureESC-Brushed-Specifications.md Sec.1; every fault coasts the bridge ([63] Table 7).",
           "Output Terminals": "2 (M+ / M-)",
-          "Shunt Qty": "1-2 (bridge-leg or in-line)",
+          "Shunt Qty": "0 -- the driver's IPROPI current mirror replaces the shunt and current-sense amplifier of the brushless tiers ([63] Sec.7.3.3.1)",
           "Commutation Requirement": "None -- direction and magnitude set by bridge polarity and duty cycle; no rotor position needed for basic operation",
-          "REFERENCES.md Tags": "-",
-          "Status": "Open / unresolved"
+          "REFERENCES.md Tags": "[62], [63]",
+          "Status": "Verified (local PDF)"
         }
       }
     },
@@ -521,6 +521,16 @@
           "Firmware Workflow Steps": "Drive the excitation reference; read absolute angle from the converter; no startup ramp needed, unlike sensorless.",
           "REFERENCES.md Tags": "-",
           "Status": "Open / unresolved"
+        },
+        {
+          "Sensor Type": "Magnetic absolute (SPI/SSI)",
+          "Rotor Position Source": "Single-turn absolute angle from an on-axis Hall sensor IC reading a diametric two-pole magnet on the shaft end; 10- to 16-bit absolute word over SSI/SPI, optional ABI/UVW/PWM outputs. Multi-turn position is accumulated in firmware.",
+          "MCU Pins Required": "3 (SCLK, DO, NSL/CS) for SSI, 4 with DI for SPI; sensor supply 3.3 V. The sensor may sit off-board on a short cable.",
+          "Additional BOM Component": "Broadcom AEAT-8800-Q24 [64], QFN-24 5 x 5 mm, 3.3 V or 5 V operation, SSI 3-wire absolute output. Series resistors and ESD protection on each line per docs/design-speed-sensor-integration.md.",
+          "Connector": "6-pin keyed (3V3, GND, SCLK, DO, NSL, DI) with shield/drain optional",
+          "Firmware Workflow Steps": "Read the absolute word each control tick; unwrap turns across the 0/full-scale boundary; home the multi-turn count from an outer absolute reference (a host sensor over the bus) at power-up; declare 'stationary' from this sensor, not from motor current.",
+          "REFERENCES.md Tags": "[64]",
+          "Status": "Verified (local PDF)"
         }
       ],
       "rows_by_key": {
@@ -563,6 +573,86 @@
           "Firmware Workflow Steps": "Drive the excitation reference; read absolute angle from the converter; no startup ramp needed, unlike sensorless.",
           "REFERENCES.md Tags": "-",
           "Status": "Open / unresolved"
+        },
+        "magnetic_absolute_spi_ssi": {
+          "Sensor Type": "Magnetic absolute (SPI/SSI)",
+          "Rotor Position Source": "Single-turn absolute angle from an on-axis Hall sensor IC reading a diametric two-pole magnet on the shaft end; 10- to 16-bit absolute word over SSI/SPI, optional ABI/UVW/PWM outputs. Multi-turn position is accumulated in firmware.",
+          "MCU Pins Required": "3 (SCLK, DO, NSL/CS) for SSI, 4 with DI for SPI; sensor supply 3.3 V. The sensor may sit off-board on a short cable.",
+          "Additional BOM Component": "Broadcom AEAT-8800-Q24 [64], QFN-24 5 x 5 mm, 3.3 V or 5 V operation, SSI 3-wire absolute output. Series resistors and ESD protection on each line per docs/design-speed-sensor-integration.md.",
+          "Connector": "6-pin keyed (3V3, GND, SCLK, DO, NSL, DI) with shield/drain optional",
+          "Firmware Workflow Steps": "Read the absolute word each control tick; unwrap turns across the 0/full-scale boundary; home the multi-turn count from an outer absolute reference (a host sensor over the bus) at power-up; declare 'stationary' from this sensor, not from motor current.",
+          "REFERENCES.md Tags": "[64]",
+          "Status": "Verified (local PDF)"
+        }
+      }
+    },
+    "holding_brake": {
+      "sheet": "Holding Brake",
+      "title": "Holding Brake Decision Matrix",
+      "subtitle": "Build axis: Holding Brake (None / Low-side solenoid driver, spring-applied)",
+      "header_row": 4,
+      "parameters": {},
+      "key_column": "Brake Option",
+      "columns": [
+        "Brake Option",
+        "Actuation",
+        "Fail-state",
+        "MCU Pins Required",
+        "Additional BOM Component",
+        "Connector",
+        "Firmware Workflow Steps",
+        "REFERENCES.md Tags",
+        "Status"
+      ],
+      "notes": [
+        "Note: A brake on the actuator shaft protects against loss of drive, not against a broken transmission downstream of it. The 'Fail-state' column is the safety property this axis exists to record -- a build that selects the solenoid row must reproduce every item in it, not just the part number. First instance: builds/6s/10A/BRUSHED_CAN_485_isolation/ (Serenity-UAV nacelle tilt)."
+      ],
+      "rows": [
+        {
+          "Brake Option": "None",
+          "Actuation": "No holding brake. The load is held by the motor's own drag, a self-locking transmission, or nothing.",
+          "Fail-state": "Not applicable -- the build has no brake to fail. A non-self-locking transmission on a load that must hold unpowered may NOT select this row.",
+          "MCU Pins Required": "0",
+          "Additional BOM Component": "None",
+          "Connector": "None",
+          "Firmware Workflow Steps": "None",
+          "REFERENCES.md Tags": "-",
+          "Status": "No part needed"
+        },
+        {
+          "Brake Option": "Low-side solenoid driver, spring-applied",
+          "Actuation": "Spring-applied, power-released pin brake. A pull solenoid retracts the pin while its coil is energised; the spring engages the pin when the coil is released. The coil is switched on its low side.",
+          "Fail-state": "De-energised = engaged. The driver input carries a pull-down so an MCU reset, brown-out or floating GPIO engages the brake without firmware; the coil's inductive kick is clamped; brake state (drive-pin readback) is published on the bus. Engage-on-fault: the motor driver's nFAULT is a brake-engage input for firmware.",
+          "MCU Pins Required": "1 digital out (BRAKE_EN) plus 1 digital in or ADC for state readback; optionally 1 ADC for the coil supply rail so the pin is never dropped into a driven castellation.",
+          "Additional BOM Component": "TI TPL7407L [66]: 40 V 7-channel NMOS low-side array, 600 mA per channel (channels paralleled for the load), 1 MOhm input pull-down per channel, internal clamp diodes to COM. Return COM to the pack-side rail so the clamp sits above the coil supply and inside the COM range (8.5-40 V, [66] Sec.6.3). The solenoid itself is a host-side part outside this axis (Serenity-UAV item BRK-4); this row carries only the driver.",
+          "Connector": "2-pin (COIL+, COIL-) keyed header; polarity marked",
+          "Firmware Workflow Steps": "Release only on an authenticated release command after the loop has unloaded the pin; sequence release -> move -> settle (encoder stationary) -> engage; engage on nFAULT, on bus loss after a timeout, and on coil-rail droop below the solenoid hold-in voltage; publish brake state every telemetry frame.",
+          "REFERENCES.md Tags": "[66]",
+          "Status": "Verified (local PDF)"
+        }
+      ],
+      "rows_by_key": {
+        "none": {
+          "Brake Option": "None",
+          "Actuation": "No holding brake. The load is held by the motor's own drag, a self-locking transmission, or nothing.",
+          "Fail-state": "Not applicable -- the build has no brake to fail. A non-self-locking transmission on a load that must hold unpowered may NOT select this row.",
+          "MCU Pins Required": "0",
+          "Additional BOM Component": "None",
+          "Connector": "None",
+          "Firmware Workflow Steps": "None",
+          "REFERENCES.md Tags": "-",
+          "Status": "No part needed"
+        },
+        "low_side_solenoid_driver_spring_applied": {
+          "Brake Option": "Low-side solenoid driver, spring-applied",
+          "Actuation": "Spring-applied, power-released pin brake. A pull solenoid retracts the pin while its coil is energised; the spring engages the pin when the coil is released. The coil is switched on its low side.",
+          "Fail-state": "De-energised = engaged. The driver input carries a pull-down so an MCU reset, brown-out or floating GPIO engages the brake without firmware; the coil's inductive kick is clamped; brake state (drive-pin readback) is published on the bus. Engage-on-fault: the motor driver's nFAULT is a brake-engage input for firmware.",
+          "MCU Pins Required": "1 digital out (BRAKE_EN) plus 1 digital in or ADC for state readback; optionally 1 ADC for the coil supply rail so the pin is never dropped into a driven castellation.",
+          "Additional BOM Component": "TI TPL7407L [66]: 40 V 7-channel NMOS low-side array, 600 mA per channel (channels paralleled for the load), 1 MOhm input pull-down per channel, internal clamp diodes to COM. Return COM to the pack-side rail so the clamp sits above the coil supply and inside the COM range (8.5-40 V, [66] Sec.6.3). The solenoid itself is a host-side part outside this axis (Serenity-UAV item BRK-4); this row carries only the driver.",
+          "Connector": "2-pin (COIL+, COIL-) keyed header; polarity marked",
+          "Firmware Workflow Steps": "Release only on an authenticated release command after the loop has unloaded the pin; sequence release -> move -> settle (encoder stationary) -> engage; engage on nFAULT, on bus loss after a timeout, and on coil-rail droop below the solenoid hold-in voltage; publish brake state every telemetry frame.",
+          "REFERENCES.md Tags": "[66]",
+          "Status": "Verified (local PDF)"
         }
       }
     },
