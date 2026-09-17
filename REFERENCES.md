@@ -2258,4 +2258,146 @@ architecture direction only, not a BOM recommendation.**
 Cited in: `docs/solutions/architecture-patterns/bom-creepage-audit-can485-faraday.md`.
 Date accessed: 2026-09-06.
 
+**[62]** Texas Instruments Incorporated, *DRV8874 H-Bridge Motor Driver
+With Integrated Current Sense and Regulation*, datasheet, SLVSF66A, Texas
+Instruments Incorporated, Dallas, TX, USA, 2019-08 (revised 2019-12).
+[Online]. Available: https://www.ti.com/lit/ds/symlink/drv8874.pdf
+(live fetch succeeded 2026-09-17 — the ti.com/lit 403 block recorded
+against [1] no longer applies.)
+Local verified copy: `docs/datasheets/ti-drv8874-datasheet.pdf` (42 pp.).
+Section/page: p. 1, Features — "4.5-V to 37-V operating supply voltage
+range," "DRV8874: 200-mΩ (High-Side + Low-Side)," "DRV8874: 6-A Peak,"
+"Selectable current regulation (IMODE)," "PH/EN and PWM H-bridge control
+modes," HTSSOP (16) PWP 5.00 mm × 4.40 mm. §5 "Pin Configuration and
+Functions" — 16-pin map (EN/IN1 1, PH/IN2 2, nSLEEP 3, nFAULT 4, VREF 5,
+IPROPI 6, IMODE 7, OUT1 8, PGND 9, OUT2 10, VM 11, VCP 12, CPH 13, CPL 14,
+GND 15, PMODE 16); EN/IN1 and PH/IN2 "Internal pulldown resistor." §6.3
+"Recommended Operating Conditions" — VVM 4.5–37 V, IOUT peak 0–6 A.
+§6.5 "Electrical Characteristics" — RDS(on)_HS and RDS(on)_LS 100 mΩ typ /
+120 mΩ max each (VVM = 24 V, IO = 2 A, TJ = 25 °C); AIPROPI 450 µA/A;
+VUVLO 4.35 V typ; IOCP 6 A min / 10 A typ; tRETRY 2 ms; RPD input pulldown
+100 kΩ. §7.3.2 "Control Modes," Table 3 "PH/EN Control Mode" (PMODE = low),
+Table 4 "PWM Control Mode." §7.3.3.1 "Current Sensing" (IPROPI reports the
+low-side FET current only in slow decay). §7.3.3.2 "Current Regulation,"
+Table 6 "IMODE Functions" (retry vs latched-off, and whether ITRIP chopping
+is reported on nFAULT). §7.3.4.1–§7.3.4.4 UVLO / CPUV / OCP / TSD and
+Table 7 "Fault Condition Summary" — every fault disables all four FETs
+(coast). §7.3.4.3 — OCP retry period tRETRY. §8.2.1.2 thermal design
+sections. Used for: the Tier-1 brushed H-bridge (Motor sheet, Brushed (DC)
+row) and the nacelle-tilt build `builds/6s/10A/BRUSHED_CAN_485_isolation/`.
+The non-automotive datasheet is kept alongside [63] because it is the
+document the plan's fault-state analysis was read from; the orderable for
+the build is the `-Q1` in [63], whose pinout and section numbering are
+identical.
+Cited in: `docs/decision-matrix.xlsx` (Motor sheet); `symbols/specs/DRV8874_Q1.json`;
+`builds/6s/10A/BRUSHED_CAN_485_isolation/README.md`;
+`docs/OpenSecureESC-Brushed-Specifications.md`.
+Date accessed: 2026-09-17.
+
+**[63]** Texas Instruments Incorporated, *DRV8874-Q1 Automotive H-Bridge
+Motor Driver With Integrated Current Sense and Regulation*, datasheet,
+SLVSF67B, Texas Instruments Incorporated, Dallas, TX, USA, 2019-08
+(revised 2021-01). [Online]. Available:
+https://www.ti.com/lit/ds/symlink/drv8874-q1.pdf
+Local verified copy: `docs/datasheets/ti-drv8874-q1-datasheet.pdf` (43 pp.).
+Section/page: p. 1, Features — "AEC-Q100 qualified for automotive
+applications," "4.5-V to 37-V operating supply voltage range"; Device
+Information — DRV8874-Q1, HTSSOP (16), 5.00 mm × 4.40 mm. §5 "Pin
+Configuration and Functions," Figure 5-1 — the 16-pin map is identical,
+pin for pin, to [62] §5 (verified 2026-09-17 by reading both tables).
+§6.3 — IOUT peak 0–6 A. §6.5 — RDS(on)_HS / RDS(on)_LS, AIPROPI 450 µA/A,
+VUVLO, IOCP 6 A min / 10 A typ, tRETRY 2 ms. §7.3.2 / §7.3.3.1 / §7.3.3.2 /
+§7.3.4.1–.5 carry the same numbering and content as [62]. Selected as the
+**orderable part** for the nacelle-tilt build so the bridge shares the
+project MCU's automotive qualification ([44]); every figure the build
+relies on is present in both documents.
+Cited in: `symbols/specs/DRV8874_Q1.json`;
+`builds/6s/10A/BRUSHED_CAN_485_isolation/README.md`;
+`docs/brushed-component-sourcing-verification.md`.
+Date accessed: 2026-09-17.
+
+**[64]** Broadcom Inc., *AEAT-8800-Q24 Magnetic Encoder IC — 10- to 16-Bit
+Programmable Angular Magnetic Encoder*, data sheet, pub-005892,
+Broadcom, 2017-05-17 (publisher location not stated in the document). [Online]. Available:
+https://www.broadcom.com/products/motion-control-encoders/magnetic-encoders/aeat-8800-q24
+(product-family page; fetched 2026-09-17 it renders the AEAT-8000 family
+listing and exposes no direct PDF link — the specific datasheet URL on
+docs.broadcom.com is therefore **not verified**; the local copy below is
+the authoritative source for every figure cited here).
+Local verified copy: `docs/datasheets/broadcom-aeat-8800-q24-datasheet.pdf`
+(25 pp.) — copied 2026-09-17 from the LibreServo_v4 repository
+(`PCB/datasheets/pub-005892_ds_aeat-8800-q24_2017-05-17.pdf`), which holds
+the same Broadcom publication; attribution chain Broadcom → LibreServo_v4
+→ this repository.
+Section/page: p. 1, Description / Key Features — "5V or 3.3V operation,"
+"Three-wire SSI interface for absolute output," "Selectable 10, 12, 14, or
+16 bits of absolute resolution," "Incremental ABI and UVW pins out," "PWM
+output modes," "Compact QFN-24 leads (5 mm × 5 mm) package." "Pin
+Assignment" table — SSI_SCL_SPI_CLK (10), SSI_NSL_SPI_DI (11),
+SSI_DO_SPI_DO (12), SSI_SPI_SEL (21), VDDA (14/19), VSS (20).
+"Recommended Operating Conditions" — VDD 3.3 V operation 3.0–3.6 V. Used
+for: the remote worm-shaft absolute sensor of the nacelle-tilt build (the
+sensor sits off-board in the Serenity brake guide; the board carries only
+its keyed SPI/SSI header).
+Cited in: `docs/decision-matrix.xlsx` (Shaft Sensor sheet, magnetic
+absolute row); `symbols/specs/AEAT_8800_Q24.json`;
+`builds/6s/10A/BRUSHED_CAN_485_isolation/README.md`.
+Date accessed: 2026-09-17.
+
+**[65]** Texas Instruments Incorporated, *TPS54560B 4.5-V to 60-V Input,
+5-A Step-Down DC/DC Converter with Eco-mode™*, datasheet, SLVSF00, Texas
+Instruments Incorporated, Dallas, TX, USA, 2019-01. [Online]. Available:
+https://www.ti.com/lit/ds/symlink/tps54560b.pdf
+Local verified copy: `docs/datasheets/ti-tps54560b-datasheet.pdf` (54 pp.).
+Section/page: p. 1, Features — "92-mΩ high-side MOSFET," "100-kHz to
+2.5-MHz Fixed switching frequency," "Adjustable UVLO and hysteresis,"
+"8-Pin HSOIC with PowerPAD™ package," "Output current is limited
+cycle-by-cycle." §6.3 "Recommended Operating Conditions" — operating input
+voltage 4.5–60 V, IO output current 0–5 A. §6.5 "Electrical
+Characteristics," CURRENT LIMIT — current-limit test 6.3 / 7.9 / 9.5 A
+(min/typ/max, open loop at the SW pin); INTERNAL SOFT-START TIME.
+§7.3.8 "Internal Soft Start"; §7.3.10 "Accurate Current-Limit Operation and
+Maximum Switching Frequency"; §7.3.7 "Enable and Adjusting Undervoltage
+Lockout"; §7.3.12 "Overvoltage Protection"; §7.3.13 "Thermal Shutdown".
+Used for: the 6–7 V motor/solenoid rail of the nacelle-tilt build, bucked
+from the 6S branch (25.2 V full charge, well inside the 60 V input rating;
+5 A continuous covers the 2.9 A motor stall plus the ~0.5 A solenoid).
+The buck's external inductor is NOT selected here — its height against the
+build's 4 mm component-side envelope is a selection criterion recorded in
+the build README.
+Cited in: `symbols/specs/TPS54560B.json`;
+`builds/6s/10A/BRUSHED_CAN_485_isolation/README.md`;
+`docs/brushed-component-sourcing-verification.md`.
+Date accessed: 2026-09-17.
+
+**[66]** Texas Instruments Incorporated, *TPL7407L 40-V, 7-Channel NMOS
+Array Low-Side Driver*, datasheet, SLRS066D, Texas Instruments
+Incorporated, Dallas, TX, USA, 2014-01 (revised 2016-03). [Online].
+Available: https://www.ti.com/lit/ds/symlink/tpl7407l.pdf
+Local verified copy: `docs/datasheets/ti-tpl7407l-datasheet.pdf` (23 pp.).
+Section/page: p. 1, Features — "600-mA Rated Drain Current (Per
+Channel)," "Internal Free-wheeling Diodes for Inductive Kick-back
+Protection," "Input Pull-down Resistors Allows Tri-stating the Inputs,"
+"Input RC-Snubber to Eliminate Spurious Switching"; Description —
+"transistors can be paralleled for higher current"; Device Information —
+TPL7407LD SOIC (16) 9.90 mm × 3.91 mm, TPL7407LPW TSSOP (16) 5.00 mm ×
+4.40 mm. §6.1 "Absolute Maximum Ratings" — VOK clamp diode reverse
+voltage 42 V, VCOM 42 V, IDS 600 mA per channel, IOK clamp current 500 mA.
+§6.3 "Recommended Operating Conditions" — VCOM "COM pin voltage range for
+full output drive" 8.5–40 V; VIL 0.9 V max, VIH 1.5 V min (3.3 V logic
+compatible). §6.5 — VF clamp forward voltage 1.4 V at 200 mA. §7.1
+"Overview" — outputs may be paralleled for a single higher-current load.
+§7.3 "Feature Description" — 1 MΩ input pull-down on every channel, 50 kΩ
+series input resistor forming an RC snubber, clamp diodes from each output
+to COM. §9 "Power Supply Recommendations". Used for: the pin-brake
+solenoid low-side driver of the nacelle-tilt build (two channels
+paralleled, inputs pulled down so an MCU reset engages the brake, COM
+returned to the 6S branch so the clamp is above the 6–7 V solenoid rail
+and inside the 40 V COM range).
+Cited in: `docs/decision-matrix.xlsx` (Holding Brake sheet);
+`symbols/specs/TPL7407L.json`;
+`builds/6s/10A/BRUSHED_CAN_485_isolation/README.md`;
+`docs/brushed-component-sourcing-verification.md`.
+Date accessed: 2026-09-17.
+
 Track resolution of these items in `TODO.md`.

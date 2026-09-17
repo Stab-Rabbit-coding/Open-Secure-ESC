@@ -14,6 +14,11 @@ detail belongs in design docs, not here.
       2026-08-03 — project MCU changed, see 13.**
 - [x] 1.5 Verify [2] SLB9672 datasheet page refs for compliance claims — DROPPED
       (external TPM removed; see 4.1).
+- [x] 1.13 **ti.com/lit datasheet access restored** (2026-09-17): the HTTP 403
+      block recorded against [1] (1.4) no longer applies — [62], [63], [65]
+      and [66] were fetched live from `https://www.ti.com/lit/ds/symlink/…`
+      and verified locally. Entries that still say "live fetch blocked" are
+      historical notes, not current state.
 - [~] 1.11 Verify [31] NXP S32K1xx Data Sheet claims used historically (local
       copy VERIFIED); S32K144 removed as project MCU (see 13). Keep artifacts
       for audit/history; do not reuse the S32K144 symbol as an active part.
