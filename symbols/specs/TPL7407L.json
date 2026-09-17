@@ -1,0 +1,107 @@
+{
+  "name": "TPL7407L",
+  "reference": "U",
+  "footprint": "Package_SO:TSSOP-16_4.4x5mm_P0.65mm",
+  "datasheet": "docs/datasheets/ti-tpl7407l-datasheet.pdf",
+  "description": "TI TPL7407L 40 V, 7-channel NMOS array low-side driver: 600 mA per channel (channels may be paralleled), 1 MOhm input pull-down per channel, input RC snubber, internal free-wheeling clamp diodes from each output to COM (COM 8.5-40 V for full drive), VIH 1.5 V (3.3 V logic). Pin-brake solenoid driver of builds/6s/10A/BRUSHED_CAN_485_isolation/: two channels paralleled, inputs pulled down so an MCU reset engages the brake, COM returned to the 6S branch so the clamp sits above the 6-7 V coil rail.",
+  "citation": "[66]",
+  "verification": "VERIFIED -- full 16-pin map read directly from the local copy of [66] (TI SLRS066D, 'Revised March 2016'), Sec. 5 'Pin Configuration and Functions', '16-PIN SOIC/TSSOP TOP VIEW' figure and the Pin Functions table: IN1-IN7 = pins 1-7 (I), GND = 8, COM = 9, OUT1-OUT7 = pins 16-10 (O; OUT1 is pin 16 opposite IN1). Pin electrical types: INx -> input; OUTx -> open_collector (open-drain NMOS sink); GND -> power_in; COM -> power_in (supply pin for the clamp diodes and internal LDO, 'should be tied to 8.5 V or higher', Sec. 5 / Sec. 9). Device facts also VERIFIED from [66]: Sec. 6.1 VOK 42 V, IDS 600 mA per channel, IOK 500 mA; Sec. 6.3 VCOM 8.5-40 V, VIL 0.9 V, VIH 1.5 V; Sec. 6.5 VF 1.4 V at 200 mA; Sec. 7.1 outputs may be paralleled; Sec. 7.3 1 MOhm pull-down and 50 kOhm series input resistor. FOOTPRINT: KiCad 9 stock Package_SO:TSSOP-16_4.4x5mm_P0.65mm (JEDEC MO-153 generated), CHECKED against [66] Device Information (TPL7407LPW TSSOP-16, 5.00 x 4.40 mm) and its PW package outline: 16 leads, 0.65 mm pitch, 4.4 mm body width; no exposed pad. This footprint is a JEDEC-outline IPC land, not a TI drawing -- [66]'s own land pattern sheet was not separately verified against it, flagged per AGENTS.md Sec. 4.",
+  "pins": [
+    {
+      "num": "1",
+      "name": "IN1",
+      "etype": "input",
+      "side": "left"
+    },
+    {
+      "num": "2",
+      "name": "IN2",
+      "etype": "input",
+      "side": "left"
+    },
+    {
+      "num": "3",
+      "name": "IN3",
+      "etype": "input",
+      "side": "left"
+    },
+    {
+      "num": "4",
+      "name": "IN4",
+      "etype": "input",
+      "side": "left"
+    },
+    {
+      "num": "5",
+      "name": "IN5",
+      "etype": "input",
+      "side": "left"
+    },
+    {
+      "num": "6",
+      "name": "IN6",
+      "etype": "input",
+      "side": "left"
+    },
+    {
+      "num": "7",
+      "name": "IN7",
+      "etype": "input",
+      "side": "left"
+    },
+    {
+      "num": "16",
+      "name": "OUT1",
+      "etype": "open_collector",
+      "side": "right"
+    },
+    {
+      "num": "15",
+      "name": "OUT2",
+      "etype": "open_collector",
+      "side": "right"
+    },
+    {
+      "num": "14",
+      "name": "OUT3",
+      "etype": "open_collector",
+      "side": "right"
+    },
+    {
+      "num": "13",
+      "name": "OUT4",
+      "etype": "open_collector",
+      "side": "right"
+    },
+    {
+      "num": "12",
+      "name": "OUT5",
+      "etype": "open_collector",
+      "side": "right"
+    },
+    {
+      "num": "11",
+      "name": "OUT6",
+      "etype": "open_collector",
+      "side": "right"
+    },
+    {
+      "num": "10",
+      "name": "OUT7",
+      "etype": "open_collector",
+      "side": "right"
+    },
+    {
+      "num": "9",
+      "name": "COM",
+      "etype": "power_in",
+      "side": "top"
+    },
+    {
+      "num": "8",
+      "name": "GND",
+      "etype": "power_in",
+      "side": "bottom"
+    }
+  ]
+}

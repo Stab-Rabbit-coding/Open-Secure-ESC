@@ -27,8 +27,12 @@ python3 gen_kicad_symbol.py ../specs/<PART>.json -o ..
 
 Regenerate everything: `python3 gen_kicad_symbol.py ../specs/*.json -o ..`
 
-Requires `kiutils` (`pip install kiutils`; generated and round-trip-validated
-against kiutils 1.4.8).
+Uses `kiutils` when it is installed (`pip install kiutils`; generated and round-trip-validated
+against kiutils 1.4.8). When it is not importable the generator falls back to a
+built-in S-expression emitter that writes the same file shape byte for byte
+(checked 2026-09-17 against the committed `OPTIGA_TRUST_M` and `BLM15HD182SN1D`
+symbols); validate the output with `kicad-cli sym export svg <PART>.kicad_sym` on
+such machines.
 
 ## Adding a new component (the reusable part of this workflow)
 
@@ -65,6 +69,10 @@ against kiutils 1.4.8).
 | `OPTIGA_TRUST_M.kicad_sym` | [45] | VERIFIED (full 10-pin PG-USON-10-2,-4 map, local datasheet p.17 Table 6). **Footprint deliberately blank** — no KiCad 9 standard footprint matches this 3×3 mm / 0.5 mm-pitch package; size one from p.15 Fig. 6 before layout |
 | `ADM2582E_ADM2587E.kicad_sym` | [4], [9] | VERIFIED (full 20-pin); part selection itself still "Candidate" in `docs/decision-matrix.xlsx` |
 | `ADM3055E_ADM3057E.kicad_sym` | [6], [10] | VERIFIED (full 20-pin); part selection itself still "Candidate" |
+| `DRV8874_Q1.kicad_sym` | [62], [63] | VERIFIED (full 16-pin PWP map, [63] Sec. 5, cross-checked against [62]); footprint `Open_Secure_ESC:TI_PWP0016J_…` from TI's own land-pattern sheet (`tools/gen_ti_powerpad_footprints.py`). Tier-1 brushed bridge, first used by `builds/6s/10A/BRUSHED_CAN_485_isolation/` |
+| `TPS54560B.kicad_sym` | [65] | VERIFIED (full 8-pin DDA map, [65] Sec. 5); footprint `Open_Secure_ESC:TI_DDA0008B_…` from TI's land-pattern sheet. Motor-rail buck of the 6S/10A brushed build; inductor/diode/compensation not selected by the spec |
+| `TPL7407L.kicad_sym` | [66] | VERIFIED (full 16-pin map, [66] Sec. 5); footprint is KiCad stock `Package_SO:TSSOP-16_4.4x5mm_P0.65mm` checked against the PW outline (JEDEC MO-153 IPC land, flagged per AGENTS.md Sec. 4). Brake-solenoid low-side driver |
+| `AEAT_8800_Q24.kicad_sym` | [64] | VERIFIED (full 24-pin map, [64] Pinout Description; EP = VSS not modelled as a pin); footprint is KiCad stock `Package_DFN_QFN:QFN-24-1EP_5x5mm_P0.65mm_EP3.25x3.25mm` checked against [64] Fig. 16 dimensions; Broadcom's own land pattern (Fig. 17, raster) NOT verified — TODO.md 18.5. Off-board sensor daughter part |
 | `DRV8353S.kicad_sym` | [21] | VERIFIED (full 40-pin, RTA/WQFN package; local datasheet). **2026-08-15: pin 41 `PAD` added** for the exposed thermal pad, tied to GND — without it the footprint's pad 41 imported with no net, i.e. an isolated copper island under the power stage. The GND assignment is an engineering default, not a datasheet value. Footprint now `Open_Secure_ESC:TI_RTA0040B_WQFN-40_6x6mm_P0.5mm_EP4.15x4.15mm` |
 | `INA240.kicad_sym` | [22] | VERIFIED (full 8-pin, D/SOIC-8 package; local datasheet) |
 | `IRFB4110PBF.kicad_sym` | [20] | Standard TO-220AB G/D/S pinout convention; ratings VERIFIED (local datasheet) |
