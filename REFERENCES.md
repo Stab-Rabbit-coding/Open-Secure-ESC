@@ -2307,7 +2307,16 @@ Configuration and Functions," Figure 5-1 — the 16-pin map is identical,
 pin for pin, to [62] §5 (verified 2026-09-17 by reading both tables).
 §6.3 — IOUT peak 0–6 A. §6.5 — RDS(on)_HS / RDS(on)_LS, AIPROPI 450 µA/A,
 VUVLO, IOCP 6 A min / 10 A typ, tRETRY 2 ms. §7.3.2 / §7.3.3.1 / §7.3.3.2 /
-§7.3.4.1–.5 carry the same numbering and content as [62]. Selected as the
+§7.3.4.1–.5 carry the same section numbering and content as [62]; the
+TABLES are numbered per section in this revision — Table 7-1 "Recommended
+External Components" (CVCP 100 nF 16 V VCP–VM, CFLY 22 nF VM-rated CPH–CPL,
+CVM1 0.1 µF, RnFAULT pull-up IOD ≤ 5 mA, RIMODE / RPMODE / RIPROPI per
+§7.3.x), Table 7-2 "PMODE Functions", Table 7-3 "PH/EN Control Mode",
+Table 7-6 "IMODE Functions" (level 3 = RIMODE 62 kΩ to GND: cycle-by-cycle
+chopping, outputs latched off, nFAULT reports chopping and overcurrent),
+Table 7-7 "Fault Condition Summary" — where [62] numbers the same tables
+Table 1 / 2 / 3 / 6 / 7. Equation 3 (§7.3.3.2): ITRIP × AIPROPI = VVREF /
+RIPROPI. Selected as the
 **orderable part** for the nacelle-tilt build so the bridge shares the
 project MCU's automotive qualification ([44]); every figure the build
 relies on is present in both documents.
