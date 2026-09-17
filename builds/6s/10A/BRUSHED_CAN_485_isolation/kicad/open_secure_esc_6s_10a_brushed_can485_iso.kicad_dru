@@ -1,0 +1,38 @@
+(version 1)
+
+# Custom design rules for the 6S / 10 A / BRUSHED / CAN-FD+RS-485 / Isolation
+# build (Serenity-UAV nacelle-tilt controller).
+#
+# Authored by Claude Opus 5 (Anthropic), 2026-09-17, under the direction of
+# Steve Griffing, PE(CSE), CISSP-ISSEP, CPP. AI-generated. Carried from the
+# 6S/50A build's .kicad_dru (2026-08-19 routing pass) with the rules that
+# were specific to that board's FET/phase geometry removed.
+#
+# ONE-LINE CONDITIONS ONLY. KiCad's rule parser silently ignores a rule
+# whose condition string is split across lines (see the 50A build's file for
+# the negative control that proved it). Keep every condition on one line.
+#
+# The isolation-tier requirement is the same as on the 50A build: 7.5 mm is
+# the minimum external air gap AND creepage, input to output terminals, from
+# REFERENCES.md [9] Table 6 (ADM2582E/ADM2587E; the ADM3057E [10] needs
+# less). The barrier is held geometrically at layout -- copper of the
+# primary side never crosses the isolated band -- and this rule is the
+# machine check that no via defeats it.
+
+(rule "power_conductor_spacing"
+    (constraint clearance (min 0.4mm))
+    (condition "A.NetClass == 'Power' && B.NetClass == 'Power' && A.Type != 'Pad' && B.Type != 'Pad'"))
+
+(rule "motor_conductor_spacing"
+    (constraint clearance (min 0.4mm))
+    (condition "A.NetClass == 'Motor' && A.Type != 'Pad' && B.Type != 'Pad'"))
+
+(rule "sense_conductor_spacing"
+    (constraint clearance (min 0.3mm))
+    (condition "A.NetClass == 'Sense' && A.Type != 'Pad' && B.Type != 'Pad'"))
+
+# NEGATIVE CONTROL (re-run after any edit, see the 50A build's file):
+#   a board with a via inside the isolated band must report this rule.
+(rule "isolation_barrier_no_via_near_isolated"
+    (constraint clearance (min 7.5mm))
+    (condition "A.NetClass == 'Isolated' && B.Type == 'Via'"))
