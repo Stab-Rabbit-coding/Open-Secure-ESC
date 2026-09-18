@@ -64,7 +64,7 @@ detail belongs in design docs, not here.
 - [~] 5.1 Gate driver + FET selection per amperage tier (10/20/30/40/50/80/120 A) — maintain candidate list; verify datasheets for final BOM lines (Cn).
 - [~] 5.2 Voltage tier variants (2S/4S/6S/8S/12S) — component derating table; verify cell choices (Cn).
 - [~] 5.3 Current sensing (shunt/hall) selection + citation — verify across tiers; INA240/WSLP candidates remain.
-- [ ] 5.4 Brushed-ESC power-stage variant: add H-bridge / half-bridge design task, BOM candidate(s), protections (reverse current, flyback diodes, current sensing placement), and interaction with control firmware. See `docs/design-brushed-esc-variant.md`. Mark part-selection claims UNVERIFIED until datasheets cited (Cn).
+- [~] 5.4 **First instance built 2026-09-17** — `builds/6s/10A/BRUSHED_CAN_485_isolation/` (Tier-1 DRV8874-Q1 [63] integrated bridge, IPROPI current sense, brake driver; see §18). Remaining: Tier-2/3 discrete-FET brushed stages. Original text: Brushed-ESC power-stage variant: add H-bridge / half-bridge design task, BOM candidate(s), protections (reverse current, flyback diodes, current sensing placement), and interaction with control firmware. See `docs/design-brushed-esc-variant.md`. Mark part-selection claims UNVERIFIED until datasheets cited (Cn).
 
 ## 6. Hardware — Protocol Interfaces
 
@@ -99,7 +99,7 @@ detail belongs in design docs, not here.
 - [ ] 8.4 Protocol drivers (per §6)
 - [ ] 8.5 Secure-boot / trust-chain firmware integration (CSEc + Trust M)
 - [ ] 8.6 Fault handling (overcurrent/thermal/comm-loss)
-- [ ] 8.7 Brushed-ESC firmware variant: H-bridge control, commutation strategy, regen handling, and safety limits. See `docs/design-brushed-esc-variant.md`.
+- [ ] 8.7 Brushed-ESC firmware variant: H-bridge control, commutation strategy, regen handling, and safety limits. See `docs/design-brushed-esc-variant.md`. **2026-09-17:** the first brushed build's firmware requirements (cascade, brake sequencing, nFAULT-as-brake-engage, rail-droop rule, jam detection, trip input, per-side sense, brake-release authorization with asymmetric MAC fail policy) are recorded in `builds/6s/10A/BRUSHED_CAN_485_isolation/README.md` "Firmware requirements" — implement against that list.
 - [ ] 8.8 Motor-speed sensor drivers and abstractions (common API): Hall (edge interrupts + debounce), quadrature decoder (hardware timer or ISR fallback), analog tachometer (ADC sampling + filtering). Include failure modes and fallback behavior per safety reqs (2.2).
 - [ ] 8.9 Sensor fusion + control use-cases: map sensor input selection to control loop modes (sensorless fallback → sensor-based closed-loop), calibrations, and per-build configuration stored in NVM.
 
@@ -160,6 +160,13 @@ detail belongs in design docs, not here.
         shutdown primitive, i.e. the security control becomes the attack.
         Decide fail-operational vs fail-safe and over what window of
         consecutive failures. See `docs/secure-element-architecture.md` O-04.
+    - [x] 12.3.a.i **Resolved for the 6S/10A brushed build only (2026-09-17):**
+          fail-safe = brake engaged, motor coasting; fail-operational applies
+          only to a MAC failure on a position frame (hold the last valid
+          command, never engage mid-manoeuvre); a MAC failure on a
+          brake-release command leaves the brake engaged. Recorded in
+          `builds/6s/10A/BRUSHED_CAN_485_isolation/README.md` (fail-state
+          table). The fleet-wide question above stays open.
   - [ ] 12.3.b **(High)** Specify an anti-replay freshness scheme. AES-128
         CMAC authenticates content, not recency; without a freshness value a
         recorded throttle command replays as valid. The Trust M's 4 monotonic
@@ -1592,9 +1599,13 @@ detail belongs in design docs, not here.
       the brushed-DC gate driver, all three sensored shaft-sensor options,
       and SBus/DBus. `unresolved_cells()` exists so a build script refuses
       them rather than emitting a BOM line.
-  - [ ] 12.6.a Source an H-bridge gate driver for the brushed row, or vet
-        the noted option of using two of a 3-phase driver's three
-        half-bridges.
+  - [x] 12.6.a **CLOSED 2026-09-17** — the brushed row is resolved to the TI
+        DRV8874-Q1 integrated H-bridge [63] (non-Q1 twin [62]), datasheet
+        held locally, pin map VERIFIED (`symbols/specs/DRV8874_Q1.json`);
+        shunt qty 0 (IPROPI mirror). Applied by
+        `docs/tools/add_holding_brake_axis.py`; `decision_matrix_to_json.py
+        --check` passes. The two-half-bridges-of-a-DRV8353S option was not
+        needed for Tier 1.
   - [ ] 12.6.b Source a resolver-to-digital converter for the resolver row.
   - [ ] 12.6.c Verify a Hall-sensor part (TI DRV5013 is carried from the
         Control sheet as a candidate only).
@@ -2244,3 +2255,74 @@ flat board — estimated 24 x 105–115 mm against the current 32.00 x 76.10 mm.
 True curved rigid FR-4 does not exist; the laminate is pressed flat, so
 "curved" means faceted, whether the facets are joined by flex hinges or are
 separate boards with an interconnect.
+
+## 17. Holding Brake Axis (added 2026-09-17)
+
+**Goal.** Record the holding-brake output as a build axis with a Fail-state
+column, because a spring-applied brake's fail behaviour is a safety property
+of the build, not a part number. First instance: §18.
+
+- [x] 17.1 Holding Brake sheet added to `docs/decision-matrix.xlsx` by
+      `docs/tools/add_holding_brake_axis.py` (rows `None` /
+      `Low-side solenoid driver, spring-applied`; Fail-state column;
+      TPL7407L [66] as the driver); Legend updated; JSON re-exported and
+      `decision_matrix_to_json.py --check` passes; root `README.md` Build
+      Options lists the axis.
+- [x] 17.2 Same script resolves the Motor sheet's Brushed (DC) row (12.6.a)
+      and adds the `Magnetic absolute (SPI/SSI)` Shaft Sensor row
+      (AEAT-8800-Q24 [64]); the Amperage sheet carries the brushed override
+      note (bridge row overrides its FET/driver/shunt/CSA columns).
+- [ ] 17.3 Add the axis to the build-skill parameter space (§14) when that
+      skill is written; `unresolved_cells()` already refuses nothing on the
+      driver row (the solenoid itself is a host-side part outside the axis).
+
+**Sequencing.** Done except 17.3, which waits on §14.
+
+## 18. Build — 6S / 10A / BRUSHED / CAN-FD+RS-485 / Isolation (Serenity nacelle tilt)
+
+**Goal.** The Serenity-UAV nacelle-tilt controller as a build instance of
+this platform, replacing a proposed LibreServo_v4 variant (Serenity-UAV
+`docs/plans/2026-09-17-001-feat-tilt-controller-open-secure-esc-build-plan.md`).
+State on 2026-09-17: **schematic + BOM readiness** — ERC 0 errors / 0
+warnings, netlist verified, no PCB.
+
+- [x] 18.1 Datasheets and citations: DRV8874 [62], DRV8874-Q1 [63],
+      AEAT-8800-Q24 [64], TPS54560B [65], TPL7407L [66] held locally;
+      `ti.com/lit` fetches succeed again (1.13).
+- [x] 18.2 Symbols and footprints: `DRV8874_Q1`, `TPS54560B`, `TPL7407L`,
+      `AEAT_8800_Q24`, `MSPM0G3518_Q1_RHB_TILT` specs (all pin maps
+      VERIFIED); TI PWP0016J and DDA0008B footprints from TI's own land
+      patterns (`symbols/tools/gen_ti_powerpad_footprints.py`);
+      `gen_kicad_symbol.py` gains a kiutils-free emitter.
+- [ ] 18.3 **(High) Complete the BOM values and the unselected parts** —
+      buck inductors L1/L2 and catch diodes D1/D2 (≤ 4 mm height on the
+      web-facing side; primary datasheets required), buck design values per
+      [65] §8.2 (UVLO, RT, FB, compensation), ITRIP / RIPROPI / VREF against
+      the 20D's 2.9 A stall ([63] Eq. 3), connector part numbers J1–J8
+      against the Serenity harness spec. Every line reads `UNVERIFIED` or
+      `pending` in the build README until then.
+- [ ] 18.4 **(High) Country of origin** for DRV8874-Q1, TPS54560B, TPL7407L
+      and AEAT-8800-Q24 — fab and assembly sites are not in any datasheet;
+      obtain vendor COO statements or distributor COO documents
+      (`docs/brushed-component-sourcing-verification.md` §5).
+- [ ] 18.5 AEAT-8800-Q24 land pattern: verify the KiCad stock QFN-24 footprint
+      against Broadcom's Figure 17 (raster; numbers not extractable by
+      pdftotext — read the rendered page).
+- [ ] 18.6 **PCB layout** inside the 42.9 × 36.5 mm host envelope: isolated
+      rows on the long axis (`isolation_envelope.py` passes at 36.5 mm with
+      a 7 mm widest part), 4 mm component height on one face and a bare
+      back face, connectors on the aft/inboard edges only, thermal vias
+      under the PWP pad (~2 W at stall), conductor sizing for 3 A
+      (`conductor_sizing.py`; IPC-2152 [46] still unread), DRC clean at
+      `--severity-error` with the `.kicad_dru` via rule and its negative
+      control; then a human-arranged view of the label-wired schematic.
+- [ ] 18.7 Firmware per the build README's "Firmware requirements" (see 8.7
+      and 12.3.a.i); the brake-release command class and the AES-CMAC path
+      depend on 13.1.e.
+- [ ] 18.8 Bench: the Serenity-side items BRK-4 (solenoid, hold-in voltage),
+      BRK-5 (hold / release under load) and BRK-6 (engage into motion at
+      max slew) are owned by Serenity-UAV `airframe/fuselage-mid/WBS.md`;
+      this build's acceptance references them.
+
+**Sequencing.** 18.3 → 18.4 (parallel) → 18.6 → gerbers; 18.7 independent
+after 13.1.e; 18.5 any time.

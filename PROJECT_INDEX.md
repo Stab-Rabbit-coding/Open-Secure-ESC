@@ -13,7 +13,7 @@ Created 2026-08-15 during the `builds/6s/50A/CAN_485_faraday` layout pass
 Open-Secure-ESC/
 ├── AGENTS.md                    binding rules for every contributor, human or AI
 ├── README.md                    project overview and the build-axis matrix
-├── REFERENCES.md                IEEE-format bibliography, [1]..[46] — the citation authority
+├── REFERENCES.md                IEEE-format bibliography, [1]..[66] — the citation authority
 ├── TODO.md                      Work Breakdown Structure; every open item lives here
 ├── PROJECT_INDEX.md             this file
 ├── SECURITY.md                  vulnerability reporting
@@ -45,6 +45,7 @@ Open-Secure-ESC/
 | `tools/decision_matrix_to_json.py` | Exports the workbook to JSON; `--check` fails if the JSON is stale. |
 | `tools/strip_width.py` | Sagitta/chord calculator: how wide a flat board fits inside a curved host, both directions, plus facet count for an arc. Makes the width↔length coupling explicit. |
 | `tools/hinge_placement.py` | Where a faceted board may fold: free corridors along the fold axis, what blocks a proposed hinge, per-panel sagitta/arc/bend angle, and `--optimize` to rank folds/cuts by Power-netclass crossings, isolated crossings, conductor count and parts that must move. Also checks the two constraints faceting imposes on placement: no rigid shielding can may straddle a joint, and a panel holding both sides of an isolation barrier must still meet the 31.86 mm from `isolation_envelope.py`. |
+| `tools/add_holding_brake_axis.py` | Adds the Holding Brake axis sheet (None / low-side solenoid driver, with a Fail-state column), resolves the Motor sheet's Brushed (DC) row to the DRV8874-Q1 [63], adds the magnetic-absolute Shaft Sensor row (AEAT-8800-Q24 [64]) and the Amperage brushed-override note. Idempotent, backs up first. |
 | `tools/add_form_factor_sheet.py` | Adds the Form Factor axis sheet (Flat / Faceted rigid-flex / Faceted separate boards) with a machine-readable geometry preamble. Recomputes its own reference numbers so the sheet cannot drift from `strip_width.py`. |
 | `tools/add_wire_egress_sheet.py` | Adds the Wire Egress axis sheet (Opposite-end / Same-end opposite faces). Idempotent; backs up to a timestamped file so the existing `.xlsx.bak` is not clobbered. |
 | `solutions/` | Documented learnings, organized by category with YAML frontmatter (`module`, `tags`, `problem_type`). |
@@ -54,7 +55,7 @@ Open-Secure-ESC/
 | `security-mcu-comparison.md` | Eight-candidate survey of security MCUs; the document the MCU swap overturns. |
 | `HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md` | Plan and verified facts for the S32K144 → MSPM0G3518-Q1 swap (`TODO.md` §13). |
 | `cern-ohl-p-v2-howto-guide.pdf` | Licence guidance. |
-| `datasheets/` | 38 primary PDFs. These are the sources `REFERENCES.md` marks `VERIFIED`; entries without a local copy here are secondary-sourced only. |
+| `datasheets/` | 62 primary PDFs (five added 2026-09-17 for the brushed build: DRV8874, DRV8874-Q1, TPS54560B, TPL7407L, AEAT-8800-Q24). These are the sources `REFERENCES.md` marks `VERIFIED`; entries without a local copy here are secondary-sourced only. |
 
 ## symbols/ — shared across all builds
 
@@ -67,9 +68,29 @@ Open-Secure-ESC/
 | `Open_Secure_ESC_Generic.kicad_sym` | Generic R / C / C_Polarized / Conn_01x02-04 / PWR_FLAG authored by `genlib.py`. This repo's own parts, **not** KiCad's `Device:`/`Connector_Generic:`/`power:` symbols — the pin geometry differs. |
 | `footprints/Open_Secure_ESC.pretty/` | Land patterns for packages KiCad 9.0 does not ship: OPTIGA `PG-USON-10-2,-4`, TI `DGS0028A`, TI `RTA0040B` (DRV8353S), Würth `WE-SHC 3670375` frame. |
 | `footprints/Open_Secure_ESC.3dshapes/` | STEP models for the above. |
-| `tools/gen_kicad_symbol.py` | JSON spec → `.kicad_sym`. |
+| `tools/gen_kicad_symbol.py` | JSON spec → `.kicad_sym`. Uses kiutils when present; otherwise a built-in emitter writes the same file shape byte for byte. |
+| `DRV8874_Q1`, `TPS54560B`, `TPL7407L`, `AEAT_8800_Q24`, `MSPM0G3518_Q1_RHB_TILT` (`.kicad_sym` + `specs/*.json`) | Parts of the 6S/10A brushed build, REFERENCES.md [62]–[66] and [44]; all pin maps VERIFIED. `MSPM0G3518_Q1_RHB_TILT` is the RHB MCU with all 32 pins named by their tilt-build role. |
+| `tools/gen_ti_powerpad_footprints.py` | TI PWP0016J (HTSSOP-16, DRV8874-Q1) and DDA0008B (HSOIC-8, TPS54560B) footprints from TI's own EXAMPLE BOARD LAYOUT sheets, dimension trace in the docstring. |
 | `tools/gen_*_footprint.py` | One generator per hand-authored footprint: DRV8353S `RTA0040B`, Toshiba `2-5W1A`, Würth `WE-SHC 3670209`/`3670375`, and the SMD solder-pad strips. Each docstring names the drawing every dimension came from and flags which numbers are derivations rather than manufacturer values. |
 | `tools/gen_optiga_uson10_3dmodel.py` | STEP model generator. |
+
+## builds/6s/10A/BRUSHED_CAN_485_isolation/
+
+The Serenity-UAV nacelle-tilt controller: 6S, 10 A tier, **brushed** (Tier-1
+DRV8874-Q1 integrated bridge), remote magnetic absolute encoder, holding-brake
+solenoid driver, CAN-FD **and** RS-485, Isolation EMI tier. First brushed,
+first 10 A and first Holding Brake instance. State: schematic + BOM readiness
+(ERC 0/0), no PCB yet — `TODO.md` §18.
+
+| Path | What it is |
+| --- | --- |
+| `README.md` | Axis table, BOM with per-line citation and status, Serenity host constraints (42.9 × 36.5 mm envelope, 4 mm height, feeds, sense), fail-state table, firmware requirements, open items. |
+| `kicad/README.md` | Schematic status, how the label-wired sheet is built, net classes, library bindings, isolation-envelope result. |
+| `kicad/*.kicad_sch` | Single-sheet schematic, A0, generated by `kicad/tools/gen_schematic.py` (`--check` proves the committed sheet). |
+| `kicad/*.kicad_pro`, `*.kicad_dru` | Net classes Power / Motor / Isolated / Sense; conductor-spacing and isolation-barrier via rules. |
+| `kicad/sym-lib-table`, `fp-lib-table` | Project-relative library tables pointing at `symbols/`. |
+| `kicad/tools/gen_schematic.py` | kiutils-free schematic generator: global label on every pin end, no-connect on every unused pin. |
+| `gerbers/README.md` | Empty by design; the gates before layout. |
 
 ## builds/6s/50A/CAN_485_faraday_faceted/
 
@@ -115,7 +136,7 @@ inner GND planes. `TODO.md` §15.
 
 ## builds/6s/50A/CAN_485_faraday/
 
-The only build instantiated so far: 6S, 50 A, CAN-FD **and** RS-485
+The first build instantiated (2026-08): 6S, 50 A, CAN-FD **and** RS-485
 concurrently, Faraday EMI tier.
 
 | Path | What it is |
