@@ -1137,6 +1137,47 @@ def build() -> str:
         out.append(libs[key][0])
     out.append("  )")
 
+    def instance(ref, libname, name, value, fp, x, y, pins, note, in_bom=True):
+        """One placed symbol; property text sits above the body, hidden fields at the origin."""
+        vis = "yes" if in_bom else "no"
+        hide_ref = "" if in_bom else " (hide yes)"
+        block = [
+            f"  (symbol (lib_id {q(libname + ':' + name)}) (at {f(x)} {f(y)} 0) (unit 1)",
+            f"    (exclude_from_sim no) (in_bom {vis}) (on_board {vis}) (dnp no)",
+            f"    (uuid {uid(ref)})",
+            (
+                f'    (property "Reference" {q(ref)} (at {f(x)} {f(y - 20)} 0) '
+                f"(effects (font (size 1.27 1.27)){hide_ref}))"
+            ),
+            f'    (property "Value" {q(value)} (at {f(x)} {f(y - 17.5)} 0) (effects (font (size 1.27 1.27))))',
+            f'    (property "Footprint" {q(fp)} (at {f(x)} {f(y)} 0) (effects (font (size 1.27 1.27)) (hide yes)))',
+            f'    (property "Datasheet" "" (at {f(x)} {f(y)} 0) (effects (font (size 1.27 1.27)) (hide yes)))',
+        ]
+        if note:
+            block.append(
+                f'    (property "Note" {q(note)} (at {f(x)} {f(y + 20)} 0) (effects (font (size 1.27 1.27)) (hide yes)))'
+            )
+        block += [
+            f"    (pin {q(num)} (uuid {uid(ref, 'pin', num)}))" for num, *_ in pins
+        ]
+        block += [
+            "    (instances",
+            f"      (project {q(PROJECT)}",
+            f"        (path {q('/' + uid('sheet'))} (reference {q(ref)}) (unit 1))",
+            "      )",
+            "    )",
+            "  )",
+        ]
+        return block
+
+    def label(net, sx, sy, rot, *key):
+        return [
+            f"  (global_label {q(net)} (shape passive) (at {f(sx)} {f(sy)} {rot}) (fields_autoplaced yes)",
+            "    (effects (font (size 1.27 1.27)) (justify left))",
+            f"    (uuid {uid(*key)})",
+            "  )",
+        ]
+
     for ref, libname, name, value, fp, (gx, gy), nets, note in PARTS:
         x, y = gx * GRID, gy * GRID  # positions are authored in 1.27 mm grid units
         _, pins = libs[f"{libname}:{name}"]
@@ -1146,28 +1187,8 @@ def build() -> str:
             raise SystemExit(
                 f"{ref}: pins {sorted(actual - declared)} unmapped / {sorted(declared - actual)} unknown"
             )
-        u = uid(ref)
-        out += [
-            f"  (symbol (lib_id {q(libname + ':' + name)}) (at {f(x)} {f(y)} 0) (unit 1)",
-            "    (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no)",
-            f"    (uuid {u})",
-            f'    (property "Reference" {q(ref)} (at {f(x)} {f(y - 20)} 0) (effects (font (size 1.27 1.27))))',
-            f'    (property "Value" {q(value)} (at {f(x)} {f(y - 17.5)} 0) (effects (font (size 1.27 1.27))))',
-            f'    (property "Footprint" {q(fp)} (at {f(x)} {f(y)} 0) (effects (font (size 1.27 1.27)) (hide yes)))',
-            f'    (property "Datasheet" "" (at {f(x)} {f(y)} 0) (effects (font (size 1.27 1.27)) (hide yes)))',
-            f'    (property "Note" {q(note)} (at {f(x)} {f(y + 20)} 0) (effects (font (size 1.27 1.27)) (hide yes)))',
-        ]
-        for num, _px, _py, _ang, _et in pins:
-            out.append(f"    (pin {q(num)} (uuid {uid(ref, 'pin', num)}))")
-        out += [
-            "    (instances",
-            f"      (project {q(PROJECT)}",
-            f"        (path {q('/' + uid('sheet'))} (reference {q(ref)}) (unit 1))",
-            "      )",
-            "    )",
-            "  )",
-        ]
-        # Labels / no-connects at the pin connection points.
+        out += instance(ref, libname, name, value, fp, x, y, pins, note)
+        # Labels / no-connects at the pin connection points: sheet = instance + (px, -py).
         for num, px, py, ang, _et in pins:
             sx, sy = x + px, y - py
             net = nets[num]
@@ -1176,48 +1197,21 @@ def build() -> str:
                     f"  (no_connect (at {f(sx)} {f(sy)}) (uuid {uid(ref, 'nc', num)}))"
                 )
             else:
-                # Label text points away from the body: pin angle 0 = pin
-                # points left (label to the left, rotation 180), 180 = right.
+                # Label text points away from the body: pin angle 0 = pin points
+                # left (label rotation 180), 180 = right, 90 = down, 270 = up.
                 rot = {0: 180, 180: 0, 90: 270, 270: 90}[ang]
-                out += [
-                    f"  (global_label {q(net)} (shape passive) (at {f(sx)} {f(sy)} {rot}) (fields_autoplaced yes)",
-                    "    (effects (font (size 1.27 1.27)) (justify left))",
-                    f"    (uuid {uid(ref, 'lbl', num)})",
-                    "  )",
-                ]
+                out += label(net, sx, sy, rot, ref, "lbl", num)
 
     # Power flags: a PWR_FLAG symbol whose single pin sits on a labelled point.
     _, fpins = libs[f"{GEN}:PWR_FLAG"]
     for i, net in enumerate(FLAGS):
         x, y = (40 + 20 * i) * GRID, 330 * GRID
         ref = f"#FLG{i + 1:02d}"
-        out += [
-            f"  (symbol (lib_id {q(GEN + ':PWR_FLAG')}) (at {f(x)} {f(y)} 0) (unit 1)",
-            "    (exclude_from_sim no) (in_bom no) (on_board no) (dnp no)",
-            f"    (uuid {uid(ref)})",
-            f'    (property "Reference" {q(ref)} (at {f(x)} {f(y - 8)} 0) (effects (font (size 1.27 1.27)) (hide yes)))',
-            f'    (property "Value" "PWR_FLAG" (at {f(x)} {f(y - 5)} 0) (effects (font (size 1.27 1.27))))',
-            f'    (property "Footprint" "" (at {f(x)} {f(y)} 0) (effects (font (size 1.27 1.27)) (hide yes)))',
-            f'    (property "Datasheet" "" (at {f(x)} {f(y)} 0) (effects (font (size 1.27 1.27)) (hide yes)))',
-        ]
-        for num, _px, _py, _ang, _et in fpins:
-            out.append(f"    (pin {q(num)} (uuid {uid(ref, 'pin', num)}))")
-        out += [
-            "    (instances",
-            f"      (project {q(PROJECT)}",
-            f"        (path {q('/' + uid('sheet'))} (reference {q(ref)}) (unit 1))",
-            "      )",
-            "    )",
-            "  )",
-        ]
+        out += instance(
+            ref, GEN, "PWR_FLAG", "PWR_FLAG", "", x, y, fpins, "", in_bom=False
+        )
         num, px, py, ang, _et = fpins[0]
-        sx, sy = x + px, y - py
-        out += [
-            f"  (global_label {q(net)} (shape passive) (at {f(sx)} {f(sy)} 0) (fields_autoplaced yes)",
-            "    (effects (font (size 1.27 1.27)) (justify left))",
-            f"    (uuid {uid(ref, 'lbl')})",
-            "  )",
-        ]
+        out += label(net, x + px, y - py, 0, ref, "lbl")
 
     out += [
         "  (sheet_instances",
