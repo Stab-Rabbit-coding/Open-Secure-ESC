@@ -12,7 +12,6 @@
 > and per low-side FET** (≈ 200 mΩ HS+LS, 240 mΩ worst case). Everything else in §1–§4
 > stays as originally drafted until re-verified.
 
-
 This document defines a scalable, OSHWA-certifiable (Open Source Hardware Association) Electronic Speed Controller (ESC) architecture designed for brushed DC motors. The framework scales across operating voltages from **2S to 12S LiPo (8.4V – 50.4V)** and continuous current loads from **10A to 120A+**.
 To avoid re-engineering core system logic, all framework variants share a unified digital and security architecture:
 
