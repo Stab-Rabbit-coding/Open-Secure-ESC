@@ -121,7 +121,7 @@ This section applies to all documents in this repository, human- and AI-authored
 ### Mandatory word usage
 
 | Word | Meaning | Example |
-|---|---|---|
+| --- | --- | --- |
 | **shall** | The action is prescribed as mandatory. | "You shall obey the law." |
 | **will** | One thing follows another; no mandatory action is demanded. | "Friday will come after Thursday." |
 | **should** | Preferred but not mandatory. | "You may do it that way, but you should do it this way." |
