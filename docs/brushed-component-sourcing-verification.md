@@ -1,6 +1,6 @@
 # Active Components Compliance & Origin Analysis
 
-To ensure compliance with defense procurement or supply chain security standards (such as **NDAA Section 889**, **DFARS 252.225-7007**, or **ITAR / EAR compliance**), silicon must not originate from restricted entity lists or covered regions (primarily China and Russia).
+To ensure compliance with defense procurement or supply chain security standards (such as **NDAA Section 889**, **DFARS 252.225-7007**, or **ITAR / EAR compliance**), silicon shall not originate from restricted entity lists or covered regions (primarily China and Russia).
 Below is the verification breakdown for the active components across all tiers:
 
 ## **1\. Core Microcontroller & Security Root of Trust**

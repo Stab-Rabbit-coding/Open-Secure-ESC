@@ -21,7 +21,7 @@ Electrical architecture (high level)
 Power-stage components & protection (to be VERIFIED)
 
 - H-bridge MOSFETs or integrated H-bridge ICs sized per amperage tier. Tier 1 (2S–6S, 10–20 A) is now the TI DRV8874-Q1 [63] (datasheet local, VERIFIED); Tier-2/3 discrete-FET candidates remain UNVERIFIED until their datasheets are added (see `docs/OpenSecureESC-Brushed-Specifications.md` §1).
-- Freewheeling / flyback diodes or synchronous MOSFET conduction strategy: design must handle regenerative currents; include regenerative path to bus or clamp/regulator and report to firmware.
+- Freewheeling / flyback diodes or synchronous MOSFET conduction strategy: the design shall handle regenerative currents; include regenerative path to bus or clamp/regulator and report to firmware.
 - RC snubbers, TVS for transients, and precharge/soft-start for large motor inductance loads.
 - Current sensing: shunt + amplifier or integrated current-sense filter placement to provide overcurrent detection and closed-loop current limit.
 
@@ -49,6 +49,11 @@ Firmware implications
 
 Safety & failure modes
 
+> **CAUTION:** H-bridge cross-conduction (shoot-through) drives simultaneous high-side/low-side
+> conduction, which can destroy the power MOSFETs within microseconds and presents a fire risk
+> from the resulting overcurrent. Cross-conduction detection shall hard-disable PWM immediately
+> on assertion; do not rely on current-sense overthreshold handling alone to catch this case.
+
 - Define safe-state on faults (fail-safe vs fail-operational decision required; reference to `TODO.md` 12.3 and project safety requirements).
 - On MOSFET cross-conduction detection: hard disable PWM and assert fault.
 - On current-sense overthreshold: limit duty cycle, then trip if persists.
@@ -69,6 +74,6 @@ Testing & verification
 
 References & verification
 
-- All H-bridge device claims and power-handling assertions must carry primary datasheet citations in `REFERENCES.md` before merging. Any design value not verified is to be annotated `UNVERIFIED — needs primary source`.
+- All H-bridge device claims and power-handling assertions shall carry primary datasheet citations in `REFERENCES.md` before merging. Any design value not verified shall be annotated `UNVERIFIED — needs primary source`.
 
 Authored-by: repo maintainers; see AGENTS.md for contributor rules.
