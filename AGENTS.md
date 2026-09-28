@@ -99,6 +99,37 @@ requirement forces).
 New learnings are added there as work produces them, so the store is expected
 to grow rather than stay fixed.
 
+## 4a. Warnings, Cautions, Notes, and Wording
+
+Callout severity and requirement-verb usage follow CNAF M-3710.7 §1.5–1.6
+(NATOPS General Flight and Operating Instructions Manual) **[67]**:
+
+- **WARNING** — a procedure or condition that may result in injury, death,
+  or destruction of hardware if not carefully observed or followed. Reserve
+  for genuine safety/asset-loss risk (e.g. a charged bus capacitor, live
+  mains, a part that can fail catastrophically under load).
+- **CAUTION** — a procedure or condition that may result in equipment
+  damage (MOSFET, MCU, isolation barrier) with no injury or asset-loss risk.
+- **Note** — information that must be emphasized but carries no
+  WARNING/CAUTION-level risk.
+
+Never downgrade a WARNING-level risk into a Note, and never use an ad hoc
+label ("IMPORTANT:", "ATTENTION:") in place of one of these three.
+
+Requirement wording, same source **[67]**:
+
+- **Shall** — mandatory.
+- **Should** — recommended, not mandatory.
+- **May** / **need not** — optional.
+- **Will** — futurity only; never a degree of requirement. Do not write
+  "will" where "shall" is meant.
+
+**Active vs. passive voice (project addition, not in CNAF M-3710.7):** write
+procedural text in the active voice ("Torque the fastener to spec," not
+"The fastener shall be torqued to spec") except where the shall/should/
+may/will wording above requires the passive construction to state the
+requirement itself.
+
 ## 5. Review Checklist (apply before merging any change)
 
 - [ ] Every new technical claim traces to an authoritative source
