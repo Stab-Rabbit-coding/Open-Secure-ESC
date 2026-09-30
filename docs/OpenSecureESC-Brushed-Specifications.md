@@ -99,7 +99,7 @@ AIR COOLED (OPEN FRAME / FINNED)          SEALED / MARINE (CONDUCTIVE STRIP)
 
 ## 4. Supply Chain Compliance & Component Origin Verification
 
-To satisfy supply chain standards (e.g., NDAA Section 889, DFARS 252.225-7007, EAR/ITAR rules), active components must not originate from restricted entity lists or covered regions (primarily China and Russia).
+To satisfy supply chain standards (e.g., NDAA Section 889, DFARS 252.225-7007, EAR/ITAR rules), active components shall not originate from restricted entity lists or covered regions (primarily China and Russia).
 
 ### 4.1 Active Component Sourcing & Fab Compliance Matrix
 
@@ -121,7 +121,7 @@ To satisfy supply chain standards (e.g., NDAA Section 889, DFARS 252.225-7007, E
 
 1. **Driver Standardization:** The STMicroelectronics L6387E (up to 600V driver) is explicitly excluded due to backend packaging in China. All gate drivers are standardized on Texas Instruments (DRV series) and Analog Devices (LTC series) components.
 2. **Traceability:** Prior to manufacturing, production runs require a Certificate of Origin (COO) for all silicon lots from authorized distributors (e.g., Arrow, Mouser, Digi-Key).
-3. **OSHWA Certification Alignment:** All schematic, Gerber, and BOM files will publish full manufacturing part numbers (MPNs) alongside verified non-restricted distributor SKUs.
+3. **OSHWA Certification Alignment:** All schematic, Gerber, and BOM files shall publish full manufacturing part numbers (MPNs) alongside verified non-restricted distributor SKUs.
 
 ## References
 

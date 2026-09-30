@@ -82,7 +82,7 @@ such machines.
 | `WE_SHC_3671375.kicad_sym` | [15], [19] | Mechanical shield **cover** — no functional schematic pins (placeholder GND-bond pin only); dimensions VERIFIED (local datasheet); pairs with the frame below. **Intentionally has NO footprint**: the cover clips onto the frame and is not soldered, so its datasheet publishes no land pattern. Placed on schematics as BOM-only, excluded from the board |
 | `WE_SHC_3670375.kicad_sym` | [15], [19], [30] | Mechanical shield **frame** — the piece actually soldered; dimensions VERIFIED (local datasheet). Footprint `Open_Secure_ESC:Wurth_WE-SHC_3670375_Frame_29.3x37.5mm` reproduces Wurth's own Recommended Land Pattern |
 
-"UNVERIFIED PLACEHOLDER" pin maps must not be sent to fab — see each
+"UNVERIFIED PLACEHOLDER" pin maps shall not be sent to fab — see each
 `specs/*.json` `verification` field and `TODO.md` 1.10 for what would need to
 be resolved first (a working fetch path or a manually obtained primary PDF).
 
