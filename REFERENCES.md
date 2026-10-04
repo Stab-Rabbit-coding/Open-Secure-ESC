@@ -2409,4 +2409,32 @@ Cited in: `docs/decision-matrix.xlsx` (Holding Brake sheet);
 `docs/brushed-component-sourcing-verification.md`.
 Date accessed: 2026-09-17.
 
+**[67]** Würth Elektronik eiSos GmbH & Co. KG, *WE-SHC Two-piece Seamless
+Shielding Cabinet — Frame*, order code 3670110, datasheet rev. 002.000,
+2025-05-12, Waldenburg, Germany. [Online]. Available:
+https://www.we-online.com/components/products/datasheet/3670110.pdf
+Local verified copy: `docs/datasheets/3670110.pdf`, fetched directly
+2026-10-03 (MD5 760e0975c8b8e8fed8d4dfe9491aa380) and read.
+Section/page: p. 1 "Dimensions" — inner 10.4 ± 0.2 mm square, outer
+11.0 ± 0.2 mm, height 2.8 ± 0.2 mm; "Recommended Land Pattern" 12.2 ×
+12.2 mm; "Assembly with Frame: Cover (3671110), Frame (3670110)".
+**EVALUATED 2026-10-03, NOT ADOPTED** (AI evaluation by Claude Opus 5.5)
+as a smaller Faraday-tier can for the 6S/80 A builds against the Serenity-UAV
+64 mm nacelle. It saves about 220 mm² of courtyard against the WE-SHC
+3670209 frame, but its 2.8 mm height breaks the 2.0 mm outer-face cap of the
+nacelle power bay, which costs more bay length than the area saves.
+Serenity-UAV `tools/esc80_cooptimize.py`, WBS NAC-64-ESC-80A.i.
+Date accessed: 2026-10-03.
+
+**[68]** Würth Elektronik eiSos GmbH & Co. KG, *WE-SHC Two-piece Seamless
+Shielding Cabinet — Cover*, order code 3671110, datasheet rev. 002.000,
+2025-05-12, Waldenburg, Germany. [Online]. Available:
+https://www.we-online.com/components/products/datasheet/3671110.pdf
+Local verified copy: `docs/datasheets/3671110.pdf`, fetched directly
+2026-10-03 (MD5 c418519d20cf6e8e9aa2d233ba359808) and read.
+Section/page: p. 1 "Dimensions" — inner 11.0 ± 0.2 mm, outer 11.6 ± 0.2 mm,
+height 2.8 mm ref.; mates with frame [67]. Evaluated with [67]; not adopted
+for the same reason.
+Date accessed: 2026-10-03.
+
 Track resolution of these items in `TODO.md`.
