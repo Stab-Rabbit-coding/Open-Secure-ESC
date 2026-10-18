@@ -1,0 +1,9 @@
+# Pin the minimum Python the scripts must run on, instead of inheriting ruff's
+# default target (which changes between ruff releases and made CI go red when
+# ruff 0.17 started suggesting datetime.UTC, a Python 3.11+ API).
+#
+# 3.10 is the floor: several scripts already use PEP 604 unions (`X | None`) in
+# runtime-evaluated annotations, which is a TypeError on 3.9. Several scripts
+# also run inside KiCad's bundled Python (pcbnew), so do not raise this to 3.11
+# without checking the KiCad builds in use.
+target-version = "py310"
