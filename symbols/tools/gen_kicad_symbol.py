@@ -16,14 +16,27 @@ Usage:
     python3 gen_kicad_symbol.py specs/*.json -o ../   # regenerate everything
 """
 
+from __future__ import annotations
+
 import argparse
 import json
 import math
 import sys
 from pathlib import Path
 
-from kiutils.items.common import Effects, Font, Position, Property
-from kiutils.symbol import Symbol, SymbolLib, SyRect
+try:
+    from kiutils.items.common import Effects, Font, Position, Property
+    from kiutils.symbol import Symbol, SymbolLib, SyRect
+
+    HAVE_KIUTILS = True
+except ModuleNotFoundError:  # pragma: no cover - environment dependent
+    # kiutils cannot be pip-installed on every machine this repo is worked on
+    # (2026-09-17: the Serenity build host has no pip access). The plain
+    # emitter below writes the same S-expression shape kiutils produced for
+    # every committed symbol (version 20211014, generator
+    # open_secure_esc_symgen), so specs stay the single source of truth and
+    # the output is byte-comparable with the kiutils path.
+    HAVE_KIUTILS = False
 
 GRID = 2.54
 PIN_LEN = 2.54
@@ -177,6 +190,63 @@ def _make_pin(p, x, y, angle):
     )
 
 
+def _q(text: str) -> str:
+    """Quote a string for the S-expression (escape backslash and quotes)."""
+    return '"' + str(text).replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def _num(v: float) -> str:
+    """Format a coordinate the way kiutils does (Python float repr)."""
+    return repr(float(round(v, 3)))
+
+
+def build_symbol_text(spec: dict) -> str:
+    """Emit the .kicad_sym text without kiutils (same layout and shape)."""
+    name = spec["name"]
+    half_w, half_h, coords = _layout(spec["pins"])
+    font = "(effects (font (size 1.27 1.27)))"
+    font_h = "(effects (font (size 1.27 1.27)) hide)"
+    props = [
+        ("Reference", spec.get("reference", "U"), 0, (0, half_h + 2 * GRID), font),
+        ("Value", name, 1, (0, half_h + GRID), font),
+        ("Footprint", spec.get("footprint", ""), 2, (0, "0"), font_h),
+        ("Datasheet", spec.get("datasheet", ""), 3, (0, "0"), font_h),
+        ("Description", spec.get("description", ""), 4, (0, "0"), font_h),
+        ("Citation", spec.get("citation", ""), 5, (0, "0"), font_h),
+        ("Verification", spec.get("verification", ""), 6, (0, "0"), font_h),
+    ]
+    out = [
+        "(kicad_symbol_lib (version 20211014) (generator open_secure_esc_symgen)",
+        f"  (symbol {_q(name)} (pin_names (offset 1.016)) (in_bom yes) (on_board yes)",
+    ]
+    for key, value, pid, (x, y), eff in props:
+        ys = y if isinstance(y, str) else _num(y)
+        out.append(f"    (property {_q(key)} {_q(value)} (id {pid}) (at 0 {ys} 0)")
+        out.append(f"      {eff}")
+        out.append("    )")
+    out.append(f"    (symbol {_q(name + '_0_1')}")
+    out.append(
+        f"      (rectangle (start {_num(-half_w)} {_num(half_h)}) "
+        f"(end {_num(half_w)} {_num(-half_h)})"
+    )
+    out.append("        (stroke (width 0.0))")
+    out.append("        (fill (type none))")
+    out.append("      )")
+    out.append("    )")
+    out.append(f"    (symbol {_q(name + '_1_1')}")
+    for p, x, y, angle in coords:
+        out.append(
+            f"      (pin {p['etype']} line (at {_num(x)} {_num(y)} {angle}) (length {_num(PIN_LEN)})"
+        )
+        out.append(f"        (name {_q(p['name'])} {font})")
+        out.append(f"        (number {_q(str(p['num']))} {font})")
+        out.append("      )")
+    out.append("    )")
+    out.append("  )")
+    out.append(")")
+    return "\n".join(out) + "\n"
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("specs", nargs="+", help="JSON pin-spec file(s)")
@@ -190,9 +260,11 @@ def main(argv=None):
 
     for spec_path in args.specs:
         spec = json.loads(Path(spec_path).read_text())
-        lib = build_symbol(spec)
         out_path = outdir / f"{spec['name']}.kicad_sym"
-        out_path.write_text(lib.to_sexpr())
+        if HAVE_KIUTILS:
+            out_path.write_text(build_symbol(spec).to_sexpr())
+        else:
+            out_path.write_text(build_symbol_text(spec))
         print(f"wrote {out_path} ({len(spec['pins'])} pins)")
 
 

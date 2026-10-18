@@ -1,0 +1,203 @@
+{
+  "name": "MSPM0G3518_Q1_RHB_TILT",
+  "reference": "U",
+  "footprint": "Package_DFN_QFN:Texas_RHB0032E_VQFN-32-1EP_5x5mm_P0.5mm_EP3.45x3.45mm",
+  "datasheet": "docs/datasheets/mspm0g3518-q1.pdf",
+  "description": "TI MSPM0G3518-Q1 MCU, RHB/VQFN-32 (5x5 mm) package, pins named by their SIGNAL ROLE in the nacelle-tilt build builds/6s/10A/BRUSHED_CAN_485_isolation/ (brushed DRV8874-Q1 bridge, pin-brake driver, remote SSI/SPI encoder, isolated CAN-FD + RS-485, OPTIGA Trust M). Same die and package as MSPM0G3518_Q1_RHB (the 6S/50A brushless build's role-named variant); this variant carries all 32 physical pins, including the four pads (PA7, PA22, PA26, PA27) the brushless variant leaves off its symbol.",
+  "citation": "[44]",
+  "verification": "VERIFIED -- every pin number and every IOMUX function below is read directly from the local copy of [44] (SLASFA6B, revised October 2025), docs/datasheets/mspm0g3518-q1.pdf: Figure 6-6 '32-pin RHB (0.5mm) (VQFN) Package Diagram' (p.14) for the RHB pin-number -> pad map (PA0=1, PA1=2, NRST=3, VDD=4, VSS=5, PA2..PA20 = 6..24, PA21..PA27 = 25..31, VCORE=32), and Table 6-2 'Pin Attributes' (pp.15-23) read with pdftotext -layout on 2026-09-17, where each pad's function list and its per-package pin-number row (the RHB column is the first number of that row) were checked: PA3 row '7 A6 B1 9 ...' pf1 GPIO; PA4 row '8 ...' pf1 GPIO; PA7 row '11 ...' pf1 GPIO; PA8 pf5 TIMA0_C0; PA9 row '13 ...' pf1 GPIO; PA22 row '26 ...' A0_7 non-IOMUX analog; PA23 row '27 ...' A1_12; PA24 row '28 ...' A0_3; PA26 row '30 ...' pf5 TIMA_FAL0 (timer fault input) and A0_1; PA27 row '31 ...' A0_0; PA21 row '25 ...' A1_7; PA25 row '29 ...' A0_2. The UART0 (PA0/PA1/PA6), CAN0 (PA12/PA13), I2C1 (PA5/PA15), SPI1 (PA2/PA16/PA17/PA18) and SWD (PA19/PA20) assignments are carried unchanged from symbols/specs/MSPM0G3518_Q1_RHB.json, whose verification cites the same Table 6-2 pages. Signal-role map: 1=RS485_TXD (PA0, UART0_TX pf2); 2=RS485_RXD (PA1, UART0_RX pf2); 10=RS485_DE_RE (PA6, UART0_RTS pf9); 16=CAN_TX (PA12, CAN0_TX pf12); 17=CAN_RX (PA13, CAN0_RX pf12); 9=SE_I2C_SDA (PA5, I2C1_SDA pf4); 19=SE_I2C_SCL (PA15, I2C1_SCL pf4); 18=SE_RST (PA14, GPIO pf1); 23=SWDIO (PA19, SWDIO pf2); 24=SWCLK (PA20, SWCLK pf2); 11=TRIP_IN (PA7, GPIO pf1); 12=MOT_EN (PA8, TIMA0_C0 pf5 (PWM)); 13=MOT_PH (PA9, GPIO pf1); 7=MOT_nSLEEP (PA3, GPIO pf1); 30=MOT_nFAULT (PA26, TIMA_FAL0 pf5 (timer fault) / GPIO pf1); 8=BRAKE_EN (PA4, GPIO pf1); 6=ENC_SPI_CS (PA2, SPI1_CS0 pf5); 21=ENC_SPI_SCK (PA17, SPI1_SCK pf3); 20=ENC_SPI_MISO (PA16, SPI1_POCI pf3); 22=ENC_SPI_MOSI (PA18, SPI1_PICO pf3); 14=GPIO_PA10 (PA10, spare); 15=GPIO_PA11 (PA11, spare); 29=GPIO_PA25 (PA25, spare (A0_2)); 31=GPIO_PA27 (PA27, spare (A0_0)); 28=ADC_IPROPI (PA24, A0_3); 27=ADC_VM (PA23, A1_12); 26=BRAKE_SENSE (PA22, A0_7); 25=ADC_VBUS (PA21, A1_7). Pin electrical types: UART/SPI/CAN/I2C/SWD per direction; GPIO outputs -> output; TRIP_IN and MOT_nFAULT -> input (MOT_nFAULT is driven by the DRV8874-Q1's open-drain nFAULT through a pull-up; TIMA_FAL0 lets the timer kill the PWM in hardware); ADC inputs -> input; spare GPIO -> bidirectional and marked no-connect on the sheet; VDD/VSS -> power_in; VCORE -> power_out (internal LDO output, 0.47 uF tank required per [44]); NRST -> input. FIRMWARE NOTE inherited from the RHB spec: ADC reference is VDDA (internal); PA21/PA23's VREF-/VREF+ alternates are unused. The exposed pad is NOT a symbol pin (repo convention); tie it to VSS copper at layout.",
+  "pins": [
+    {
+      "num": "1",
+      "name": "RS485_TXD",
+      "etype": "output",
+      "side": "left"
+    },
+    {
+      "num": "2",
+      "name": "RS485_RXD",
+      "etype": "input",
+      "side": "left"
+    },
+    {
+      "num": "10",
+      "name": "RS485_DE_RE",
+      "etype": "output",
+      "side": "left"
+    },
+    {
+      "num": "16",
+      "name": "CAN_TX",
+      "etype": "output",
+      "side": "left"
+    },
+    {
+      "num": "17",
+      "name": "CAN_RX",
+      "etype": "input",
+      "side": "left"
+    },
+    {
+      "num": "9",
+      "name": "SE_I2C_SDA",
+      "etype": "bidirectional",
+      "side": "left"
+    },
+    {
+      "num": "19",
+      "name": "SE_I2C_SCL",
+      "etype": "bidirectional",
+      "side": "left"
+    },
+    {
+      "num": "18",
+      "name": "SE_RST",
+      "etype": "output",
+      "side": "left"
+    },
+    {
+      "num": "23",
+      "name": "SWDIO",
+      "etype": "bidirectional",
+      "side": "left"
+    },
+    {
+      "num": "24",
+      "name": "SWCLK",
+      "etype": "input",
+      "side": "left"
+    },
+    {
+      "num": "11",
+      "name": "TRIP_IN",
+      "etype": "input",
+      "side": "left"
+    },
+    {
+      "num": "12",
+      "name": "MOT_EN",
+      "etype": "output",
+      "side": "right"
+    },
+    {
+      "num": "13",
+      "name": "MOT_PH",
+      "etype": "output",
+      "side": "right"
+    },
+    {
+      "num": "7",
+      "name": "MOT_nSLEEP",
+      "etype": "output",
+      "side": "right"
+    },
+    {
+      "num": "30",
+      "name": "MOT_nFAULT",
+      "etype": "input",
+      "side": "right"
+    },
+    {
+      "num": "8",
+      "name": "BRAKE_EN",
+      "etype": "output",
+      "side": "right"
+    },
+    {
+      "num": "6",
+      "name": "ENC_SPI_CS",
+      "etype": "output",
+      "side": "right"
+    },
+    {
+      "num": "21",
+      "name": "ENC_SPI_SCK",
+      "etype": "output",
+      "side": "right"
+    },
+    {
+      "num": "20",
+      "name": "ENC_SPI_MISO",
+      "etype": "input",
+      "side": "right"
+    },
+    {
+      "num": "22",
+      "name": "ENC_SPI_MOSI",
+      "etype": "output",
+      "side": "right"
+    },
+    {
+      "num": "14",
+      "name": "GPIO_PA10",
+      "etype": "bidirectional",
+      "side": "right"
+    },
+    {
+      "num": "15",
+      "name": "GPIO_PA11",
+      "etype": "bidirectional",
+      "side": "right"
+    },
+    {
+      "num": "29",
+      "name": "GPIO_PA25",
+      "etype": "bidirectional",
+      "side": "right"
+    },
+    {
+      "num": "31",
+      "name": "GPIO_PA27",
+      "etype": "bidirectional",
+      "side": "right"
+    },
+    {
+      "num": "28",
+      "name": "ADC_IPROPI",
+      "etype": "input",
+      "side": "bottom"
+    },
+    {
+      "num": "27",
+      "name": "ADC_VM",
+      "etype": "input",
+      "side": "bottom"
+    },
+    {
+      "num": "26",
+      "name": "BRAKE_SENSE",
+      "etype": "input",
+      "side": "bottom"
+    },
+    {
+      "num": "25",
+      "name": "ADC_VBUS",
+      "etype": "input",
+      "side": "bottom"
+    },
+    {
+      "num": "4",
+      "name": "VDD",
+      "etype": "power_in",
+      "side": "top"
+    },
+    {
+      "num": "32",
+      "name": "VCORE",
+      "etype": "power_out",
+      "side": "top"
+    },
+    {
+      "num": "3",
+      "name": "NRST",
+      "etype": "input",
+      "side": "top"
+    },
+    {
+      "num": "5",
+      "name": "VSS",
+      "etype": "power_in",
+      "side": "bottom"
+    }
+  ]
+}

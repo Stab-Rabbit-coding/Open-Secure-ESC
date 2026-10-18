@@ -1,5 +1,23 @@
 # Security Module Comparison: NXP S32K144 CSEc vs. Infineon SLB9672 TPM 2.0, and a Survey of Automotive-Class MCU Security Options
 
+> **STATUS 2026-08-22 — the decision this document argues toward has been
+> overtaken.** This document's own §9 survey covered `MSPM0G3107` ([38]) and
+> `MSPM0G350x-Q1` ([43]) as candidates alongside the incumbent S32K144; the
+> repo owner decided 2026-08-10 to swap `U1` to that MSPM0 family — the
+> specific part is the sibling **MSPM0G3518-Q1** ([44]), not [38]/[43]
+> themselves, chosen for its AES-128/**256** accelerator and confirmed
+> schematic-verified as `U1` on `builds/6s/50A/CAN_485_faraday`
+> (`kicad/sym-lib-table`: "Project MCU as of 2026-08-10; supersedes
+> S32K144"; pin numbers `VERIFIED` in
+> `symbols/specs/MSPM0G3518_Q1_PM.json`). See `TODO.md` §13 and
+> `docs/secure-element-architecture.md` for the current, MCU-accurate
+> security architecture. **This document's body below is NOT rewritten** —
+> its comparative research (S32K144 vs. SLB9672, and the §9 MCU survey) is
+> preserved as the historical record that led to the swap decision, per this
+> repo's convention of not erasing superseded analysis. Read the "Context"
+> paragraph immediately below, and every present-tense claim that follows it,
+> as describing the **S32K144-era** design, not the current schematic.
+
 Governed by `AGENTS.md`. This is a research/design-reference document, not a
 BOM or schematic change. It supports TODO.md items 1.11 and 4.2 (secure boot
 / attestation chain design doc). Every technical claim below is either cited
@@ -7,12 +25,13 @@ to a locally verified primary datasheet/reference manual, or explicitly
 marked `UNVERIFIED` per `AGENTS.md` §3 when only a secondary source (search
 snippet, distributor listing) was reachable this session.
 
-**Context:** this project's current design ([31], README.md) uses the
-S32K144's on-chip CSEc for message authentication and does **not** carry an
-external TPM; the SLB9672 ([2]) was evaluated and dropped 2026-08-03. This
-document compares the two on their technical merits for the record, and
-surveys other automotive-class MCUs with on-chip security engines, in case a
-future build variant revisits the trade-off. The survey started scoped to
+**Context (S32K144-era, superseded 2026-08-10 — see banner above):** this
+project's design at the time ([31], README.md) used the S32K144's on-chip
+CSEc for message authentication and did **not** carry an external TPM; the
+SLB9672 ([2]) was evaluated and dropped 2026-08-03. This document compares
+the two on their technical merits for the record, and surveys other
+automotive-class MCUs with on-chip security engines — that survey is what the
+2026-08-10 MSPM0 swap decision actually drew on. The survey started scoped to
 "5V-class" parts, then the repo owner clarified that most of the rest of
 this project's design is 3.3V-class, so §9 below covers both, noting each
 part's actual supply voltage rather than filtering by it.

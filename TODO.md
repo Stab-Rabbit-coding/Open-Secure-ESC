@@ -14,12 +14,22 @@ detail belongs in design docs, not here.
       2026-08-03 — project MCU changed, see 13.**
 - [x] 1.5 Verify [2] SLB9672 datasheet page refs for compliance claims — DROPPED
       (external TPM removed; see 4.1).
+- [x] 1.13 **ti.com/lit datasheet access restored** (2026-09-17): the HTTP 403
+      block recorded against [1] (1.4) no longer applies — [62], [63], [65]
+      and [66] were fetched live from `https://www.ti.com/lit/ds/symlink/…`
+      and verified locally. Entries that still say "live fetch blocked" are
+      historical notes, not current state.
 - [~] 1.11 Verify [31] NXP S32K1xx Data Sheet claims used historically (local
       copy VERIFIED); S32K144 removed as project MCU (see 13). Keep artifacts
       for audit/history; do not reuse the S32K144 symbol as an active part.
-- [~] 1.12 `docs/security-mcu-comparison.md` — updated to reflect MCU swap and
+- [x] 1.12 `docs/security-mcu-comparison.md` — updated to reflect MCU swap and
       Trust M justification; ensure any claim referencing MCU crypto or SHE
       is traced to an authoritative source (Cn).
+      **Closed 2026-08-22** (see `TODO.md` 13.1.h): a superseded-status
+      banner now points the document at the actual decision
+      (MSPM0G3518-Q1, [44]) and at `docs/secure-element-architecture.md`
+      for current architecture; the S32K144-vs-alternatives body is kept as
+      historical record, its claims already cited to [31]/[2]/[33]/[35]–[43].
 
 ## 2. Requirements
 
@@ -54,7 +64,7 @@ detail belongs in design docs, not here.
 - [~] 5.1 Gate driver + FET selection per amperage tier (10/20/30/40/50/80/120 A) — maintain candidate list; verify datasheets for final BOM lines (Cn).
 - [~] 5.2 Voltage tier variants (2S/4S/6S/8S/12S) — component derating table; verify cell choices (Cn).
 - [~] 5.3 Current sensing (shunt/hall) selection + citation — verify across tiers; INA240/WSLP candidates remain.
-- [ ] 5.4 Brushed-ESC power-stage variant: add H-bridge / half-bridge design task, BOM candidate(s), protections (reverse current, flyback diodes, current sensing placement), and interaction with control firmware. See `docs/design-brushed-esc-variant.md`. Mark part-selection claims UNVERIFIED until datasheets cited (Cn).
+- [~] 5.4 **First instance built 2026-09-17** — `builds/6s/10A/BRUSHED_CAN_485_isolation/` (Tier-1 DRV8874-Q1 [63] integrated bridge, IPROPI current sense, brake driver; see §18). Remaining: Tier-2/3 discrete-FET brushed stages. Original text: Brushed-ESC power-stage variant: add H-bridge / half-bridge design task, BOM candidate(s), protections (reverse current, flyback diodes, current sensing placement), and interaction with control firmware. See `docs/design-brushed-esc-variant.md`. Mark part-selection claims UNVERIFIED until datasheets cited (Cn).
 
 ## 6. Hardware — Protocol Interfaces
 
@@ -89,7 +99,7 @@ detail belongs in design docs, not here.
 - [ ] 8.4 Protocol drivers (per §6)
 - [ ] 8.5 Secure-boot / trust-chain firmware integration (CSEc + Trust M)
 - [ ] 8.6 Fault handling (overcurrent/thermal/comm-loss)
-- [ ] 8.7 Brushed-ESC firmware variant: H-bridge control, commutation strategy, regen handling, and safety limits. See `docs/design-brushed-esc-variant.md`.
+- [ ] 8.7 Brushed-ESC firmware variant: H-bridge control, commutation strategy, regen handling, and safety limits. See `docs/design-brushed-esc-variant.md`. **2026-09-17:** the first brushed build's firmware requirements (cascade, brake sequencing, nFAULT-as-brake-engage, rail-droop rule, jam detection, trip input, per-side sense, brake-release authorization with asymmetric MAC fail policy) are recorded in `builds/6s/10A/BRUSHED_CAN_485_isolation/README.md` "Firmware requirements" — implement against that list.
 - [ ] 8.8 Motor-speed sensor drivers and abstractions (common API): Hall (edge interrupts + debounce), quadrature decoder (hardware timer or ISR fallback), analog tachometer (ADC sampling + filtering). Include failure modes and fallback behavior per safety reqs (2.2).
 - [ ] 8.9 Sensor fusion + control use-cases: map sensor input selection to control loop modes (sensorless fallback → sensor-based closed-loop), calibrations, and per-build configuration stored in NVM.
 
@@ -150,6 +160,13 @@ detail belongs in design docs, not here.
         shutdown primitive, i.e. the security control becomes the attack.
         Decide fail-operational vs fail-safe and over what window of
         consecutive failures. See `docs/secure-element-architecture.md` O-04.
+    - [x] 12.3.a.i **Resolved for the 6S/10A brushed build only (2026-09-17):**
+          fail-safe = brake engaged, motor coasting; fail-operational applies
+          only to a MAC failure on a position frame (hold the last valid
+          command, never engage mid-manoeuvre); a MAC failure on a
+          brake-release command leaves the brake engaged. Recorded in
+          `builds/6s/10A/BRUSHED_CAN_485_isolation/README.md` (fail-state
+          table). The fleet-wide question above stays open.
   - [ ] 12.3.b **(High)** Specify an anti-replay freshness scheme. AES-128
         CMAC authenticates content, not recency; without a freshness value a
         recorded throttle command replays as valid. The Trust M's 4 monotonic
@@ -1618,9 +1635,13 @@ detail belongs in design docs, not here.
       the brushed-DC gate driver, all three sensored shaft-sensor options,
       and SBus/DBus. `unresolved_cells()` exists so a build script refuses
       them rather than emitting a BOM line.
-  - [ ] 12.6.a Source an H-bridge gate driver for the brushed row, or vet
-        the noted option of using two of a 3-phase driver's three
-        half-bridges.
+  - [x] 12.6.a **CLOSED 2026-09-17** — the brushed row is resolved to the TI
+        DRV8874-Q1 integrated H-bridge [63] (non-Q1 twin [62]), datasheet
+        held locally, pin map VERIFIED (`symbols/specs/DRV8874_Q1.json`);
+        shunt qty 0 (IPROPI mirror). Applied by
+        `docs/tools/add_holding_brake_axis.py`; `decision_matrix_to_json.py
+        --check` passes. The two-half-bridges-of-a-DRV8353S option was not
+        needed for Tier 1.
   - [ ] 12.6.b Source a resolver-to-digital converter for the resolver row.
   - [ ] 12.6.c Verify a Hall-sensor part (TI DRV5013 is carried from the
         Control sheet as a candidate only).
@@ -1639,13 +1660,38 @@ detail belongs in design docs, not here.
 > confirmed by its "A 0.47 µF tank capacitor is required for the VCORE pin",
 > and C3 on the sheet is 470 nF.
 >
-> What remains open is the part that matters most: **the security
-> documentation still describes the S32K144's CSEc.** 13.1.e and 13.1.h below
-> are untouched, and `builds/6s/50A/CAN_485_faraday/README.md` carries an
-> as-built correction note pointing here. Do not treat any CSEc statement in
-> the design docs as describing this build until 13.1.e is closed.
+> **Status update 2026-08-22 — verified against the schematic and closed the
+> documentation gap.** This pass re-checked every 13.1.\* claim directly
+> against `open_secure_esc_6s_50a_can485_faraday.kicad_sch` (not just the
+> JSON spec's own self-description): `U1`'s `lib_id` is
+> `MSPM0G3518_Q1_PM:MSPM0G3518_Q1_PM` (line 4489); `VDDA` appears nowhere as
+> a net (only inside doc-string text); the `VCORE` net has two
+> `global_label` instances (lines 3147, 3329) plus an explicit note at line
+> 5267 requiring a dedicated 470 nF cap and nothing else on that net,
+> matching 13.1.a's decision; `NRST` has a mandatory 10 kΩ pull-up (note at
+> line 6064) that the superseded S32K144 design lacked; `SE_I2C_SCL`/
+> `SE_I2C_SDA`/`SE_RST` each have two `global_label` instances tying `U1`
+> pins 8/9/7 to `U2` (OPTIGA Trust M). The hand-authored `.kicad_sym` pin
+> list matches the JSON spec pin-for-pin (28 pins, same numbers/names/
+> `etype`s). **13.1.e is now closed**: `docs/secure-element-architecture.md`
+> was rewritten — C-01 (AES-128 ceiling) marked RESOLVED, C-05 (CSEc/HSRUN)
+> marked SUPERSEDED with the MSPM0 equivalent explicitly flagged
+> `UNVERIFIED` (not silently assumed absent), §1.1 and §2 rewritten for the
+> MSPM0's `AESADV`/Keystore per [44]/[40], and a **new finding C-08** raised:
+> the S32K144's CSEc had a documented volatile `RAM_KEY` slot for runtime
+> session-key loading; [40] p.2 Table 1-1 describes the MSPM0 Keystore as
+> CSC-configured only, and no primary source read so far confirms an
+> equivalent runtime-loadable path exists. **13.1.h is now closed** as a
+> status-banner update (not a full rewrite): `docs/security-mcu-comparison.md`
+> now carries a superseded-status note; its S32K144-vs-alternatives body is
+> kept as the historical research that the swap decision actually drew on,
+> per this repo's convention of not erasing superseded analysis.
+> **13.1.f is only partly closed** — see its own entry below; it opened
+> C-08 rather than closing cleanly. **13.1 stays `[~]`**, not `[x]`: C-08,
+> plus the new 13.1.i verification items, are genuinely open engineering
+> questions, not paperwork.
 
-- [ ] 13.1 **Replace the NXP S32K144 with the TI MSPM0G3518-Q1**, package PM
+- [~] 13.1 **Replace the NXP S32K144 with the TI MSPM0G3518-Q1**, package PM
       (LQFP-64), orderable `M0G3518QPMRQ1` [44]. Decided 2026-08-10: the
       S32K144's CSEc is SHE-compliant and therefore **AES-128 only**, which
       capped the authenticated hot path; the MSPM0G351x provides an
@@ -1654,7 +1700,7 @@ detail belongs in design docs, not here.
       `docs/secure-element-architecture.md`.
       **Full plan, verified facts, and constraints:**
       `docs/HANDOFF-mcu-swap-s32k144-to-mspm0g3518.md`. Start there.
-  - [ ] 13.1.a **(Hazard — read before editing the schematic.)** `VCORE` is
+  - [x] 13.1.a **(Hazard — read before editing the schematic.)** `VCORE` is
         NOT the equivalent of the S32K144's `VDDA`. `VDDA` is an analog supply
         input tied to 3V3; `VCORE` is a regulator **output**, and [44] p.52
         states "The VCORE pin must only be connected to C_VCORE. Do not supply
@@ -1662,30 +1708,119 @@ detail belongs in design docs, not here.
         slot-for-slot swap would tie VCORE to 3V3 and violate the datasheet.
         **Decided 2026-08-10: drop VDDA's rail connection and give VCORE its
         own dedicated capacitor to VSS, with nothing else on that net.**
-  - [ ] 13.1.b `UNVERIFIED — needs primary source` : the C_VCORE capacitance
+        **Verified 2026-08-22 directly against the schematic:** `VDDA`
+        appears nowhere as a net on `open_secure_esc_6s_50a_can485_faraday
+        .kicad_sch` (only inside doc-string text); the `VCORE` net (2
+        `global_label` instances, lines 3147/3329) carries only the C_VCORE
+        note at line 5267, which states explicitly "This net carries the cap
+        and nothing else." Decision implemented as specified.
+  - [x] 13.1.b `UNVERIFIED — needs primary source` : the C_VCORE capacitance
         value. It is in the [44] p.51 Recommended Operating Conditions table,
         whose columns do not survive `pdftotext`. Do not guess it. The ±20%
         tolerance requirement IS verified and belongs on the BOM line.
-  - [ ] 13.1.c Author `symbols/specs/MSPM0G3518_Q1_PM.json` + `.kicad_sym`,
+        **Closed 2026-08-15, re-verified 2026-08-22:** 470 nF, read from [44]
+        p.51 §7.3 via `pdftotext -layout` (the bare-`pdftotext` column
+        collapse this item warned about was the actual blocker, not the
+        value being unobtainable). Schematic note at line 5267 states the
+        value and cites [44] p.51 §7.3 directly.
+  - [x] 13.1.c Author `symbols/specs/MSPM0G3518_Q1_PM.json` + `.kicad_sym`,
         mirroring the S32K144's functional signal-role names so the existing
         schematic wiring survives. Do not reuse
         `symbols/MSPM0G3518_Q1_RHB.kicad_sym` — that is the VQFN-32 package.
-  - [ ] 13.1.d Pin numbers will again be an `UNVERIFIED PLACEHOLDER PIN MAP`
+        **Verified 2026-08-22:** both files exist; the hand-authored
+        `.kicad_sym`'s 28 pins match the JSON spec's 28 pins exactly (number,
+        name, `etype`) pin-for-pin; `U1` on the build schematic instantiates
+        `MSPM0G3518_Q1_PM:MSPM0G3518_Q1_PM`, not the RHB symbol.
+  - [x] 13.1.d Pin numbers will again be an `UNVERIFIED PLACEHOLDER PIN MAP`
         unless [44]'s Table 6-2 can be read. **Try `pdfdetach -list` on
         `docs/datasheets/mspm0g3518-q1.pdf` first** — that trick is what
         unblocked the S32K144 map (see 1.11(a)) and may avoid the caveat.
-  - [ ] 13.1.e Rewrite `docs/secure-element-architecture.md`: C-01 becomes
+        **Closed 2026-08-15, re-verified 2026-08-22:** not a placeholder.
+        `symbols/specs/MSPM0G3518_Q1_PM.json`'s `"verification"` field records
+        the actual method used — `pdftotext -layout` (not `pdfdetach`) against
+        Figure 6-3 and Table 6-2, cross-checked against the §6.3 per-peripheral
+        signal tables, all 64 PM pads accounted for with zero discrepancies
+        between the two independent extractions. This environment has neither
+        `pdftotext` nor any Python PDF library available, so the extraction
+        itself could not be independently re-run this pass; the verification
+        record's own cross-check methodology was reviewed instead and is
+        credible (two independent extraction methods, explicit per-pad
+        conflict check, agreement with zero discrepancies).
+  - [x] 13.1.e Rewrite `docs/secure-element-architecture.md`: C-01 becomes
         RESOLVED, C-05 (CSEc/HSRUN exclusion) no longer applies, and every
         "CSEc" reference needs revisiting. **The Trust M's justification does
         NOT change** — the MSPM0's AES engine is still symmetric, so the
         asymmetric layer is still required.
-  - [ ] 13.1.f Check the keystore reduction: MSPM0 holds **4** AES keys
+        **Done 2026-08-22.** C-01 marked RESOLVED (ceiling lifted to AES-256,
+        original finding kept as history). C-05 marked SUPERSEDED — the
+        S32K144-specific HSRUN/CSEc exclusion no longer applies verbatim, but
+        per `AGENTS.md` §1.3 the doc does **not** claim the MSPM0 has no
+        equivalent constraint (that would be asserting absence from absence
+        of a citation); it is flagged `UNVERIFIED`, needs the MSPM0 TRM
+        clock/power chapter ([39]), and is carried forward as 13.1.i. §1.1
+        rewritten for `AESADV`/Keystore per [44] p.1 and [40] p.2 Table 1-1
+        (software-only ECDSA-P256/SHA-256, no hardware acceleration, no
+        certificate path — same structural gap, different citation). §2's
+        division-of-labour table updated; the Trust M rows are explicitly
+        unchanged, the MCU-side "session-key custody" row now points at the
+        new C-08 finding instead of asserting a settled mechanism. Every
+        other finding (C-02, C-03, C-06, C-07, O-01–O-05) reviewed and
+        annotated "unaffected by the MCU swap" where that's true, since none
+        of them actually depend on which MCU sits next to the Trust M.
+  - [~] 13.1.f Check the keystore reduction: MSPM0 holds **4** AES keys
         ([44] p.1) against CSEc's 17 ([31] Table 36-75). Confirm that suits the
         intended key hierarchy before closing 13.1.
-  - [ ] 13.1.g Preserve `SE_I2C_SCL` / `SE_I2C_SDA` / `SE_RST` on the new
+        **Analysed 2026-08-22, not fully closable — it surfaced a bigger open
+        question than a slot count.** Headroom alone is not the problem: this
+        design's only *named* MCU-side key use is the CSEc `RAM_KEY` role
+        (one volatile session-key slot) plus, per
+        `docs/security-mcu-comparison.md` §7, a `BOOT_MAC_KEY` role for
+        secure-boot verification — both fit inside a 4-slot budget with room
+        to spare, and the S32K144's 17 general-purpose user-key slots were
+        never all committed to a design in this repo (TODO.md §4.2/§4.3, the
+        secure-boot/key-provisioning design docs, are still `[ ]` open). The
+        real finding is that CSEc's `RAM_KEY` was explicitly volatile and
+        runtime-loadable, and the only primary-source description of the
+        MSPM0 Keystore found so far ([40] p.2 Table 1-1) describes it as
+        CSC-configured only, with no documented runtime-load path for a
+        freshly-negotiated ECDHE session key. That is worse than a slot-count
+        regression — it's a mechanism gap. Filed as **new finding C-08** in
+        `docs/secure-element-architecture.md` §4 (High, OPEN). This item
+        cannot close until C-08 does; tracked together with 13.1.i.
+  - [x] 13.1.g Preserve `SE_I2C_SCL` / `SE_I2C_SDA` / `SE_RST` on the new
         symbol, or the OPTIGA Trust M silently disconnects.
-  - [ ] 13.1.h Update `docs/security-mcu-comparison.md` — its S32K144-vs-
+        **Verified 2026-08-22 directly against the schematic:** all three
+        nets carry two `global_label` instances each (`SE_I2C_SCL`/
+        `SE_I2C_SDA` at lines 3959–3973 near `U2` and 4022–4036 near `U1`;
+        `SE_RST` likewise), tying `U1` pins 8/9/7 (pads `PA15`/`PA16`/`PA14`)
+        to `U2`. The OPTIGA block is not disconnected.
+  - [x] 13.1.h Update `docs/security-mcu-comparison.md` — its S32K144-vs-
         alternatives argument is the document this decision overturns.
+        **Done 2026-08-22 as a status banner, not a full rewrite** — added a
+        prominent superseded-status note pointing at the actual decision
+        (MSPM0G3518-Q1, [44]) and at `docs/secure-element-architecture.md`
+        for the current architecture; corrected the "Context" paragraph to
+        read as historical. The comparative research body (§2–§10, including
+        the §9 MCU survey that the swap decision drew on) is preserved
+        verbatim as the historical record, consistent with this repo's
+        practice of not erasing superseded analysis (cf. TODO.md §13's own
+        history section, §9 added to `secure-element-architecture.md` this
+        same pass). Also closes the doc side of TODO.md 1.12.
+  - [ ] 13.1.i **NEW 2026-08-22.** Read the MSPM0G3518-Q1 `AESADV`/`Keystore`
+        chapter body ([44] §8.20/§8.21, not yet read past the p.1 feature
+        summary and p.5 TOC) and, if needed, the MSPM0 G-Series TRM's
+        clock/power chapter ([39], SLAU846E) to resolve three items raised by
+        this pass, all filed in `docs/secure-element-architecture.md` §4:
+        (a) **C-08** — does `AESADV` support a runtime-loadable key outside
+        Keystore (a `RAM_KEY` equivalent), or must every key go through the
+        CSC-gated Keystore path; (b) **C-04** — does `AESADV`'s CMAC/GCM path
+        expose tag truncation directly (like CSEc's `TRUNCATE()`), or must
+        firmware truncate a full-length tag itself; (c) **C-05** — does any
+        MSPM0 clock/power mode restrict `AESADV` execution, the way S32K144
+        HSRUN restricted CSEc. None of these may be answered by inference
+        from the MSPM0's general reputation as a capable device — per
+        `AGENTS.md` §1.3 each needs its own citation or its own explicit
+        `UNVERIFIED`.
 
 ---
 
@@ -2156,3 +2291,74 @@ flat board — estimated 24 x 105–115 mm against the current 32.00 x 76.10 mm.
 True curved rigid FR-4 does not exist; the laminate is pressed flat, so
 "curved" means faceted, whether the facets are joined by flex hinges or are
 separate boards with an interconnect.
+
+## 17. Holding Brake Axis (added 2026-09-17)
+
+**Goal.** Record the holding-brake output as a build axis with a Fail-state
+column, because a spring-applied brake's fail behaviour is a safety property
+of the build, not a part number. First instance: §18.
+
+- [x] 17.1 Holding Brake sheet added to `docs/decision-matrix.xlsx` by
+      `docs/tools/add_holding_brake_axis.py` (rows `None` /
+      `Low-side solenoid driver, spring-applied`; Fail-state column;
+      TPL7407L [66] as the driver); Legend updated; JSON re-exported and
+      `decision_matrix_to_json.py --check` passes; root `README.md` Build
+      Options lists the axis.
+- [x] 17.2 Same script resolves the Motor sheet's Brushed (DC) row (12.6.a)
+      and adds the `Magnetic absolute (SPI/SSI)` Shaft Sensor row
+      (AEAT-8800-Q24 [64]); the Amperage sheet carries the brushed override
+      note (bridge row overrides its FET/driver/shunt/CSA columns).
+- [ ] 17.3 Add the axis to the build-skill parameter space (§14) when that
+      skill is written; `unresolved_cells()` already refuses nothing on the
+      driver row (the solenoid itself is a host-side part outside the axis).
+
+**Sequencing.** Done except 17.3, which waits on §14.
+
+## 18. Build — 6S / 10A / BRUSHED / CAN-FD+RS-485 / Isolation (Serenity nacelle tilt)
+
+**Goal.** The Serenity-UAV nacelle-tilt controller as a build instance of
+this platform, replacing a proposed LibreServo_v4 variant (Serenity-UAV
+`docs/plans/2026-09-17-001-feat-tilt-controller-open-secure-esc-build-plan.md`).
+State on 2026-09-17: **schematic + BOM readiness** — ERC 0 errors / 0
+warnings, netlist verified, no PCB.
+
+- [x] 18.1 Datasheets and citations: DRV8874 [62], DRV8874-Q1 [63],
+      AEAT-8800-Q24 [64], TPS54560B [65], TPL7407L [66] held locally;
+      `ti.com/lit` fetches succeed again (1.13).
+- [x] 18.2 Symbols and footprints: `DRV8874_Q1`, `TPS54560B`, `TPL7407L`,
+      `AEAT_8800_Q24`, `MSPM0G3518_Q1_RHB_TILT` specs (all pin maps
+      VERIFIED); TI PWP0016J and DDA0008B footprints from TI's own land
+      patterns (`symbols/tools/gen_ti_powerpad_footprints.py`);
+      `gen_kicad_symbol.py` gains a kiutils-free emitter.
+- [ ] 18.3 **(High) Complete the BOM values and the unselected parts** —
+      buck inductors L1/L2 and catch diodes D1/D2 (≤ 4 mm height on the
+      web-facing side; primary datasheets required), buck design values per
+      [65] §8.2 (UVLO, RT, FB, compensation), ITRIP / RIPROPI / VREF against
+      the 20D's 2.9 A stall ([63] Eq. 3), connector part numbers J1–J8
+      against the Serenity harness spec. Every line reads `UNVERIFIED` or
+      `pending` in the build README until then.
+- [ ] 18.4 **(High) Country of origin** for DRV8874-Q1, TPS54560B, TPL7407L
+      and AEAT-8800-Q24 — fab and assembly sites are not in any datasheet;
+      obtain vendor COO statements or distributor COO documents
+      (`docs/brushed-component-sourcing-verification.md` §5).
+- [ ] 18.5 AEAT-8800-Q24 land pattern: verify the KiCad stock QFN-24 footprint
+      against Broadcom's Figure 17 (raster; numbers not extractable by
+      pdftotext — read the rendered page).
+- [ ] 18.6 **PCB layout** inside the 42.9 × 36.5 mm host envelope: isolated
+      rows on the long axis (`isolation_envelope.py` passes at 36.5 mm with
+      a 7 mm widest part), 4 mm component height on one face and a bare
+      back face, connectors on the aft/inboard edges only, thermal vias
+      under the PWP pad (~2 W at stall), conductor sizing for 3 A
+      (`conductor_sizing.py`; IPC-2152 [46] still unread), DRC clean at
+      `--severity-error` with the `.kicad_dru` via rule and its negative
+      control; then a human-arranged view of the label-wired schematic.
+- [ ] 18.7 Firmware per the build README's "Firmware requirements" (see 8.7
+      and 12.3.a.i); the brake-release command class and the AES-CMAC path
+      depend on 13.1.e.
+- [ ] 18.8 Bench: the Serenity-side items BRK-4 (solenoid, hold-in voltage),
+      BRK-5 (hold / release under load) and BRK-6 (engage into motion at
+      max slew) are owned by Serenity-UAV `airframe/fuselage-mid/WBS.md`;
+      this build's acceptance references them.
+
+**Sequencing.** 18.3 → 18.4 (parallel) → 18.6 → gerbers; 18.7 independent
+after 13.1.e; 18.5 any time.

@@ -2,6 +2,16 @@
 
 ## Executive Summary
 
+> **Citation status (2026-09-17).** This document's own bibliography (§References) is
+> not integrated into `REFERENCES.md` and cites secondary mirrors; per `AGENTS.md` §1.1
+> only claims re-verified from a primary datasheet held in `docs/datasheets/` may be
+> relied on. Re-verified so far: the Tier-1 bridge, now the **DRV8874-Q1** —
+> `REFERENCES.md` [62]/[63], first instance `builds/6s/10A/BRUSHED_CAN_485_isolation/`.
+> Correction from that verification: §2.2's "integrated 45 mΩ (total H-bridge)" is not
+> what the datasheet states — [63] §6.5 gives **100 mΩ typ / 120 mΩ max per high-side
+> and per low-side FET** (≈ 200 mΩ HS+LS, 240 mΩ worst case). Everything else in §1–§4
+> stays as originally drafted until re-verified.
+
 This document defines a scalable, OSHWA-certifiable (Open Source Hardware Association) Electronic Speed Controller (ESC) architecture designed for brushed DC motors. The framework scales across operating voltages from **2S to 12S LiPo (8.4V – 50.4V)** and continuous current loads from **10A to 120A+**.
 To avoid re-engineering core system logic, all framework variants share a unified digital and security architecture:
 
@@ -38,7 +48,7 @@ A single monolithic H-bridge driver cannot cover the entire range from 2S/10A (8
 ### 2.2 Tier 1: Integrated H-Bridge IC Options (2S – 6S / 10A – 20A)
 
 - **TI DRV8873-Q1 / DRV8874:**
-  - 38V operating supply maximum rating, integrated 45 mΩ (total H-bridge) $R_{DS(on)}$ power MOSFETs.
+  - 38V operating supply maximum rating, integrated 45 mΩ (total H-bridge) $R_{DS(on)}$ power MOSFETs. **Corrected 2026-09-17 against [63] §6.5 (DRV8874-Q1): 4.5–37 V operating, 100 mΩ typ / 120 mΩ max per FET (HS and LS each), 6 A peak — see the citation-status note above.**
   - Features direct PWM/PH-EN interfaces, integrated current sensing proportional output, and comprehensive protections (OCP, TSD, UVLO).
 
 ### 2.3 Tier 2 & Tier 3: Discrete MOSFET & Gate Driver Options
@@ -89,7 +99,7 @@ AIR COOLED (OPEN FRAME / FINNED)          SEALED / MARINE (CONDUCTIVE STRIP)
 
 ## 4. Supply Chain Compliance & Component Origin Verification
 
-To satisfy supply chain standards (e.g., NDAA Section 889, DFARS 252.225-7007, EAR/ITAR rules), active components must not originate from restricted entity lists or covered regions (primarily China and Russia).
+To satisfy supply chain standards (e.g., NDAA Section 889, DFARS 252.225-7007, EAR/ITAR rules), active components shall not originate from restricted entity lists or covered regions (primarily China and Russia).
 
 ### 4.1 Active Component Sourcing & Fab Compliance Matrix
 
@@ -111,7 +121,7 @@ To satisfy supply chain standards (e.g., NDAA Section 889, DFARS 252.225-7007, E
 
 1. **Driver Standardization:** The STMicroelectronics L6387E (up to 600V driver) is explicitly excluded due to backend packaging in China. All gate drivers are standardized on Texas Instruments (DRV series) and Analog Devices (LTC series) components.
 2. **Traceability:** Prior to manufacturing, production runs require a Certificate of Origin (COO) for all silicon lots from authorized distributors (e.g., Arrow, Mouser, Digi-Key).
-3. **OSHWA Certification Alignment:** All schematic, Gerber, and BOM files will publish full manufacturing part numbers (MPNs) alongside verified non-restricted distributor SKUs.
+3. **OSHWA Certification Alignment:** All schematic, Gerber, and BOM files shall publish full manufacturing part numbers (MPNs) alongside verified non-restricted distributor SKUs.
 
 ## References
 

@@ -11,8 +11,9 @@ Root of trust: Infineon OPTIGA™ Trust M V3 secure element [45] over I²C (sche
 
 Build Options:
 
-* Motor speed sensor: ADC/DIO/SPI shaft sensor input (Hall / encoder / analog tach)
-* Motor type: Brushed / Brushless
+* Motor speed sensor: ADC/DIO/SPI shaft sensor input (Hall / encoder / analog tach / magnetic absolute SSI-SPI, e.g. AEAT-8800-Q24 [64])
+* Motor type: Brushed (Tier-1 integrated H-bridge DRV8874-Q1 [63]) / Brushless
+* Holding brake: None (default) / Low-side solenoid driver, spring-applied (de-energised = engaged; TPL7407L [66]) — see `docs/decision-matrix.xlsx` "Holding Brake"
 * Voltage: 2S, 4S, 6S, 8S, 12S
 * Amperage: 10A, 20A, 30A, 40A, 50A, 80A, 120A
 * Protocol: PWM, SBus, DBus, UART, TTL, SPI, RS-232 [3], RS-485 [4], CAN2.0 [5], CAN-FD [6], MIL-STD-1553B [7]
@@ -20,7 +21,7 @@ Build Options:
 * EMI Hardening: None, Isolation, Grounding, Faraday
 * Wire Egress: Opposite-end (default), Same-end opposite faces (both conductor groups leave one board end, phases on F.Cu and pack on B.Cu, shielded by the inner GND planes)
 * Form Factor: Flat (default), Faceted rigid-flex (for mounting inside a curved host; strip width and sagitta derive from the host bore radius — see `docs/tools/strip_width.py`)
-* Ingress & environmental protection: Splash/spray variants (target IPX4–IPX6, IEC 60529 [56]) air-cooled via an open aspirated path; Sealed/immersion variants (target IPX7–IPX8, up to NEMA 6P equivalent) MUST use a metal conduction cooling path with no air exchange — these are two distinct mechanical designs, not one IP-rating dial (see `docs/design-waterproofing-and-thermal-management.md`).
+* Ingress & environmental protection: Splash/spray variants (target IPX4–IPX6, IEC 60529 [56]) air-cooled via an open aspirated path; Sealed/immersion variants (target IPX7–IPX8, up to NEMA 6P equivalent) shall use a metal conduction cooling path with no air exchange — these are two distinct mechanical designs, not one IP-rating dial (see `docs/design-waterproofing-and-thermal-management.md`).
 
 ## Repository layout
 

@@ -2,11 +2,11 @@
 
 Status: DRAFT (authoring complete)
 Applies to: All build variants (Brushed + Brushless)
-Governing rules: AGENTS.md §1–§3 — every technical claim that requires a primary source must be verified and added to REFERENCES.md; UNVERIFIED markers applied where the repo lacks the primary source.
+Governing rules: AGENTS.md §1–§3 — every technical claim that requires a primary source shall be verified and added to REFERENCES.md; UNVERIFIED markers applied where the repo lacks the primary source.
 
 Summary
 
-- Requirement: every ESC variant MUST provide a motor-speed input interface (Hall / optical encoder / analog tachometer) as a first-class item in BOM and schematic. This doc defines electrical integration, connector choices, front-end protection, PCB routing and layout notes, failure modes, and test points.
+- Requirement: every ESC variant shall provide a motor-speed input interface (Hall / optical encoder / analog tachometer) as a first-class item in BOM and schematic. This doc defines electrical integration, connector choices, front-end protection, PCB routing and layout notes, failure modes, and test points.
 
 Rationale
 
@@ -87,11 +87,11 @@ Failure modes & safety
 
 - Detect open, short-to-rail, and stalled sensor conditions in firmware:
 
-  - Hall/encoder: loss of pulses → enter safe fallback (sensorless or reduced-power mode) or to predefined safe-state per safety policy (2.2). Behavior must be defined by system integrator.
+  - Hall/encoder: loss of pulses → enter safe fallback (sensorless or reduced-power mode) or to predefined safe-state per safety policy (2.2). Behavior shall be defined by the system integrator.
   - Analog tach: out-of-range voltage → fault.
 
 - Watchdog and cross-check: compare RPM reported by sensor with motor-modelled RPM (if sensorless estimator exists); on mismatch exceed threshold → fault.
-- All failure-handling policies must be recorded and linked to AGENTS.md checklist before merging.
+- All failure-handling policies shall be recorded and linked to the AGENTS.md checklist before merging.
 
 Testing
 
