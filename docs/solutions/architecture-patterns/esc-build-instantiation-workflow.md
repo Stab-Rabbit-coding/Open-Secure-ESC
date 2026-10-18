@@ -11,6 +11,7 @@ applies_when:
   - "Adding a shaft-sensor interface to an existing build"
   - "Authoring a KiCad footprint from a manufacturer drawing"
   - "Taking any build from schematic to routed board"
+  - "Shrinking a board against a tight Form Factor / width constraint"
 tags:
   - esc
   - kicad
@@ -220,12 +221,46 @@ Related: a 1 mΩ shunt at 50 A dissipates I²R = **2.5 W into a 3.0 W part**
 (83 % of rating, before derating, in a board already running hot). The
 reference design used 0.5 mΩ, halving it.
 
+### Trap 8 — If the board is width-constrained, size the MCU package before the isolators
+
+`docs/solutions/architecture-patterns/smaller-package-does-not-shrink-creepage.md`
+and `bom-creepage-audit-can485-faraday.md` found this the hard way on the
+6S/50A/Faceted build: creepage/clearance around an isolated CAN or RS-485
+transceiver is set by IEC 60664-1's working-voltage/insulation-class table,
+**not** by the transceiver's package size or how many chips implement the
+barrier. A smaller isolator package rated to a higher working voltage can
+need *more* creepage than the one already in the BOM, and splitting one
+integrated part into a discrete isolator + DC-DC + transformer stack
+multiplies the places that same clearance has to be re-established rather
+than dividing it. Chasing isolator package size to shrink a board is very
+likely solving the problem in the wrong axis.
+
+The lever that actually moves `docs/tools/isolation_envelope.py`'s minimum
+board width is the **widest non-isolated part** — almost always the MCU —
+because that width, not the isolator's, is what the tool's inboard-fit
+check is actually gated on. TI's MSPM0G351x family alone spans 5×5 mm
+(RHB, VQFN-32) to 16×16 mm (PZ, LQFP-100) for the *same silicon*, differing
+only in which GPIOs are bonded out; before instantiating a build against a
+tight width target, check the project MCU's smallest package option that
+still exposes every signal this build needs (CAN, the protocol axis's
+comms lines, PWM count for the motor axis, ADC channel count) — the same
+pad-by-pad conflict check `symbols/specs/MSPM0G3518_Q1_RHB.json` documents
+— before assuming the isolators are the thing to shrink.
+
+**Rule:** when a build's Form Factor axis (or any other width/space
+constraint) is tight, run the MCU-package fit check *before* auditing
+isolator/transceiver package size. The isolator audit is real and worth
+doing (see the two docs above) — it just isn't where the width actually
+comes from.
+
 ## When to Apply
 
 - Every new `builds/<voltage>/<amperage>/<variant>/` instantiation.
 - Any time a footprint is authored from a manufacturer drawing.
 - Before running a bulk coordinate transform on a generated schematic.
 - Before auto-routing any board carrying more than a few amps.
+- Before proposing an isolator/transceiver package swap to save board
+  width — check the MCU package first (Trap 8).
 
 ## Examples
 
@@ -276,3 +311,10 @@ what makes the genuinely-verified numbers trustworthy.
 - `symbols/README.md` — footprint provenance table and the Toshiba catalog note
 - `builds/6s/50A/CAN_485_faraday/kicad/README.md` — the source build's state
 - `TODO.md` §12.4 — the open items this build carries into fab
+- `docs/solutions/architecture-patterns/smaller-package-does-not-shrink-creepage.md`,
+  `bom-creepage-audit-can485-faraday.md` — Trap 8's source investigation
+- `docs/solutions/architecture-patterns/pcb-footprint-injection-and-live-file-safety.md`
+  — hand-editing a `.kicad_sch`/`.kicad_pcb` when the GUI isn't the tool doing it
+- `docs/solutions/architecture-patterns/schematic-pin-y-sign-when-hand-wiring.md`
+  — verifying hand-authored wires/labels by netlist, not by eye
+- `docs/tools/isolation_envelope.py` — the tool Trap 8's rule is checked against
