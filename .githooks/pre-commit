@@ -1,0 +1,9 @@
+#!/bin/sh
+# Pre-commit guard: doc wording (REF-MIL-001 CNAF M-3710.7 SS1.5/1.6 callout/verb conventions)
+#
+# Enable once per clone:  git config core.hooksPath .githooks
+
+set -e
+TOPDIR="$(git rev-parse --show-toplevel)"
+
+python3 "$TOPDIR/tools/precommit_doc_wording.py" || exit 1
