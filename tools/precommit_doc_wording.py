@@ -13,6 +13,7 @@ statement, so it never fails the commit.
 
 Scope: staged *.md files only. Runs from the repo's pre-commit hook.
 """
+
 import re
 import subprocess
 import sys
@@ -30,7 +31,9 @@ WILL_NEAR_MANDATORY = re.compile(
 def staged_markdown_files():
     out = subprocess.run(
         ["git", "diff", "--cached", "--name-only", "--diff-filter=ACM"],
-        capture_output=True, text=True, check=True,
+        capture_output=True,
+        text=True,
+        check=True,
     ).stdout.splitlines()
     return [f for f in out if f.endswith(".md")]
 
@@ -69,7 +72,9 @@ def main():
         all_warnings.extend(warnings)
 
     if all_warnings:
-        print("doc-wording advisory (REF-MIL-001 SS1.6, not blocking):", file=sys.stderr)
+        print(
+            "doc-wording advisory (REF-MIL-001 SS1.6, not blocking):", file=sys.stderr
+        )
         for w in all_warnings:
             print(f"  {w}", file=sys.stderr)
 
