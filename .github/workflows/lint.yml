@@ -79,7 +79,10 @@ jobs:
 
       - name: Install ruff
         if: steps.pyfiles.outputs.found == 'true'
-        run: pip install ruff
+        # Pinned: an unpinned install picks up new default rules on every ruff
+        # release and turns this job red without any change in this repo.
+        # Bump deliberately, and run `ruff check` / `ruff format --check` first.
+        run: pip install "ruff==0.17.1"
 
       - name: Ruff check
         if: steps.pyfiles.outputs.found == 'true'
