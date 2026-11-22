@@ -2461,4 +2461,27 @@ height 2.8 mm ref.; mates with frame [67]. Evaluated with [67]; not adopted
 for the same reason.
 Date accessed: 2026-10-03.
 
+**[69]** National Aeronautics and Space Administration, *Workmanship
+Standard for Crimping, Interconnecting Cables, Harnesses, and Wiring*,
+NASA-STD-8739.4A with Change 4 (Revision A approved 2016-06-30; Change 3
+2021-11-02; Change 4 2022-04-13, "editorial correction to caption titles"),
+Washington, DC, USA. [Online]. Available:
+https://standards.nasa.gov/sites/default/files/standards/NASA/A/4/nasa-std-87394a_w_change_4_0.pdf
+(catalog page https://standards.nasa.gov/standard/NASA/NASA-STD-87394).
+Local verified copy: `docs/datasheets/nasa-std-87394a_w_change_4.pdf`,
+fetched directly 2026-11-22 (MD5 bd97e9f4159199569fa3ea196d577a94) and read.
+Section/page: §7.2.19 and Table 7-1 "Bend Radii for Completed
+Interconnecting Cable or Harness", p. 30 of 113. Minimum bend radius:
+overall harness, AWG 10 or smaller, without coaxial cable, 3 × OD (optimum
+10 × OD); individual coaxial cable, 6 × OD (optimum 10 × OD); polyimide
+(Kapton) insulated wire or a harness that includes it, 10 × OD (optimum
+15 × OD). §7.2.19 applies the table to bending in the installed harness.
+Issue 23 and Serenity-UAV `tools/esc70_design.json` cite "Chg 3 Table 7-1".
+The current catalog copy is Change 4; its history log describes Change 4
+as editorial only ("editorial correction to caption titles"), so the
+Change 3 table values are expected to be the same. The Change 3 copy itself
+was not obtained: Change 3 Table 7-1 values are UNVERIFIED — needs primary
+source (see TODO.md). The Change 4 values above are verified.
+Date accessed: 2026-11-22.
+
 Track resolution of these items in `TODO.md`.

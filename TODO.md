@@ -2370,7 +2370,8 @@ after 13.1.e; 18.5 any time.
 **2026-11-22: issue 23's G1 envelope is INVALID** (Serenity-UAV `3d23e68`,
 skin-ray bug). Do not place or route before Gate E.
 
-- [ ] 19.1 U1 Setup + baseline; cite NASA-STD-8739.4A (Cn).
+- [x] 19.1 U1 Setup + baseline; NASA-STD-8739.4A cited [69] (2026-11-22).
+- [ ] 19.1.a UNVERIFIED: NASA-STD-8739.4A Chg 3 Table 7-1 copy ([69] is Chg 4).
 - [ ] 19.2 Owner ruling: `[67]` is assigned twice in `REFERENCES.md`.
 - [ ] 19.3 U2 `docs/tools/bay_partition_fit.py` + tests.
 - [ ] 19.4 U3–U6 70 A power design, BOM, parts, modular schematic.
