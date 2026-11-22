@@ -48,3 +48,4 @@ __pycache__/
 
 # Analyzer output (regenerable; the kicad skill caches runs here)
 builds/**/kicad/analysis/
+.compound-engineering/*.local.yaml

@@ -2362,3 +2362,21 @@ warnings, netlist verified, no PCB.
 
 **Sequencing.** 18.3 → 18.4 (parallel) → 18.6 → gerbers; 18.7 independent
 after 13.1.e; 18.5 any time.
+
+## 19. Build — 6S / 70A / CAN-FD+RS-485 / Faraday / Faceted (Serenity 64 mm nacelle, issue 23)
+
+**Goal.** ESC A and ESC B for the Serenity-UAV 64 mm nacelle bays. Plan:
+`docs/plans/2026-11-22-001-feat-70a-nacelle64-esc-sprint-plan.md` (U1–U19).
+**2026-11-22: issue 23's G1 envelope is INVALID** (Serenity-UAV `3d23e68`,
+skin-ray bug). Do not place or route before Gate E.
+
+- [ ] 19.1 U1 Setup + baseline; cite NASA-STD-8739.4A (Cn).
+- [ ] 19.2 Owner ruling: `[67]` is assigned twice in `REFERENCES.md`.
+- [ ] 19.3 U2 `docs/tools/bay_partition_fit.py` + tests.
+- [ ] 19.4 U3–U6 70 A power design, BOM, parts, modular schematic.
+- [ ] 19.5 U7 Firmware 70 A limit and shunt scaling.
+- [!] 19.6 Gate E: corrected envelope on issue 23 (Serenity-UAV).
+- [ ] 19.7 U8–U9 Partition trade (Gate P), hinge + interconnect.
+- [ ] 19.8 U10–U14 Placement, thermal, routing.
+- [ ] 19.9 U15–U16 Independent review, fab release (Gate F).
+- [ ] 19.10 U17–U19 Procedures, bench (Gate Q), qualification.
