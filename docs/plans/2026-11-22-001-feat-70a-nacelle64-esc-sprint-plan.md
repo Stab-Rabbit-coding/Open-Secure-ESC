@@ -166,8 +166,14 @@ Validation:
    `docs/tools/*.py` already holds.
 5. Send broad multi-file sweeps to an Explore subagent and keep only its
    conclusion.
-6. End each sprint with `ce-handoff`: what changed, the open items, and the
-   next sprint's first read.
+6. End each sprint with `/sprint-close <U-ID>`
+   (SecureControllers `.claude/skills/sprint-close/`). It runs `ce-doc-review`,
+   `ce-compound-refresh`, `ce-code-review`, `ce-compound`, `ce-handoff` and
+   `ce-commit-push-pr`, in that order, scoped to the sprint's diff.
+7. The Build environment's setup script installs `kiutils`, `scipy`,
+   `trimesh`, `rtree`, `shapely`, `pytest` and `markdownlint-cli2` 0.22.1,
+   so no sprint reinstalls them. CI's lint job installs the latest
+   `markdownlint-cli2`, not a pinned version.
 
 ### High-Level Technical Design
 
