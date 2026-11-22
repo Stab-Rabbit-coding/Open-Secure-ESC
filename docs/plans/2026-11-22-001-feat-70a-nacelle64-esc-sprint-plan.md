@@ -9,8 +9,6 @@ execution: code
 origin: "GitHub Stab-Rabbit-coding/Open-Secure-ESC issue 23 (body + comment 7079567551)"
 ---
 
-# feat: 6S 70 A ESC for the Serenity-UAV 64 mm nacelle bays (issue 23)
-
 Governed by [`AGENTS.md`](../../AGENTS.md). TODO index: `TODO.md` §19.
 AI-generated plan (Claude, Anthropic), 2026-11-22. Not human-reviewed.
 
@@ -21,6 +19,8 @@ AI-generated plan (Claude, Anthropic), 2026-11-22. Not human-reviewed.
 > both ESC B bays sat. Do not lay out a board to any G1 figure. Sprints after
 > **Gate E** stay closed until Serenity-UAV posts a corrected envelope on
 > issue 23 and the owner decides on it.
+
+<!-- separate WARNING and CAUTION callouts (MD028) -->
 
 > **CAUTION** — Serenity-UAV OD-3 accepted only the existing 70 A design. A
 > re-partitioned board is a different ESC. It shall get the full thermal,
